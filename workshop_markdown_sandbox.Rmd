@@ -1,0 +1,305 @@
+---
+title: "SEISMIC Collaborative LAK Workshop"
+author: "V.Farrar"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+syndat <- read.csv(file = "SEISMIC_synthetic_data_2023-01-26.csv")
+
+
+#load packages
+  #ISSUE: change to pacman to reduce number of installations needed.
+library(tidyverse)
+library(gmodels)
+library(lme4)
+library(lmerTest)
+library(broom)
+library(broom.mixed)
+```
+
+```{r prep MV synthetic data}
+#run this chunk if using Montse's synthetic data - needs to be prepped for code
+#renaming variables MV synthetic data
+syndat$crs_name <- syndat$course
+syndat$ethniccode_cat <- syndat$ethnicity
+syndat$firstgen <- syndat$first_gen
+syndat$lowincomeflag <- syndat$lowincome
+syndat$numgrade <- syndat$grade
+
+#create a section variable
+  #used in classroom composition analysis
+
+#arrange data by demographic vars
+syndat <- syndat %>% arrange(crs_name,lowincomeflag, firstgen, ethniccode_cat, female)
+#then randomly assign sections
+syndat$crs_section <- rep(c(1:2,1:3,1:4), length.out=2369) #length of dataset 
+```
+
+# Define Your Course of Interest
+
+What course are you interested in looking at? Options: BIO300, MATH100
+
+Define it below, in quotes "", in the code below. This will be used in the rest of the code, and you can always come back and change it.
+
+```{r course of interest}
+#MV options: "Entry Bio", "Lower Chem", "Upper Bio"
+
+course_of_interest <- "BIO300"
+```
+
+# Systemic Advantage Index
+
+## Calculating SAI
+
+SAI, or systemic advantage index, is a metric that takes into account multiple axes of student identities, including:
+
+-   race/ethnicity
+
+-   gender
+
+-   socioeconomic status
+
+-   parental education (i.e., first-generation college-going status)
+
+💭 Can you think of any other systemic advantages not included in this index that likely influence student's outcomes in a course? What would be the challenges to adding those identities or advantages to this index?
+
+➡️ **Your task: Walk through one of the lines of code and compare it with the SAI table below from the talk. Can you explain where the SAI assignment comes from?**
+
+```{r SAI calculation, echo=TRUE}
+#this code goes through all possible combinations of the 4 advantage axes and assigns an SAI based on that students' values
+#as ethniccode_cat == 1 is the "BIPOC" label, all other categories are considered advantaged 
+syndat <-
+  syndat %>% mutate(sai = case_when(
+    female == "0" & ethniccode_cat != "1" & firstgen == "0" & lowincomeflag == "0"  ~ "4",
+    female == "1" & ethniccode_cat != "1" & firstgen == "0" & lowincomeflag == "0"  ~ "3",
+    female == "0" & ethniccode_cat == "1" & firstgen == "0" & lowincomeflag == "0"  ~ "3", 
+    female == "0" & ethniccode_cat != "1" & firstgen == "0" & lowincomeflag == "1"  ~ "3", 
+    female == "0" & ethniccode_cat != "1" & firstgen == "1" & lowincomeflag == "0"  ~ "3", 
+    female == "0" & ethniccode_cat == "1" & firstgen == "1" & lowincomeflag == "0"  ~ "2", 
+    female == "0" & ethniccode_cat == "1" & firstgen == "0" & lowincomeflag == "1"  ~ "2", 
+    female == "1" & ethniccode_cat == "1" & firstgen == "0" & lowincomeflag == "0"  ~ "2", 
+    female == "0" & ethniccode_cat != "1" & firstgen == "1" & lowincomeflag == "1"  ~ "2", 
+    female == "1" & ethniccode_cat != "1" & firstgen == "1" & lowincomeflag == "0"  ~ "2", 
+    female == "1" & ethniccode_cat != "1" & firstgen == "0" & lowincomeflag == "1"  ~ "2", 
+    female == "1" & ethniccode_cat != "1" & firstgen == "1" & lowincomeflag == "1"  ~ "1", 
+    female == "1" & ethniccode_cat == "1" & firstgen == "1" & lowincomeflag == "0"  ~ "1",
+    female == "1" & ethniccode_cat == "1" & firstgen == "0" & lowincomeflag == "1"  ~ "1", 
+    female == "0" & ethniccode_cat == "1" & firstgen == "1" & lowincomeflag == "1"  ~ "1",
+    female == "1" & ethniccode_cat == "1" & firstgen == "1" & lowincomeflag == "1"  ~ "0",
+    TRUE ~ "NA"))
+```
+
+## Exploring course outcomes across SAI
+
+Let's explore what grade outcomes look like across levels of SAI in our course of interest.
+
+```{r SAI summary stats, warning=FALSE, message=FALSE}
+syndat %>%
+  filter(crs_name == course_of_interest) %>%
+  group_by(crs_name, sai) %>%
+  summarise(n = n(),
+            mean_grade = mean(numgrade, na.rm = T),
+            sd_grade = sd(numgrade, na.rm = T))
+```
+
+```{r SAI plot}
+#plot raw grades in course of interest
+syndat %>%
+  filter(crs_name %in% course_of_interest) %>%
+  ggplot(aes(x = sai, y = numgrade, color = crs_name))+ 
+      stat_summary(geom = "point", fun = "mean", 
+                 position = position_dodge(0.2)) + 
+    stat_summary(geom = "errorbar", fun.data = "mean_cl_normal", 
+                 width = 0.1, position = position_dodge(0.2)) +
+  labs(title = paste(course_of_interest)) + 
+  theme_bw()
+
+#plot raw grades by all disciplines 
+ggplot(syndat, aes(x = sai, y = numgrade, color = crs_name)) + 
+    stat_summary(geom = "point", fun = "mean", 
+                 position = position_dodge(0.2)) + 
+    stat_summary(geom = "errorbar", fun.data = "mean_cl_normal", 
+                 width = 0.1, position = position_dodge(0.2)) +
+  labs(title = "Compare All Disciplines") +
+  theme_bw()
+```
+
+## SAI and Grade Anomaly
+
+While we can see differences in raw grade outcomes across the advantages spectrum, many studies control for metrics of prior academic performance when evaluating outcomes in a course.
+
+These are typically: high school GPA, standardized test scores (SAT/ACT), prior cumulative GPA at an institution, or GPA excluding the course of interest (GPAO).
+
+💭 Given the talks today, what are some issues with referencing prior academic performance as a "control" for student preparation?
+
+**Grade anomaly**, or the difference between the current course grade and a student's prior academic performance, can show us how outcomes in this course differ from student's previous experiences at the instution (or other academic settings).
+
+```{r grade anomaly vs raw grade}
+#returns 95% confidence intervals across courses and SAI for grade anomaly
+syndat %>% 
+  drop_na(numgrade, gpao) %>%
+  mutate(grade_anomaly = numgrade - gpao) %>%
+  group_by(crs_name, sai) %>%
+  summarise(mean = ci(grade_anomaly)[1], 
+                      lowCI = ci(grade_anomaly)[2],
+                      hiCI = ci(grade_anomaly)[3], 
+                      sd = ci (grade_anomaly)[4])
+```
+
+```{r grade anomaly across SAI}
+#grade anomaly across all disciplines
+ggplot(syndat, aes(x = sai, y = numgrade-gpao, color = crs_name)) + 
+    stat_summary(geom = "point", fun = "mean", 
+                 position = position_dodge(0.2)) + 
+    stat_summary(geom = "errorbar", fun.data = "mean_cl_normal", 
+                 width = 0.1, position = position_dodge(0.2)) +
+  labs(title = "Compare All Disciplines", x = "SAI", 
+       y = "Grade anomaly") +
+  theme_bw()
+```
+
+Another way we can explore the concept of grade anomaly is by comparing the relationship between GPAO and course grades for each level of SAI.
+
+```{r gpao vs numgrade, message=FALSE, warning=FALSE}
+syndat %>%
+  drop_na(numgrade, gpao) %>%
+  group_by(crs_name, sai) %>%
+  summarise(mean_gpao = ci(gpao)[1], 
+            lo_gpao = ci(gpao)[2],
+            hi_gpao = ci(gpao)[3], 
+            mean_grade = ci(numgrade)[1],
+            lo_grade = ci(numgrade)[2],
+            hi_grade = ci(numgrade)[3]) %>%
+  ggplot(aes(x = mean_gpao, y = mean_grade, color = sai)) +
+  geom_point() + 
+  geom_errorbar(aes(xmin = lo_gpao, xmax = hi_gpao), 
+                width = 0) + 
+  geom_errorbar(aes(ymin = lo_grade, ymax = hi_grade), 
+                width = 0) + 
+  geom_abline(intercept = 0, slope = 1, color = "black") + 
+  facet_wrap(~crs_name) +
+  theme_bw()
+                    
+```
+
+**Question**: Are students in the course of interest getting grades that are lower on average ("grade penalty") or higher on average ("grade bonus") compared to their other courses? Does this effect differ with the number of systemic advantages (SAI)?
+
+# Classroom Composition
+
+Based upon work in WG1P3 by Angel Sylvester and Heather Rypkema at University of Michigan
+
+How does the number of students represented in a course relate to course outcomes for students that hold that identity in that course?
+
+```{r composition by section}
+#show percents by demographic var
+syndat %>% group_by(crs_name, crs_section) %>%
+  summarise(n = n(),
+            perc_women = (sum(female == "1", na.rm = T)/n)*100,
+            perc_peer = (sum(ethniccode_cat == "1", na.rm = T)/n)*100,
+            perc_firstgen = (sum(firstgen == "1", na.rm = T)/n)*100)
+
+```
+
+Let's explore the data first:
+
+```{r calculate gaps by section}
+#plot correlations between differences in numgrade and class representation for both men and women 
+
+gaps_by_sect <-
+syndat %>% 
+  #sort data by demographic values of interest
+  pivot_longer(cols = c(female:ethniccode_cat),
+               names_to = "demo_var",
+               values_to = "value") %>%
+  group_by(demo_var, crs_name, crs_section) %>%
+  summarise(n = n(),
+            perc_class = sum(value == "1", na.rm = T)/n*100,
+            mean_grade_diff = mean(numgrade[value == 1], na.rm = T) - mean(numgrade[value == 0], na.rm = T))
+      
+gaps_by_sect      
+            
+```
+
+```{r gender gaps vs % women}
+#plot gender gaps vs % women
+#note: facet wrap is not as useful as the % for PEER vs the % for female are quite different across courses
+
+gaps_by_sect %>%
+  filter(demo_var == "female") %>%
+ggplot(aes(x = perc_class, y = mean_grade_diff, 
+           color = crs_name)) +
+  geom_point() + 
+  geom_smooth(method = "lm") + 
+  labs(x = "% Women", y = "Gender gap in course grade (M-W)", 
+       color = "Course") + 
+  theme_bw()
+```
+
+```{r grade gaps vs % PEER}
+#plot grade gaps vs % PEER
+#note: facet wrap is not as useful as the % for PEER vs the % for female are quite different across courses
+
+gaps_by_sect %>%
+  filter(demo_var == "ethniccode_cat") %>%
+ggplot(aes(x = perc_class, y = mean_grade_diff, 
+           color = crs_name)) +
+  geom_point() + 
+  geom_smooth(method = "lm") + 
+  labs(x = "% PEER", y = "Equity gap in course grade \n(nonPEER-PEER)", 
+       color = "Course") + 
+  theme_bw()
+```
+
+Based on these correlations alone, would you predict significant relationships between classroom composition (% representation) and course outcomes for individual students, based upon their reported identity?
+
+(If you need more information, what additional metric would you want to plot or see in order to answer that question?)
+
+## Linear mixed models
+
+To address that question, we will build general linear models that incorporate demographic variables (here, gender and ethnicity/race), classroom composition, and their interaction to see if % representation relates in any way to student grade outcomes. We will control for GPAO as a control for prior academic performance.
+
+```{r linear mixed models}
+#linear mixed model call: 
+  #numgrade ~ gpao + [demographic_variable]*[% of class in that group] + (1|crs_section)
+classcomp_lms <- 
+syndat %>%
+  mutate(urm = ifelse(ethniccode_cat == "1",1,0)) %>%
+  pivot_longer(cols = c(female, urm, firstgen),
+               names_to = "demo_var",
+               values_to = "value") %>%
+  group_by(demo_var, crs_name, crs_section) %>%
+  mutate(n_section = n(),
+         perc_class1 = sum(value == "1", na.rm = T)/n_section*100) %>%
+  ungroup() %>%
+  group_by(crs_name, demo_var) %>%
+  nest() %>%
+  mutate(fit = map(data, ~lmer(numgrade ~ gpao + perc_class1*value + (1|crs_section), data = .)), 
+         results = map(fit, tidy)) %>%
+  unnest(results) %>%
+  select(-data, -fit) %>%
+  mutate(p.value = round(p.value, digits = 4), 
+         signif = ifelse(p.value < 0.05, 1,0))
+
+classcomp_lms
+```
+
+```{r}
+classcomp_lms %>%
+  filter(demo_var == "female") %>%
+  filter(term %in% c("perc_class1","value","perc_class1:value")) %>%
+  ggplot(aes(x = crs_name, y = estimate)) + 
+  geom_col(aes(fill = as.factor(signif)), color = "black") + 
+  labs(x = "Course", fill = "p < 0.05") +
+  scale_fill_manual(values = c("white","turquoise3")) + 
+  facet_grid(~term, scales = "free",
+             labeller = labeller(term = c("perc_class1" = "%Women","value" = "Gender","perc_class1:value" = "%Women*Gender"))) +
+  theme_classic() + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 1))
+
+#for plotting: 
+  #rename perc_class and value depending on demographic variable
+  #create a column for significance and color/shape based on significance
+```
