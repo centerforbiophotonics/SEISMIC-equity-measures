@@ -1,0 +1,68 @@
+---
+title: "SEISMIC Equity Measures"
+subtitle: "Outcome: Grades"
+author: "Victoria Farrar"
+date: "2023-03-03"
+output:
+  rmdformats::readthedown
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+setwd("~/Documents/GitHub/LAK-sandbox/")
+syndat <- read.csv(file = "SEISMIC_synthetic_data_2023-01-26.csv")
+library(tidyverse)
+library(gmodels) #ci
+library(rmdformats)
+```
+
+# Academic Factors
+
+## Question: How does overall prior performance at the university compare to student outcomes in my course? 
+
+### Data needed
+
+* Grade point average overall, calculated omitting the course of interest
+
+* Final course grades 
+
+### Grade anomaly
+
+**Grade anomaly** is a way we can compare outcomes in our course to students' other experiences at the university. Often, to compare, we use grade point average omitting the course of interest (GPAO), because this metric has been found to be the most 
+
+### Example 
+```{r, warning=FALSE, message=FALSE}
+#show average grade anomaly across all sections of courses in dataset
+
+aga <- #average grade anomaly
+syndat %>% 
+  drop_na(numgrade, gpao) %>%
+  mutate(grade_anomaly = numgrade - gpao) %>%
+  group_by(crs_name) %>%
+  summarise(mean = ci(grade_anomaly)[1], 
+                      lowCI = ci(grade_anomaly)[2],
+                      hiCI = ci(grade_anomaly)[3], 
+                      sd = ci (grade_anomaly)[4])
+aga
+
+#plot
+ggplot(aga, aes(x = crs_name, y = mean, color = crs_name)) + 
+  geom_point() + 
+  geom_errorbar(aes(ymin = lowCI, ymax = hiCI)) + 
+  geom_hline(yintercept = 0) + 
+  labs(x = NULL, y = "Mean Grade Anomaly \n(Course Grade - GPAO)",
+       color = "Course") + 
+  theme_classic()
+
+
+```
+In the synthetic data, we can see that there is a **grade penalty** for all upper division courses examined. This means that students are doing *worse* on average in all of these courses compared to  other courses taken at the university. However, we can see that organic chemistry seems to be have significantly lower grade outcomes than say, Evolutionary Biology or Statistics. 
+
+**WOULD GUIDING QUESTIONS BE BETTER HERE, RATHER THAN AN ACTUAL WALKTHROUGH?**
+
+What do these trends look like across time?
+
+
+# Demographic Factors
+
+# Environmental Factors
