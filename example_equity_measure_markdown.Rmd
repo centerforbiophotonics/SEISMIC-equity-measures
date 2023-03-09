@@ -24,12 +24,6 @@ library(parameters) #pretty model output for .Rmd
 
 ## Question: How does overall prior performance at the university compare to student outcomes in my course?
 
-### Data needed
-
--   Grade point average overall, calculated omitting the course of interest (GPAO)
-
--   Final course grades
-
 ### Grade anomaly
 
 **Grade anomaly** is a way we can compare outcomes in our course to students' other experiences at the university. Often, to compare, we use grade point average omitting the course of interest (GPAO), because this metric has been found to be the best metric of prior academic preparation in previous studies (compared to high school GPA or standardized test scores, [Koester et al.,2016](https://doi.org/10.48550/arXiv.1608.07565)).
@@ -173,6 +167,7 @@ bio300 <- syndat %>% filter(crs_name == "BIO300")
 model1 <- lmer(grade_anomaly ~ female + as.factor(ethniccode_cat) + firstgen + lowincomeflag + international + (1|crs_section) , data = bio300)
 
 ```
+
 ```{r print model parameters, echo=FALSE}
 mp <- model_parameters(model1, digits = 2, p_digits = 3) 
 print_html(mp)
@@ -180,12 +175,11 @@ print_html(mp)
 
 ### What does this model output tell us?
 
-The coefficient refers to the $\beta , which is the amount of variation in *GradeAnomaly* that is explained by the variable of interest, all other factors held constant. The standard error for this coefficient, as well as the 95% confidence interval (CI) are shown to the left. Then, the *t*-value and *p*-value for this coefficient is shown. Typically, coefficients that are significantly different from zero (i.e., actually explain a portion of the variation in our dependent variable) will have confidence intervals that do not include 0 and *p* < 0.05. 
+The coefficient refers to the \$\beta , which is the amount of variation in *GradeAnomaly* that is explained by the variable of interest, all other factors held constant. The standard error for this coefficient, as well as the 95% confidence interval (CI) are shown to the left. Then, the *t*-value and *p*-value for this coefficient is shown. Typically, coefficients that are significantly different from zero (i.e., actually explain a portion of the variation in our dependent variable) will have confidence intervals that do not include 0 and *p* \< 0.05.
 
-What we see is that in BIO300, being a PEER student (`ethniccode_cat` = 1) has the largest impact on grade anomaly, making the grade penalty -0.21 points lower for PEER students (all other variables held constant).  After this, the next most impacted group is women, for whom the model predicts will have a grade penalty - 0.12 points lower than men with all other variables held constant. 
+What we see is that in BIO300, being a PEER student (`ethniccode_cat` = 1) has the largest impact on grade anomaly, making the grade penalty -0.21 points lower for PEER students (all other variables held constant). After this, the next most impacted group is women, for whom the model predicts will have a grade penalty - 0.12 points lower than men with all other variables held constant.
 
-We can play around with these model parameters to understand what the model is telling us. 
-Set the demographic variables to the variables you care about in the chunk below: 
+We can play around with these model parameters to understand what the model is telling us. Set the demographic variables to the variables you care about in the chunk below:
 
 ```{r enter demog vars for lm}
 #enter 0 for "no" and 1 for "yes"
@@ -203,6 +197,78 @@ print(paste("expected grade anomaly =", expected_grade_anomaly))
 ## How does grade anomaly relate to the systemic advantages in higher education a student may hold?
 
 How can we view the cumulative effect of systemic advantages students may have access to (conferred by demographic identities) overall in the context of a course?
+
+## SAI
+
+SAI, or the **Systemic Advantage Index** is one approach. This metric takes into account multiple axes of student identities, including:
+
+-   race/ethnicity
+
+-   gender
+
+-   socioeconomic status
+
+-   parental education (i.e., first-generation college-going status)
+
+------------------------------------------------------------------------
+
+> 💭 Can you think of any other systemic advantages not included in this index that likely influence student's outcomes in a course? What would be the challenges to adding those identities or advantages to this index?
+
+------------------------------------------------------------------------
+
+```{r SAI calculation, echo=TRUE}
+#this code goes through all possible combinations of the 4 advantage axes and assigns an SAI based on that students' values
+#as ethniccode_cat == 1 is the "BIPOC" label, all other categories are considered advantaged 
+syndat <-
+  syndat %>% mutate(sai = case_when(
+    female == "0" & ethniccode_cat != "1" & firstgen == "0" & lowincomeflag == "0"  ~ "4",
+    female == "1" & ethniccode_cat != "1" & firstgen == "0" & lowincomeflag == "0"  ~ "3",
+    female == "0" & ethniccode_cat == "1" & firstgen == "0" & lowincomeflag == "0"  ~ "3", 
+    female == "0" & ethniccode_cat != "1" & firstgen == "0" & lowincomeflag == "1"  ~ "3", 
+    female == "0" & ethniccode_cat != "1" & firstgen == "1" & lowincomeflag == "0"  ~ "3", 
+    female == "0" & ethniccode_cat == "1" & firstgen == "1" & lowincomeflag == "0"  ~ "2", 
+    female == "0" & ethniccode_cat == "1" & firstgen == "0" & lowincomeflag == "1"  ~ "2", 
+    female == "1" & ethniccode_cat == "1" & firstgen == "0" & lowincomeflag == "0"  ~ "2", 
+    female == "0" & ethniccode_cat != "1" & firstgen == "1" & lowincomeflag == "1"  ~ "2", 
+    female == "1" & ethniccode_cat != "1" & firstgen == "1" & lowincomeflag == "0"  ~ "2", 
+    female == "1" & ethniccode_cat != "1" & firstgen == "0" & lowincomeflag == "1"  ~ "2", 
+    female == "1" & ethniccode_cat != "1" & firstgen == "1" & lowincomeflag == "1"  ~ "1", 
+    female == "1" & ethniccode_cat == "1" & firstgen == "1" & lowincomeflag == "0"  ~ "1",
+    female == "1" & ethniccode_cat == "1" & firstgen == "0" & lowincomeflag == "1"  ~ "1", 
+    female == "0" & ethniccode_cat == "1" & firstgen == "1" & lowincomeflag == "1"  ~ "1",
+    female == "1" & ethniccode_cat == "1" & firstgen == "1" & lowincomeflag == "1"  ~ "0",
+    TRUE ~ "NA"))
+```
+
+### How are students distributed across SAI? (What systemic advantages do my students have access to)?
+```{r sample size by SAI}
+#sample size by SAI
+```
+
+Let us examine trends in grade anomaly across the SAI. 
+
+```{r SAI plot}
+#plot raw grades in course of interest
+syndat %>%
+  ggplot(aes(x = sai, y = numgrade-gpao, color = crs_name))+ 
+      stat_summary(geom = "point", fun = "mean", 
+                 position = position_dodge(0.2)) + 
+    stat_summary(geom = "errorbar", fun.data = "mean_cl_normal", 
+                 width = 0.1, position = position_dodge(0.2)) +
+  labs(x = "SAI", y = "Average grade anomaly", color = "Course") + 
+  theme_bw()
+
+syndat %>%
+  ggplot(aes(x = sai, y = numgrade-gpao, color = crs_name))+ 
+      stat_summary(geom = "point", fun = "mean") + 
+    stat_summary(geom = "errorbar", fun.data = "mean_cl_normal", width = 0.1) +
+  labs(x = "SAI", y = "Average grade anomaly", color = "Course",
+       subtitle = "Mean ± 95% CI shown") + 
+  theme_bw()
+```
+Comparing the figures where we examined trends in grade anomaly across specific demographic identities, versus a view across systemic advantages, what can we observe from this graph? 
+
+The SAI approach makes it clear that as students have increasing numbers of systemic advantages in higher education, they tend to receive less of a grade penalty in these courses. This overall pattern is obvious across all four courses, although the effect of increasing advantages may taper in some courses between groups 3 & 4. 
 
 
 # Environmental Factors
