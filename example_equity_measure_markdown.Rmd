@@ -18,19 +18,32 @@ library(rmdformats)
 
 # Academic Factors
 
-## Question: How does overall prior performance at the university compare to student outcomes in my course? 
+## Question: How does overall prior performance at the university compare to student outcomes in my course?
 
 ### Data needed
 
-* Grade point average overall, calculated omitting the course of interest
+-   Grade point average overall, calculated omitting the course of interest (GPAO)
 
-* Final course grades 
+-   Final course grades
 
 ### Grade anomaly
 
-**Grade anomaly** is a way we can compare outcomes in our course to students' other experiences at the university. Often, to compare, we use grade point average omitting the course of interest (GPAO), because this metric has been found to be the most 
+**Grade anomaly** is a way we can compare outcomes in our course to students' other experiences at the university. Often, to compare, we use grade point average omitting the course of interest (GPAO), because this metric has been found to be the best metric of prior academic preparation in previous studies (compared to high school GPA or standardized test scores, [Koester et al.,2016](https://doi.org/10.48550/arXiv.1608.07565)).
 
-### Example 
+Grade anomaly has two key advantages:
+
+1)  It provides a relative view of a course grade relative to a students' other course outcomes. Essentially, it places the grade in context of the student's general performance. Since students relative grades (i.e. *How am I doing in this class relative to my others?*) can affect their persistence in STEM, for instance ([Ost, 2010](https://www.sciencedirect.com/science/article/abs/pii/S0272775710000762?via%3Dihub); [Witteveen & Atwell, 2020](https://onlinelibrary.wiley.com/doi/full/10.1002/sce.21580) ) this context can be important for understanding the impacts of a course on retention in STEM.
+
+2)  It allows us to "normalize" against a students' grade in a single course against their previous grades within an institutional context. This allows us to compare across courses, departments and institutions, while "normalizing" for differences in grading norms across those contexts (Matz et al., 2017).
+
+Grade anomalies can be:
+
+-   **Grade penalties** - where students receive *lower* grades in the course relative to their other coursework, or,
+
+-   **Grade bonuses** - where students receive *higher* grades relative to other courses.
+
+### Example
+
 ```{r, warning=FALSE, message=FALSE}
 #show average grade anomaly across all sections of courses in dataset
 
@@ -56,13 +69,56 @@ ggplot(aga, aes(x = crs_name, y = mean, color = crs_name)) +
 
 
 ```
-In the synthetic data, we can see that there is a **grade penalty** for all upper division courses examined. This means that students are doing *worse* on average in all of these courses compared to  other courses taken at the university. However, we can see that organic chemistry seems to be have significantly lower grade outcomes than say, Evolutionary Biology or Statistics. 
 
-**WOULD GUIDING QUESTIONS BE BETTER HERE, RATHER THAN AN ACTUAL WALKTHROUGH?**
+In the synthetic data, we can see that there is a **grade penalty** for all upper division courses examined. This means that students are doing *worse* on average in all of these courses compared to other courses taken at the university. However, we can see that organic chemistry seems to be have significantly lower grade outcomes than say, Evolutionary Biology or Statistics.
 
-What do these trends look like across time?
+[WOULD GUIDING QUESTIONS BE BETTER HERE, RATHER THAN AN ACTUAL WALKTHROUGH?]{style="color: red;"}
 
+## What do these trends look like across time?
+
+We can also examine how grade anomaly has changed (or not) in a course over time.
+
+### Example
+
+```{r}
+#plot average grade anomaly over years
+syndat %>% 
+  drop_na(numgrade, gpao) %>%
+  mutate(grade_anomaly = numgrade - gpao) %>%
+  mutate(year = str_sub(crs_section,0,4)) %>%
+  ggplot(aes(x = year, y = grade_anomaly, color = crs_name)) + 
+  stat_summary(geom = "point", fun.y = "mean", position = position_dodge(0.25)) + 
+  stat_summary(geom = "errorbar", fun.data = "mean_cl_normal", width = 0.2, position = position_dodge(0.25)) + 
+  labs(x = "Year", y = "Average grade anomaly", color = "Course") + 
+  theme_bw()
+
+```
+
+For instance, we can see that Evolutionary Biology had a larger grade penalty in 2018 than in 2019. The grade penalty has been getting smaller over time in Biology 300 from 2016 to 2019.
 
 # Demographic Factors
+
+An important next question to ensure equitable outcomes is to examine grade anomaly for students from diverse backgrounds in STEM. These include identities such as gender, race/ethnicity, first-generation college-going status, and low income status.
+
+Ideally, students from historically marginalized groups will not have larger grade penalties than students from majority groups, and may even sometimes experience grade bonuses.
+
+## What is the makeup of the course student body?
+
+Before answering this question, we should evaluate the makeup of the student body. Who even takes these courses?
+
+```{r}
+#return percents of all demographic groups
+syndat %>%
+  group_by(crs_name) %>%
+  summarise(n = n(), 
+            perc_women = sum(female)/n*100, 
+            perc_PEER = sum(ethniccode_cat == "1")/n*100, 
+            perc_firstgen = sum(firstgen)/n*100,
+            perc_lowincome = sum(lowincomeflag)/n*100) 
+      
+```
+
+## How does grade anomaly compare for students from historically marginalized groups in STEM? 
+
 
 # Environmental Factors
