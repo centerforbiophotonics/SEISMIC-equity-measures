@@ -8,7 +8,7 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, warnings = FALSE, messages = FALSE)
 setwd("~/Documents/GitHub/LAK-sandbox/")
 syndat <- read.csv(file = "SEISMIC_synthetic_data_2023-01-26.csv")
 library(tidyverse)
