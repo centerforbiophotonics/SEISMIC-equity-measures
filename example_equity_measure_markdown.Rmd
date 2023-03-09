@@ -14,6 +14,10 @@ syndat <- read.csv(file = "SEISMIC_synthetic_data_2023-01-26.csv")
 library(tidyverse)
 library(gmodels) #ci
 library(rmdformats)
+library(kableExtra) #prettier html tables
+library(lme4) #mixed models
+library(lmerTest) #significance for mixed models
+library(parameters) #pretty model output for .Rmd
 ```
 
 # Academic Factors
@@ -44,7 +48,7 @@ Grade anomalies can be:
 
 ### Example
 
-```{r, warning=FALSE, message=FALSE}
+```{r avg grade anomaly (aga), warning=FALSE, message=FALSE}
 #show average grade anomaly across all sections of courses in dataset
 
 aga <- #average grade anomaly
@@ -52,11 +56,12 @@ syndat %>%
   drop_na(numgrade, gpao) %>%
   mutate(grade_anomaly = numgrade - gpao) %>%
   group_by(crs_name) %>%
-  summarise(mean = ci(grade_anomaly)[1], 
-                      lowCI = ci(grade_anomaly)[2],
-                      hiCI = ci(grade_anomaly)[3], 
-                      sd = ci (grade_anomaly)[4])
-aga
+  summarise(mean = gmodels::ci(grade_anomaly)[1], 
+                      lowCI = gmodels::ci(grade_anomaly)[2],
+                      hiCI = gmodels::ci(grade_anomaly)[3], 
+                      sd = gmodels::ci(grade_anomaly)[4])
+
+kable_styling(kbl(aga, digits = 2))
 
 #plot
 ggplot(aga, aes(x = crs_name, y = mean, color = crs_name)) + 
@@ -80,7 +85,7 @@ We can also examine how grade anomaly has changed (or not) in a course over time
 
 ### Example
 
-```{r}
+```{r aga over time, message=FALSE, warning=FALSE}
 #plot average grade anomaly over years
 syndat %>% 
   drop_na(numgrade, gpao) %>%
@@ -106,19 +111,98 @@ Ideally, students from historically marginalized groups will not have larger gra
 
 Before answering this question, we should evaluate the makeup of the student body. Who even takes these courses?
 
-```{r}
+```{r demographics overview}
 #return percents of all demographic groups
 syndat %>%
   group_by(crs_name) %>%
   summarise(n = n(), 
-            perc_women = sum(female)/n*100, 
-            perc_PEER = sum(ethniccode_cat == "1")/n*100, 
-            perc_firstgen = sum(firstgen)/n*100,
-            perc_lowincome = sum(lowincomeflag)/n*100) 
-      
+            percent_women = sum(female)/n*100, 
+            percent_PEER = sum(ethniccode_cat == "1")/n*100, 
+            percent_firstgen = sum(firstgen)/n*100,
+            percent_lowincome = sum(lowincomeflag)/n*100) %>%
+  kbl(., digits = 1) %>%
+  kable_styling()
 ```
 
-## How does grade anomaly compare for students from historically marginalized groups in STEM? 
+## How does grade anomaly compare for students from historically marginalized groups in STEM?
+
+```{r aga by demographics}
+syndat %>%
+  pivot_longer(cols = female:lowincomeflag, 
+               names_to = "demo_var",
+               values_to = "value") %>%
+  filter(value == 1 & demo_var != "transfer") %>%
+  mutate(demo_var = factor(demo_var, 
+                           labels = c("PEER", "Woman", "FirstGen", "LowIncome", "International"))) %>%
+  ggplot(aes(x = demo_var, y = numgrade-gpao, color = crs_name)) + 
+  stat_summary(geom = "point", fun = "mean") + 
+  stat_summary(geom = "errorbar", fun.data = "mean_cl_normal", width = 0.1) + 
+  labs(x = "Student identity", y = "Average grade anomaly", color = "Course",
+       subtitle = "Mean ± 95% CI shown") + 
+  theme_bw()
+```
+
+We observe that while all students receive grade penalties in these courses, Chemistry & Biology lead to significantly larger grade penalties for almost all identities (PEER students, women, first-generation students, and low income students, international students) compared to Evolutionary Biology & Statistics.
+
+## Linear modeling
+
+[*NOTE: I would want Montse to look over this section as she teaches stats!*]{style="color: red;"}
+
+Another common approach to exploring the relationship between student identities and course grade outcomes is linear modeling, or linear regression. Here, we set the course grade as the dependent variable, and all demographic variables as independent variables. This approach allows us to quantify how much each axis of student identity explains variation in course grades *while controlling for other demographic identities*. Following our focus so far on grade anomaly, our model could look like this:
+
+$GradeAnomaly \sim \beta Gender + \beta PEER + \beta FirstGen + \beta Low Income + \beta International + \epsilon$
+
+It's also important to control for variation in the course across offerings, as each offering can differ in the student population (who is taking the course? are they taking it "on" schedule or "off" the typical curricular schedule?), instruction (who teaches the course? what are the grading policies? what topics were covered?) and other factors (for example, what quarter the course was taken can affect student breaks, schedules, etc.). To control for this, researchers often add a *random effect* of course offering. Models including random and fixed effects (what we typically think of as "regular" independent variables) are called **linear mixed models**. To learn more about random effects and mixed models, see the great resource in [Theobald 2018](https://doi.org/10.1187/cbe.17-12-0280).
+
+Model now with random effects:
+
+$GradeAnomaly \sim \beta Gender + \beta PEER + \beta FirstGen + \beta Low Income + \beta International + U (1|CourseOffering) + \epsilon$
+
+Let's explore the linear mixed model for just BIO 300.
+
+[(*NOTE: I do not love the output of `parameters` package currently, working on using `sjPlot` instead.*)]{style="color: red;"}
+
+```{r aga lm}
+#calculate grade anomaly in dataset
+syndat$grade_anomaly <- syndat$numgrade - syndat$gpao
+
+#subset data to just bio300
+bio300 <- syndat %>% filter(crs_name == "BIO300")
+
+#build model
+model1 <- lmer(grade_anomaly ~ female + as.factor(ethniccode_cat) + firstgen + lowincomeflag + international + (1|crs_section) , data = bio300)
+
+```
+```{r print model parameters, echo=FALSE}
+mp <- model_parameters(model1, digits = 2, p_digits = 3) 
+print_html(mp)
+```
+
+### What does this model output tell us?
+
+The coefficient refers to the $\beta , which is the amount of variation in *GradeAnomaly* that is explained by the variable of interest, all other factors held constant. The standard error for this coefficient, as well as the 95% confidence interval (CI) are shown to the left. Then, the *t*-value and *p*-value for this coefficient is shown. Typically, coefficients that are significantly different from zero (i.e., actually explain a portion of the variation in our dependent variable) will have confidence intervals that do not include 0 and *p* < 0.05. 
+
+What we see is that in BIO300, being a PEER student (`ethniccode_cat` = 1) has the largest impact on grade anomaly, making the grade penalty -0.21 points lower for PEER students (all other variables held constant).  After this, the next most impacted group is women, for whom the model predicts will have a grade penalty - 0.12 points lower than men with all other variables held constant. 
+
+We can play around with these model parameters to understand what the model is telling us. 
+Set the demographic variables to the variables you care about in the chunk below: 
+
+```{r enter demog vars for lm}
+#enter 0 for "no" and 1 for "yes"
+peer <- 1
+woman <- 1
+firstgen <- 1
+lowincome <- 1
+interntnl <-0
+
+expected_grade_anomaly <- -0.22 + -0.12*woman + -0.21*peer -0.09*firstgen -0.06*lowincome  + 0.02*interntnl
+
+print(paste("expected grade anomaly =", expected_grade_anomaly))
+```
+
+## How does grade anomaly relate to the systemic advantages in higher education a student may hold?
+
+How can we view the cumulative effect of systemic advantages students may have access to (conferred by demographic identities) overall in the context of a course?
 
 
 # Environmental Factors
