@@ -3,6 +3,8 @@
 
 **Creators:** Victoria Farrar, Nita Tarchinski
 
+Preview the current example R Markdown .html file [here](https://htmlpreview.github.io/?https://github.com/vsfarrar/SEISMIC-equity-measures/blob/main/example_equity_measure_markdown.html). 
+
 |                       | Grades | Retention in STEM Majors | Graduation | 
 |-----------------------|--------|--------------------------|------------|
 | Academic Factors      | e.g. Grade anomaly (GPAO, prior GPA)      |                          |            |   
