@@ -62,6 +62,8 @@ What is the makeup of the course by
 ```{r demographics bar plot, message=FALSE, warning=FALSE}
 #bar plot with percent of all students in the class by demographics
 
+#underlying table
+
 demog_percent <-
 dat %>% 
   #select course of interest only
@@ -81,7 +83,7 @@ dat %>%
   #select only students that belong to marginalized backgrounds
   filter(value == 1)
 
-#plot
+#plot ####
 
 demog_percent %>%
   #rename labels to be more interpretable
@@ -90,10 +92,12 @@ demog_percent %>%
                            labels = c("PEER", "Woman", "FirstGen", "LowIncome", "International", "Transfer"))) %>%
 ggplot(aes(x = demo_var, y = perc, fill = demo_var)) + 
   #add barplot for percent
-  geom_col(stat = "identity", color = "black") + 
+  geom_col(color = "black") + 
   #add labels for actual percent values
   geom_text(aes(label = round(perc,0)), vjust = -1) + 
   labs(x = "Student identity", y = "Percent of class (%)") + 
+  #set y axis to 100
+  ylim(0,100)+
   theme_bw() + 
   #hide redundant color legend
   theme(legend.position = "none")
