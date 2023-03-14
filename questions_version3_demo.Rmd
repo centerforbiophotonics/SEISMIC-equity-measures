@@ -13,16 +13,26 @@ date: "2023-03-14"
 
 ```{r setup, include=FALSE}
 #hide code, warnings, and messages by default
-knitr::opts_chunk$set(include = FALSE, warnings = FALSE, messages = FALSE)
+knitr::opts_chunk$set(echo = FALSE, warnings = FALSE, messages = FALSE)
 library(tidyverse)
 library(rmdformats) #output format: readthedown
 library(kableExtra) #pretty html tables
 ```
 
-```{r load data, include = FALSE}
+```{r load data, echo = FALSE}
 #load data 
 #change this file name to the source of your properly formatted data file 
 dat <- read.csv(file = "~/Documents/GitHub/LAK-sandbox/SEISMIC_synthetic_data_2023-01-26.csv")
+```
+
+```{r select course of interest, results = "asis"}
+#if the dataset has more than one course in it, define the course of interest here
+#what you enter must match the entry in the dataset
+course_of_interest <- "BIO300"
+
+#this command will include the selected course of interest in the R markdown report. 
+#Do not edit this line:
+cat(paste("The course of interest is:", course_of_interest))
 ```
 
 # Who is in this course?
@@ -49,9 +59,44 @@ What is the makeup of the course by
 
 -   military
 
-```{r demographics bar plot}
+```{r demographics bar plot, message=FALSE, warning=FALSE}
 #bar plot with percent of all students in the class by demographics
 
+demog_percent <-
+dat %>% 
+  #select course of interest only
+  filter(crs_name == course_of_interest) %>%
+  #add n for all students in course
+  add_tally(name = "n_course") %>%
+  #pivot to a long format dataframe
+  pivot_longer(cols = female:lowincomeflag, 
+               names_to = "demo_var",
+               values_to = "value") %>% 
+  group_by(demo_var, value) %>% 
+  #count sample size by each group, then divide by course total
+  summarise(n_total = n(),
+            n_course = mean(n_course)) %>% 
+  #convert to percent
+  mutate(perc = n_total/n_course *100) %>% #percent for each level
+  #select only students that belong to marginalized backgrounds
+  filter(value == 1)
+
+#plot
+
+demog_percent %>%
+  #rename labels to be more interpretable
+  mutate(demo_var = factor(demo_var, 
+                           levels = c("ethniccode_cat","female","firstgen","lowincomeflag","international","transfer"),
+                           labels = c("PEER", "Woman", "FirstGen", "LowIncome", "International", "Transfer"))) %>%
+ggplot(aes(x = demo_var, y = perc, fill = demo_var)) + 
+  #add barplot for percent
+  geom_col(stat = "identity", color = "black") + 
+  #add labels for actual percent values
+  geom_text(aes(label = round(perc,0)), vjust = -1) + 
+  labs(x = "Student identity", y = "Percent of class (%)") + 
+  theme_bw() + 
+  #hide redundant color legend
+  theme(legend.position = "none")
 ```
 
 ## How have these demographics changed over time?
@@ -60,11 +105,38 @@ What is the makeup of the course by
   #could be facet grid or not
 ```
 
-# Grades in this course?
+# Grades in this course
 
 ## How do course outcomes compare for different student groups?
 ```{r raw grades by identity}
 #different identities with raw grades on average across identities 
+
+#calculate overall mean grade for course (will be plotted as an average line)
+mean_grade_coi <- mean(dat$numgrade[dat$crs_name == course_of_interest], na.rm = T)
+
+dat %>%
+  filter(crs_name == course_of_interest) %>%
+  #pivot to a long format dataframe
+  pivot_longer(cols = female:lowincomeflag, 
+               names_to = "demo_var",
+               values_to = "value") %>% 
+  #select all students who do belong to the group of interest
+  filter(value == 1 ) %>%
+  #rename labels to be more interpretable
+  mutate(demo_var = factor(demo_var, 
+                           labels = c("PEER", "Woman", "FirstGen", "LowIncome", "International", "Transfer"))) %>%
+  #PLOT
+  ggplot(aes(x = demo_var, y = numgrade, color = demo_var)) +   
+  #points for mean
+  stat_summary(geom = "point", fun = "mean") + 
+  #add 95% CI errorbars
+  stat_summary(geom = "errorbar", fun.data = "mean_cl_normal", width = 0.1) + 
+  #plot average line for mean grade
+  geom_hline(yintercept = mean_grade_coi, linetype = "dashed") +
+  #labels
+  labs(x = "Student identity", y = "Average grade", color = "Student identity",
+       caption = "Mean ± 95% CI shown \n Dashed line is overall average grade") + 
+  theme_bw()
 ```
 
 ## How does oveall prior performance at the university (i.e., GPAO, prior GPA) compare to student outcomes in my course?
