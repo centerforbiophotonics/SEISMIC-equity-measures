@@ -5,6 +5,8 @@ author: "Victoria Farrar"
 date: "2023-03-03"
 output:
   rmdformats::readthedown
+css:
+  custom.css
 ---
 
 ```{r setup, include=FALSE}

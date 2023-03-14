@@ -1,0 +1,49 @@
+#main .nav-pills > li.active > a,
+#main .nav-pills > li.active > a:hover,
+#main .nav-pills > li.active > a:focus {
+    background-color:  #003366;
+}
+
+
+#main .nav-pills > li > a:hover {
+    background-color:  #003366;
+}
+
+h1, h2, h3, h4, h5, h6, legend {
+    color:  #003366;
+}
+/* changes all header colors */
+
+#nav-top span.glyphicon {
+    color:  #003366;
+}
+
+
+#table-of-contents h2 {
+    background-color:  #003366;
+}
+
+#sidebar {
+    background-color:#B3A369;
+}
+
+#sidebar h2 {
+    background-color: #003366;
+}
+
+
+#main a {
+    background-image: linear-gradient(180deg,#002855,#002855);
+    color: #002855;
+}
+
+a:hover {
+    color: #002855;
+}
+
+a:visited {
+    color: #3d1308;
+}
+
+/* School color codes in hex can be found at:https://teamcolorcodes.com/ */
+/* Code accessed from: https://stackoverflow.com/questions/42935320/how-to-change-the-color-theme-on-rmdformats-readthedown#:~:text=To%20change%20the%20default%20color,default%20CSS%20elements%20defining%20color.&text=Customize%20and%20add%20this%20to,css%20in%20your%20preamble.*/
