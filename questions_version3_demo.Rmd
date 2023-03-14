@@ -1,0 +1,95 @@
+---
+title: "SEISMIC Equity Measures"
+subtitle: "Level 1"
+output:
+  rmdformats::readthedown
+css:
+  custom.css
+date: "2023-03-14"
+
+---
+
+*(This R Markdown is a demo example based upon Questions (version 3) in [this Google Doc](https://docs.google.com/document/d/1TceXPFyIDZ0ZC06XFtYz6fWkgvnNYbpq7F11voeGLFA/edit#heading=h.h9qcp91x0k23)).*
+
+```{r setup, include=FALSE}
+#hide code, warnings, and messages by default
+knitr::opts_chunk$set(include = FALSE, warnings = FALSE, messages = FALSE)
+library(tidyverse)
+library(rmdformats) #output format: readthedown
+library(kableExtra) #pretty html tables
+```
+
+```{r load data, include = FALSE}
+#load data 
+#change this file name to the source of your properly formatted data file 
+dat <- read.csv(file = "~/Documents/GitHub/LAK-sandbox/SEISMIC_synthetic_data_2023-01-26.csv")
+```
+
+# Who is in this course?
+
+What is the makeup of the course by
+
+-   race/ethnicity
+
+-   gender
+
+-   first-generation status
+
+-   socioeconomic status
+
+-   transfer status
+
+-   STEM major
+
+-   X major
+
+-   in-state
+
+-   international
+
+-   military
+
+```{r demographics bar plot}
+#bar plot with percent of all students in the class by demographics
+
+```
+
+## How have these demographics changed over time?
+```{r demographics over time}
+#different identities with the percent over time
+  #could be facet grid or not
+```
+
+# Grades in this course?
+
+## How do course outcomes compare for different student groups?
+```{r raw grades by identity}
+#different identities with raw grades on average across identities 
+```
+
+## How does oveall prior performance at the university (i.e., GPAO, prior GPA) compare to student outcomes in my course?
+
+[grade anomaly explainer here]
+
+```{r grade anomaly by identity}
+#different identities with average grade anomaly across identities 
+```
+
+## How do course outcomes differ across the spectrum of systemic advantges students may have access to in higher education?
+
+### SAI
+[SAI explainer here]
+
+```{r raw grades by SAI}
+#raw grades by SAI
+```
+
+```{r grade anomaly by SAI}
+#grade anomaly by SAI
+```
+
+```{r R coding resources}
+#R coding resources used
+
+```
+
