@@ -17,6 +17,14 @@ knitr::opts_chunk$set(echo = FALSE, warnings = FALSE, messages = FALSE)
 library(tidyverse)
 library(rmdformats) #output format: readthedown
 library(kableExtra) #pretty html tables
+
+#create some plot settings
+theme_seismic <- 
+  theme_classic(base_size = 14) + 
+  theme(axis.text = element_text(color = "black"), 
+        strip.text = element_text(color = "black"), 
+        panel.border = element_rect(color = "black", fill = NA, size = 1), 
+        strip.background = element_rect(color = "black", size = 1))
 ```
 
 ```{r load data, echo = FALSE}
@@ -98,15 +106,54 @@ ggplot(aes(x = demo_var, y = perc, fill = demo_var)) +
   labs(x = "Student identity", y = "Percent of class (%)") + 
   #set y axis to 100
   ylim(0,100)+
-  theme_bw() + 
+  theme_seismic +
   #hide redundant color legend
   theme(legend.position = "none")
 ```
 
 ## How have these demographics changed over time?
-```{r demographics over time}
+```{r demographics over time, message=FALSE, warning=FALSE}
 #different identities with the percent over time
   #could be facet grid or not
+
+dat %>% 
+  #select course of interest only
+  filter(crs_name == course_of_interest) %>%
+  #add n for all students in course section
+  add_count(crs_section, name = "n_section") %>%
+  #pivot to a long format dataframe
+  pivot_longer(cols = female:lowincomeflag, 
+               names_to = "demo_var",
+               values_to = "value") %>% 
+  #group by course section
+  group_by(crs_section, demo_var, value) %>% 
+  #count sample size by each group, then divide by course total
+  summarise(n_total = n(),
+            n_course = mean(n_section)) %>% 
+  #convert to percent
+  mutate(perc = n_total/n_course *100) %>% #percent for each level
+  #select only students that belong to marginalized backgrounds
+  filter(value == 1) %>%
+  #rename labels to be more interpretable
+  mutate(demo_var = factor(demo_var, 
+                           levels = c("ethniccode_cat","female","firstgen","lowincomeflag","international","transfer"),
+                           labels = c("PEER", "Woman", "FirstGen", "LowIncome", "International", "Transfer"))) %>%
+  #PLOT ####
+ggplot(aes(x = as.factor(crs_section), y = perc, color = demo_var)) + 
+  geom_point() + 
+  geom_line(aes(group = demo_var)) + 
+  labs(x = "Course Offering", y = "Percent of class (%)",
+       color = "Student identity", 
+       caption = "Offerings shown as year (YYYY) \nand quarter (winter -01, spring-03, fall-10)") + 
+  #set y axis to 100
+  ylim(0,100)+
+  #optional: separate plots for each demographic variable
+  #facet_wrap(~demo_var) + 
+  theme_seismic + 
+  theme(axis.text.x = element_text(angle = 90))
+
+
+
 ```
 
 # Grades in this course
