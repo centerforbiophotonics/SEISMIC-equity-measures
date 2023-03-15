@@ -3,7 +3,7 @@
 
 **Creators:** Victoria Farrar, Nita Tarchinski
 
-Preview the current example R Markdown .html file [here](https://htmlpreview.github.io/?https://github.com/vsfarrar/SEISMIC-equity-measures/blob/main/example_equity_measure_markdown.html). 
+Preview the current example R Markdown .html file [here](https://htmlpreview.github.io/?https://github.com/vsfarrar/SEISMIC-equity-measures/blob/main/questions_version3_demo.html#how-does-oveall-prior-performance-at-the-university-i.e.-gpao-prior-gpa-compare-to-student-outcomes-in-my-course). 
 
 |                       | Grades | Retention in STEM Majors | Graduation | 
 |-----------------------|--------|--------------------------|------------|
