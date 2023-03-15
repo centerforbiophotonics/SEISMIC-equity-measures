@@ -190,12 +190,52 @@ dat %>%
   theme_bw()
 ```
 
-## How does oveall prior performance at the university (i.e., GPAO, prior GPA) compare to student outcomes in my course?
+## How does overall prior performance at the university (i.e., GPAO, prior GPA) compare to student outcomes in my course?
 
-[grade anomaly explainer here]
+One way we can compare outcomes in our course to students' prior performance at our institution is by calculating **grade anomaly**. Grade anomaly subtracts a measure of student's general or prior academic performance, such as prior GPA, from their course grade. 
+
+Grade anomalies can be:
+
+-   **Grade penalties** - where students receive *lower* grades in the course relative to their other coursework, or,
+
+-   **Grade bonuses** - where students receive *higher* grades relative to other courses.
+
+SEISMIC projects often use grade point average omitting the course of interest (**GPAO**), because this metric has been found to be the best metric of prior academic preparation in previous studies (compared to high school GPA or standardized test scores, [Koester et al.,2016](https://doi.org/10.48550/arXiv.1608.07565)). GPAO can also be especially useful for transfer students, who may not have a prior GPA at our institution if they just transferred. 
 
 ```{r grade anomaly by identity}
 #different identities with average grade anomaly across identities 
+
+#calculate overall mean grade for course (will be plotted as an average line)
+aga_coi <- mean(dat$numgrade[dat$crs_name == course_of_interest], na.rm = T) - 
+           mean(dat$gpao[dat$crs_name == course_of_interest], na.rm = T)
+
+
+dat %>%
+  filter(crs_name == course_of_interest) %>%
+  #pivot to a long format dataframe
+  pivot_longer(cols = female:lowincomeflag, 
+               names_to = "demo_var",
+               values_to = "value") %>% 
+  #select all students who do belong to the group of interest
+  filter(value == 1 ) %>%
+  #rename labels to be more interpretable
+  mutate(demo_var = factor(demo_var, 
+                           labels = c("PEER", "Woman", "FirstGen", "LowIncome", "International", "Transfer"))) %>%
+  #PLOT
+  ggplot(aes(x = demo_var, y = numgrade-gpao, color = demo_var)) +   
+  #points for mean
+  stat_summary(geom = "point", fun = "mean") + 
+  #add 95% CI errorbars
+  stat_summary(geom = "errorbar", fun.data = "mean_cl_normal", width = 0.1) + 
+  #plot average line for mean grade
+  geom_hline(yintercept = aga_coi, linetype = "dashed") +
+  #plot line and annotations for penalty vs bonus
+  geom_hline(yintercept = 0) +  
+  annotate(geom = "text", x = 1, y = c(0.1,-0.1), label = c("grade bonus", "grade penalty"), color = c("blue", "red"), hjust = -0.1) + 
+  #labels
+  labs(x = "Student identity", y = "Average grade anomaly \n(course grade-GPAO)", color = "Student identity",
+       caption = "Mean ± 95% CI shown \n Dashed line is course average grade anomaly") + 
+  theme_bw()
 ```
 
 ## How do course outcomes differ across the spectrum of systemic advantges students may have access to in higher education?
