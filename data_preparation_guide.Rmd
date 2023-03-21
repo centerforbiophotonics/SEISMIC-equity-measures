@@ -1,0 +1,50 @@
+---
+title: "Data Preparation Guide for SELC Analysts"
+author: "V.Farrar"
+output: html_document
+---
+```{r setup, include = FALSE}
+library(tidyverse)
+library(parameters)
+```
+
+In order to use the code included in the R Markdown files that generate reports, you will need to access the following variables in your institutional data, and format it following these guidelines. 
+
+#  Dataset Preparation 
+
+## Dataset Format 
+
+Before running the code, ensure your data is formatted in the described SEISMIC format. 
+ 
+Course-level variables and student-level variables should be included in the same data table. Course-level variables should be present as separate columns. For instance, if students took multiple courses at an institution, there should be one row per student:course combination. Students that retook courses should thus have multiple rows for a single student:course combination that differ by term and grade. Student-level demographic data should be consistent across each student's rows. Note that this formatting differs from that of some other SEISMIC projects, where there are separate tables for course- and student-level variables. 
+
+Below is an example from the synthetic dataset.
+The first 3 columns, `crs_name`, `crs_section` and `n_section` are course level variables. The next columns are student-level variables, with demographic factors and then grade data as well. 
+
+**Note: The exact order in your dataset will not matter for running the code - only that all of the variables are present and named as described below.**
+
+```{r load synthetic data, echo=FALSE, paged.print=TRUE}
+synthdat <- read.csv(file = "~/Documents/GitHub/LAK-sandbox/SEISMIC_synthetic_data_2023-01-26.csv")
+
+synthdat %>%
+  select(crs_name, crs_section, n_section, st_id, female, firstgen,ethniccode_cat,international,transfer,lowincomeflag, numgrade, gpao) %>%
+  arrange(crs_section) %>%
+  head() %>%
+  print_html()
+```
+
+For an example dataset, see: [Example dataset](https://docs.google.com/spreadsheets/d/14yD7tf09ZbpKUBF2KIkqPzPLpyKW9BeQyEd5zlR7EUM/edit?usp=sharing) (Google Doc; *open access*) 
+
+
+## Variables to Include
+
+### Data Dictionary
+
+Please reference this data dictionary for the correct variable names and minimum variables required: 
+ 
+[DataDescription_ SEISMIC_ WG1P6.xlsx](https://docs.google.com/spreadsheets/d/1SJKqRIwwFkYRMk1GrEuAUOixMuZkXgmE/edit?usp=sharing&ouid=101003818724972958035&rtpof=true&sd=true) (Google Drive link; open access) 
+
+### Inclusion criteria 
+
+# Check Your Data 
+
