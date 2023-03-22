@@ -38,7 +38,24 @@ For an example dataset, see: [Example dataset](https://docs.google.com/spreadshe
 
 ## Variables to Include
 
+For the code to run, the following variables are required: 
+
 ### Data Dictionary
+
+<!-- example-table-LIST:START -->
+| variable | type | description / formatting notes | 
+| :----| :---- | :---- | 
+| st_id | character |unique identifier for each student (does not have to be actually linkable to students, can be random)| 
+| female | ||
+| ethniccode_cat | ||
+| firstgen | || 
+| lowincomeflag | || 
+| transfer | || 
+| international | || 
+| numgrade | || 
+| gpao | || 
+| crs_name | || 
+| crs_section | || 
 
 Please reference this data dictionary for the correct variable names and minimum variables required: 
  
