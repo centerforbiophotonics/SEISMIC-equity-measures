@@ -6,7 +6,6 @@ output:
 css:
   custom.css
 date: "2023-03-14"
-
 ---
 
 *(This R Markdown is a demo example based upon Questions (version 3) in [this Google Doc](https://docs.google.com/document/d/1TceXPFyIDZ0ZC06XFtYz6fWkgvnNYbpq7F11voeGLFA/edit#heading=h.h9qcp91x0k23)).*
@@ -111,7 +110,14 @@ ggplot(aes(x = demo_var, y = perc, fill = demo_var)) +
   theme(legend.position = "none")
 ```
 
+**Guiding questions:**
+
+-   Do any of the percentages of students in the course surprise you? In what way?
+-   Given the demographic breakdown of your course, are there any changes or groups you would be specifically interested in examining course outcomes for?
+-   Do you think it could be useful to show the demographic breakdown to your students? How might you present this data to your students?
+
 ## How have these demographics changed over time?
+
 ```{r demographics over time, message=FALSE, warning=FALSE}
 #different identities with the percent over time
   #could be facet grid or not
@@ -156,9 +162,15 @@ ggplot(aes(x = as.factor(crs_section), y = perc, color = demo_var)) +
 
 ```
 
+**Guiding questions:**
+
+-   What groups, if any, are growing in the classroom in recent years?
+-   Are there any change to the classroom course content or structure that could better meet the needs or specific challenges of these groups?
+
 # Grades in this course
 
 ## How do course outcomes compare for different student groups?
+
 ```{r raw grades by identity}
 #different identities with raw grades on average across identities 
 
@@ -192,7 +204,7 @@ dat %>%
 
 ## How does overall prior performance at the university (i.e., GPAO, prior GPA) compare to student outcomes in my course?
 
-One way we can compare outcomes in our course to students' prior performance at our institution is by calculating **grade anomaly**. Grade anomaly subtracts a measure of student's general or prior academic performance, such as prior GPA, from their course grade. 
+One way we can compare outcomes in our course to students' prior performance at our institution is by calculating **grade anomaly**. Grade anomaly subtracts a measure of student's general or prior academic performance, such as prior GPA, from their course grade.
 
 Grade anomalies can be:
 
@@ -200,7 +212,7 @@ Grade anomalies can be:
 
 -   **Grade bonuses** - where students receive *higher* grades relative to other courses.
 
-SEISMIC projects often use grade point average omitting the course of interest (**GPAO**), because this metric has been found to be the best metric of prior academic preparation in previous studies (compared to high school GPA or standardized test scores, [Koester et al.,2016](https://doi.org/10.48550/arXiv.1608.07565)). GPAO can also be especially useful for transfer students, who may not have a prior GPA at our institution if they just transferred. 
+SEISMIC projects often use grade point average omitting the course of interest (**GPAO**), because this metric has been found to be the best metric of prior academic preparation in previous studies (compared to high school GPA or standardized test scores, [Koester et al.,2016](https://doi.org/10.48550/arXiv.1608.07565)). GPAO can also be especially useful for transfer students, who may not have a prior GPA at our institution if they just transferred.
 
 ```{r grade anomaly by identity}
 #different identities with average grade anomaly across identities 
@@ -238,6 +250,11 @@ dat %>%
   theme_seismic
 ```
 
+**Guiding questions:**
+
+-   Are students recieving a grade bonus or a grade penalty on average in this course? (see dashed line for overall course average)
+-   Are there any marginalized demographic groups that are receiving more of a grade penalty or more of a grade bonus? Reflecting on the course structure and its place in the curriculum context, can you think of any reasons that might be?
+
 ## How do course outcomes differ across the spectrum of systemic advantges students may have access to in higher education?
 
 How can we view the cumulative effect of systemic advantages students may have access to (conferred by demographic identities) overall in the context of a course?
@@ -254,11 +271,16 @@ SAI, or the **Systemic Advantage Index** is one approach. This metric takes into
 
 -   parental education (i.e., first-generation college-going status)
 
+SAI adds together all of the advantages a student may have across these four demographic axes and assigns an index. The table below shows SAI for multiple combinations of identities. For instance, a Latino, first-generation, low income man (column second from left) would be considered to have SAI = 1, while a white, continuing-generation woman from a high income family would be considered to have SAI = 3 (column second from right).
+
+![](SAI_assignment.tif)
+
 ------------------------------------------------------------------------
 
 > 💭 Can you think of any other systemic advantages not included in this index that likely influence student's outcomes in a course? What would be the challenges to adding those identities or advantages to this index?
 
 ------------------------------------------------------------------------
+
 ```{r SAI calculation}
 #this code goes through all possible combinations of the 4 advantage axes and assigns an SAI based on that students' values
 #as ethniccode_cat == 1 is the "BIPOC" label, all other categories are considered advantaged 
@@ -282,6 +304,10 @@ dat <-
     female == "1" & ethniccode_cat == "1" & firstgen == "1" & lowincomeflag == "1"  ~ "0",
     TRUE ~ "NA"))
 ```
+
+### How do course grades and grade anomalies compare across levels of SAI? 
+
+The below plots show raw grades and grade anomaly partitioned by the number of systemic advantages students have access to. 
 
 ```{r raw grades by SAI}
 #raw grades by SAI
@@ -321,8 +347,13 @@ dat %>%
 
 ```
 
+**Guiding questions:**
+
+-   Are different levels of SAI significantly different from each other in terms of course outcomes (i.e., do 95% confidence intervals overlap)? Is there a linear relationship between SAI and grade, or is the relationship more mixed? Is there a point where students fall "below" average grades or grade anomalies? How can we better serve those students in this course? 
+
+- If we see differences across levels of SAI, what elements of the course structure might lead to some of these differences with student systemic advantages?
+
 ```{r R coding resources, include = FALSE}
 #R coding resources used
 
 ```
-
