@@ -3,23 +3,23 @@ title: "Data Preparation Guide for SELC Analysts"
 author: "V.Farrar"
 output: html_document
 ---
+
 ```{r setup, include = FALSE}
 library(tidyverse)
 library(parameters)
 ```
 
-In order to use the code included in the R Markdown files that generate reports, you will need to access the following variables in your institutional data, and format it following these guidelines. 
+In order to use the code included in the R Markdown files that generate reports, you will need to access the following variables in your institutional data, and format it following these guidelines.
 
-#  Dataset Preparation 
+# Dataset Preparation
 
-## Dataset Format 
+## Dataset Format
 
-Before running the code, ensure your data is formatted in the described SEISMIC format. 
- 
-Course-level variables and student-level variables should be included in the same data table. Course-level variables should be present as separate columns. For instance, if students took multiple courses at an institution, there should be one row per student:course combination. Students that retook courses should thus have multiple rows for a single student:course combination that differ by term and grade. Student-level demographic data should be consistent across each student's rows. Note that this formatting differs from that of some other SEISMIC projects, where there are separate tables for course- and student-level variables. 
+Before running the code, ensure your data is formatted in the described SEISMIC format.
 
-Below is an example from the synthetic dataset.
-The first 3 columns, `crs_name`, `crs_section` and `n_section` are course level variables. The next columns are student-level variables, with demographic factors and then grade data as well. 
+Course-level variables and student-level variables should be included in the same data table. Course-level variables should be present as separate columns. For instance, if students took multiple courses at an institution, there should be one row per student:course combination. Students that retook courses should thus have multiple rows for a single student:course combination that differ by term and grade. Student-level demographic data should be consistent across each student's rows. Note that this formatting differs from that of some other SEISMIC projects, where there are separate tables for course- and student-level variables.
+
+Below is an example from the synthetic dataset. The first 3 columns, `crs_name`, `crs_section` and `n_section` are course level variables. The next columns are student-level variables, with demographic factors and then grade data as well.
 
 **Note: The exact order in your dataset will not matter for running the code - only that all of the variables are present and named as described below.**
 
@@ -33,35 +33,95 @@ synthdat %>%
   print_html()
 ```
 
-For an example dataset, see: [Example dataset](https://docs.google.com/spreadsheets/d/14yD7tf09ZbpKUBF2KIkqPzPLpyKW9BeQyEd5zlR7EUM/edit?usp=sharing) (Google Doc; *open access*) 
-
+For an example dataset, see: [Example dataset](https://docs.google.com/spreadsheets/d/14yD7tf09ZbpKUBF2KIkqPzPLpyKW9BeQyEd5zlR7EUM/edit?usp=sharing) (Google Doc; *open access*)
 
 ## Variables to Include
 
-For the code to run, the following variables are required: 
+For the code to run, the following variables are required:
 
 ### Data Dictionary
 
 <!-- example-table-LIST:START -->
-| variable | type | description / formatting notes | 
-| :----| :---- | :---- | 
-| st_id | character |unique identifier for each student (does not have to be actually linkable to students, can be random)| 
-| female | ||
-| ethniccode_cat | ||
-| firstgen | || 
-| lowincomeflag | || 
-| transfer | || 
-| international | || 
-| numgrade | || 
-| gpao | || 
-| crs_name | || 
-| crs_section | || 
 
-Please reference this data dictionary for the correct variable names and minimum variables required: 
- 
-[DataDescription_ SEISMIC_ WG1P6.xlsx](https://docs.google.com/spreadsheets/d/1SJKqRIwwFkYRMk1GrEuAUOixMuZkXgmE/edit?usp=sharing&ouid=101003818724972958035&rtpof=true&sd=true) (Google Drive link; open access) 
++----------------+------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| variable       | type       | description / formatting notes                                                                                                                                                                                                                               |
++:===============+:===========+:=============================================================================================================================================================================================================================================================+
+| st_id          | character  | unique identifier for each student (does not have to be actually linkable to students, can be random)                                                                                                                                                        |
++----------------+------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| female         | numeric    | student sex or gender (self-reported or registrar available)                                                                                                                                                                                                 |
+|                |            |                                                                                                                                                                                                                                                              |
+|                |            | 0: male                                                                                                                                                                                                                                                      |
+|                |            |                                                                                                                                                                                                                                                              |
+|                |            | 1: female                                                                                                                                                                                                                                                    |
+|                |            |                                                                                                                                                                                                                                                              |
+|                |            | "NA": other, third category                                                                                                                                                                                                                                  |
++----------------+------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| ethniccode_cat | numeric    | student race/ethnicity categories. Student self-identifies as:                                                                                                                                                                                               |
+|                |            |                                                                                                                                                                                                                                                              |
+|                |            | 0: White only                                                                                                                                                                                                                                                |
+|                |            |                                                                                                                                                                                                                                                              |
+|                |            | 1: includes *any or a mix* of Hispanic/Latino/Chicano, Black/African-American, American Indian/Indigenous, Alaska Native or Pacific Island                                                                                                                   |
+|                |            |                                                                                                                                                                                                                                                              |
+|                |            | 2: Asian/Asian-American only OR Asian/Asian-American and White.                                                                                                                                                                                              |
+|                |            |                                                                                                                                                                                                                                                              |
+|                |            | 3: Other                                                                                                                                                                                                                                                     |
+|                |            |                                                                                                                                                                                                                                                              |
+|                |            | NA: Missing or not available                                                                                                                                                                                                                                 |
++----------------+------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| firstgen       | numeric    | Parental education/ First-Generation college going status.                                                                                                                                                                                                   |
+|                |            |                                                                                                                                                                                                                                                              |
+|                |            | 0: one or more parent/guardian(s) has earned a Bachelor's degree or higher                                                                                                                                                                                   |
+|                |            |                                                                                                                                                                                                                                                              |
+|                |            | 1: no parent/guardian has earned a Bachelor's degree or higher                                                                                                                                                                                               |
++----------------+------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| lowincomeflag  | numeric    | Low-Income status.                                                                                                                                                                                                                                           |
+|                |            |                                                                                                                                                                                                                                                              |
+|                |            | 0: Student or family income not flagged as low-income.                                                                                                                                                                                                       |
+|                |            |                                                                                                                                                                                                                                                              |
+|                |            | 1: Student is flagged as low-income based on family household income and household size using 185% of the U.S. poverty line. Use Pell eligible if available; if not: \$25,100\*1.85 = \$46,435 (185% of U.S. poverty line for household size of 4; \$25,100) |
++----------------+------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| transfer       | numeric    | Transfer status from another institution (two-year, such as junior/community colleges, or four-year) \                                                                                                                                                       |
+|                |            |                                                                                                                                                                                                                                                              |
+|                |            | 0: student not flagged as transfer; student entered institution as a first-year / freshman; prior institution was high-school                                                                                                                                |
+|                |            |                                                                                                                                                                                                                                                              |
+|                |            | 1: student flagged as transfer; students' prior institution was another higher education institution (two-year or four-year)                                                                                                                                 |
++----------------+------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| international  | numeric    | International / Non-resident alien status.                                                                                                                                                                                                                   |
+|                |            |                                                                                                                                                                                                                                                              |
+|                |            | 0: U.S. Citizen / permanent resident                                                                                                                                                                                                                         |
+|                |            |                                                                                                                                                                                                                                                              |
+|                |            | 1: Non-resident alien / international student.                                                                                                                                                                                                               |
++----------------+------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| crs_name       | character  | Name of the course of interest. Recommend course catalog numbers (e.g. BIO100) instead of full names ("Fundamentals of Biology")                                                                                                                             |
++----------------+------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| crs_term       | character  | Academic term the course was offered. Any format can be used here, especially if this will link with the notation in your institutional database.                                                                                                            |
+|                |            |                                                                                                                                                                                                                                                              |
+|                |            | *Note: specific course years, semesters/quarters, and sections are stored in other variables.*                                                                                                                                                               |
++----------------+------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| crs_year       | numeric    | Calendar year the course was offered. Enter in "YYYY" format.                                                                                                                                                                                                |
++----------------+------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| crs_semq       | numeric    | Semester or quarter the course was offered. Use the following notation:                                                                                                                                                                                      |
+|                |            |                                                                                                                                                                                                                                                              |
+|                |            | 01: Spring or Winter semester; Winter quarter (UC)                                                                                                                                                                                                           |
+|                |            |                                                                                                                                                                                                                                                              |
+|                |            | 03: Spring quarter (UC)                                                                                                                                                                                                                                      |
+|                |            |                                                                                                                                                                                                                                                              |
+|                |            | 05: Summer session, or Summer session 1/I                                                                                                                                                                                                                    |
+|                |            |                                                                                                                                                                                                                                                              |
+|                |            | 07: Summer session 2/II                                                                                                                                                                                                                                      |
+|                |            |                                                                                                                                                                                                                                                              |
+|                |            | 10: Fall semester or Fall quarter (UCs)                                                                                                                                                                                                                      |
++----------------+------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| crs_section    | numeric    | Section of the course within a term. If more than one section was offered of the course per term, use numeric codes following your institutions notation (e.g. "01", "02", "03")                                                                             |
+|                |            |                                                                                                                                                                                                                                                              |
+|                |            | Note: If only one section was offered, please default to "01".                                                                                                                                                                                               |
++----------------+------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| numgrade       | numeric    | Student's final course grade in the course listed in `crs_name` and term in `crs_term`\                                                                                                                                                                      |
+|                |            | Please convert to a numeric grade using your institution's grading conventions. ([Example scale from UC Davis here](https://registrar.ucdavis.edu/records/transcripts/calculate-gpa)) \                                                                      |
+|                |            | *Note: Typically ranges from 0-4.0*                                                                                                                                                                                                                          |
++----------------+------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| gpao           | numeric    | Grade point average omitting the course of interest (GPAO). Student's cumulative grade point average at the end of the term listed in `crs_term`, minus the grade in the course of interest (`crs_name`).                                                    |
++----------------+------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 
-### Inclusion criteria 
 
-# Check Your Data 
-
+# Check Your Data
