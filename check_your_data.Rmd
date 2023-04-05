@@ -1,0 +1,138 @@
+---
+title: "Check Your Data"
+subtitle: "For SELC Project Institutional Researchers"
+output: html_document
+date: 2023-04-05
+---
+
+This R Markdown document allows code users (specifically, institutional researchers and data analysts for SELC project institutions) to check that their data matches the formatting requirements listed in the [Data Preparation Guide](https://htmlpreview.github.io/?https://github.com/vsfarrar/SEISMIC-equity-measures/blob/main/data_preparation_guide.html).
+
+*Note: This document best navigated in the "Visual" mode in RStudio version 2023.03.0+386*, which allows you to view both nicely-formatted walk-through text AND interact with code.
+
+```{r setup, include=FALSE}
+#setup the R markdown, load packages
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+First, load your data in the chunk below, changing the file directory to where your formatted data is located. **Data must be formatted as a .csv file**, otherwise this step will not work.
+
+```{r load your data}
+#load your data
+#change the `file = [directory]` to the directory where your file is located
+dat <- read.csv("~/Documents/GitHub/LAK-sandbox/SEISMIC_synthetic_data_2023-01-26.csv")
+```
+
+Next, we will check that all the required variables are in your dataset and named properly. Extra variables in your data are ok, but all the expected variables are required by the code, otherwise the code will run.
+
+If any of the variables list "FALSE", the variable needs to be added or renamed before running the code.
+
+The list of variables in your dataset are also reported under the table. If this variable/column exists, but is not named properly, you can use the function `dplyr::rename` to rename the variable. (Type `?rename` into console for function details).
+
+For the list of variables, see "Variables to Include" in the [Data Preparation Guide](https://htmlpreview.github.io/?https://github.com/vsfarrar/SEISMIC-equity-measures/blob/main/data_preparation_guide.html).
+
+```{r check required variables}
+#required variable list from Data Dictionary in Data Preparation Guide
+ required_vars <- c("st_id","female","ethniccode_cat","firstgen","lowincomeflag","transfer", "international", "crs_name", "crs_term", "crs_year", "crs_semq","crs_section", "numgrade", "gpao")
+
+ #check that each variable is in the dataset
+as.data.frame(required_vars) %>%
+  mutate(in_dataset = required_vars %in% colnames(dat))
+
+#show colnames
+cat("Existing columns/variables in dataset: \n")
+colnames(dat)
+
+```
+
+Next, let's view the variable ranges and expected values. We'll begin with the demographic variables. The following 5 variables should all be binary coded, with values being 0/1 or NA if missing:
+
+-   female
+
+-   firstgen
+
+-   lowincomeflag
+
+-   transfer
+
+-   international
+
+The code chunk below will check that the values for these variables are either 0,1, or NA.
+
+```{r check demographic values}
+#check demographic values are binary coded
+demo_vars <-
+dat %>%
+  select(female, firstgen, lowincomeflag, transfer, international)
+
+#check that each of these variables is coded using binary (or NA is properly entered as NA)
+apply(demo_vars,2,function(x) { all(x %in% 0:1 | is.na(x))})
+
+```
+
+If any of the variables returned FALSE, you can enter that variable in the code below to see the values that are represented in that variable below, along with their sample size. This may show values you may need to recode to binary or filter out.
+
+```{r view value range}
+#if binary coding returns FALSE in above chunk, replace "variable" in the code below with the name of the variable you would like to examine
+dat %>% count(variable)
+
+```
+
+To recode levels of a variable, a couple of options are available:
+
+-   use `ifelse` to replace the value you want to recode and keep all others:
+
+    -   ex: `dat$female <- ifelse(dat$female == 2, NA, dat$female)` will recode any times `female == 2` with *NA* and keep all other existing values (0,1, NA)
+
+-   use `dplyr::recode` to replace the specific value to be recoded
+
+    -   ex: `dat <-dat %>% recode(transfer, "T" = 1, "F" = 0)` would replace values of letter T in a transfer variable with the value of 1, an allowed value.
+
+    -   note: `recode` uses opposite order as `rename` where "old" = "new" instead of reverse. See `?recode` for function details
+
+-   use `naniar::replace_with_na` to replace unallowed or other values with *NA*.
+
+    -   ex: `replace_with_na(dat, replace = list(female = 2))` This replaces all instances of female == 2 with *NA* as per the first example with if_else().
+
+    -   requires installing and loading the `naniar` package. See `?replace_with_na` for function details
+
+Next, let's check the ethnicity category variable, `ethniccode_cat`, which has more allowable levels (0-3).
+
+The below code will check that `ethniccode_cat` falls between 0 and 3, or is *NA*. It also returns the values of this variable, along with their sample size. Use the above functions to recode or replace any stray values.
+
+```{r check ethniccode_cat}
+#check that ethniccode_cat is between 0 and 3 (or NA is properly entered as NA)
+all(dat$ethniccode_cat %in% 0:3 | is.na(dat$ethniccode_cat))
+
+#return a count of all levels of ethniccode_cat
+dat %>% count(ethniccode_cat)
+```
+
+Next, we will check that course years are entered properly. Course years need to be in YYYY format (i.e. should have 4 digits). This code also returns the range of years in the dataset - you will need to check if this is the range you expect given the data you are using.
+
+```{r check course years}
+#convert crs_year to numeric if it is not already in that format
+dat$crs_year <- as.numeric(dat$crs_year)
+
+#check that course year is in YYYY format (essentially 4 digits if numeric)
+  #should return TRUE. If it does not, evaluate where 
+all(nchar(trunc(dat$crs_year) == 4))
+
+#return range of course years - does this match what you expect for this dataset?
+dat %>% count(crs_year)
+
+cat("The range of years is:")
+range(dat$crs_year)
+
+```
+
+We will also check if `crs_semq`, which stores information about semester or quarter of the `crs_term`, is entered correctly. Values are also limited for this variable, please refer to the Data Dictionary.
+
+```{r check crs_semq variable}
+#check that crs_semq is in the allowed values
+all(dat$crs_semq %in% c("01","03","05","07","10") | is.na(dat$crs_semq))
+
+#return a count of all values of crs_semq
+dat %>% count(dat$crs_semq)
+
+```
