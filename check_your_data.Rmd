@@ -161,7 +161,17 @@ dat %>% count(dat$crs_semq)
 
 Lastly, we will check the numeric ranges for our numeric variables, `numgrade` (course grade, converted to numeric) and `gpao` (GPAO). The below chunk returns the range (Min., Max.) for each of these variables, as well as the 1st and 3rd quartiles, the median, and the mean. It also returns the number of missing, or *NA* variables.
 
-Check your
+💭 **Check: Does the range of values for grades and GPAO match what you would expect from your institutional grading practices?** For example, UC Davis grading scale ranges from 0.0 - 4.0, so both `numgrade` and `GPAO` should range from 0 to 4.0.
+
+If there are numbers outside of that range that you would like to exclude, you can:
+
+-   use the `dplyr::filter` function to remove these values from your dataset
+
+    -   ex: `dat <- dat %>% filter(numgrade <= 4.0)` would limit the dataset to only those rows where course grade is 4.0 or lower.
+
+-   use `ifelse` to replace values outside of a range with *NA*.
+
+    -   ex: `dat$numgrade <- ifelse(dat$numgrade > 4.0, NA, dat$numgrade)` would change any grade value greater than 4 to *NA*, while keeping all other values in the column.
 
 ```{r view range/stats for numeric vars}
 #return summary statistics for the numeric required variables, numgrade and gpao
@@ -169,4 +179,8 @@ dat %>% select(numgrade, gpao) %>% summary()
 
 ```
 
-Now, we are ready to generate the report for your local SELC team! Navigate to the `questions_version3_demo.Rmd` document and begin running the code there!
+### **Finished!** 
+
+**Now, we are ready to generate the report for your local SELC team!** 🎉
+
+Navigate to the `questions_version3_demo.Rmd` document and begin running the code there.
