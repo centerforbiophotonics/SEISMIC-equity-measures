@@ -7,7 +7,13 @@ date: 2023-04-05
 
 This R Markdown document allows code users (specifically, institutional researchers and data analysts for SELC project institutions) to check that their data matches the formatting requirements listed in the [Data Preparation Guide](https://htmlpreview.github.io/?https://github.com/vsfarrar/SEISMIC-equity-measures/blob/main/data_preparation_guide.html).
 
+If you have questions, contact [Nita Tarchinski](mailto:nitaked@umich.edu).
+
 *Note: This document best navigated in the "Visual" mode in RStudio version 2023.03.0+386*, which allows you to view both nicely-formatted walk-through text AND interact with code.
+
+------------------------------------------------------------------------
+
+Throughout this document, the 🟠✍️ above the chunk means "you may need to edit the code first before running". All other code chunks do not require edits by the user, and can be run as is to view the outputs.
 
 ```{r setup, include=FALSE}
 #setup the R markdown, load packages
@@ -18,6 +24,8 @@ library(tidyverse)
 ### Load your data
 
 First, load your data in the chunk below, changing the file directory to where your formatted data is located. **Data must be formatted as a .csv file**, otherwise this step will not work.
+
+🟠✍️ Edit the code below:
 
 ```{r load your data}
 #load your data
@@ -81,7 +89,7 @@ apply(demo_vars,2,function(x) { all(x %in% 0:1 | is.na(x))})
 
 If any of the variables returned FALSE, you can enter that variable in the code below to see the values that are represented in that variable below, along with their sample size. This may show values you may need to recode to binary or filter out.
 
-🛑 Edit the code below [if needed]:
+🟠✍️ Edit the code below [if needed]:
 
 ```{r view value range}
 #if binary coding returns FALSE in above chunk, replace "variable" in the code below with the name of the variable you would like to examine
@@ -179,7 +187,7 @@ dat %>% select(numgrade, gpao) %>% summary()
 
 ```
 
-### **Finished!** 
+### **Finished!**
 
 **Now, we are ready to generate the report for your local SELC team!** 🎉
 
