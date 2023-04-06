@@ -11,6 +11,8 @@ library(parameters)
 
 In order to use the code included in the R Markdown files that generate reports, you will need to access the following variables in your institutional data, and format it following these guidelines.
 
+If you have questions, contact [Nita Tarchinski](mailto:nitaked@umich.edu ).
+
 # Dataset Preparation
 
 ## Dataset Format
@@ -133,7 +135,7 @@ For the SELC grant project Level 1 analyses, these are the initial exclusion cri
 
 -   Exclude non-letter grades (i.e., exclude Pass/No-Pass grading, students who dropped or withdrew from the course)
 
-# Preparing Your Dataset 
+# Preparing Your Dataset
 
 The exact details of preparing your dataset for use with the SELC materials code will depend on how your data is stored / accessed at your institution, as well as what software or programming languages you feel most comfortable using to prepare your data. Any software/language can be used to format the data to conform to the above format and variable notation requirements, not just R (including Excel).
 
@@ -163,4 +165,6 @@ Did you know: you can type `?[function name]` into the console and get the run e
 
 **Once prepared, data should be stored as a .csv file.**
 
-You can use the "Check Your Data" R Markdown file [LINK FORTHCOMING] to check your variables and ensure your data is formatted as expected before running the code.
+# Ready to check your data?
+
+You can use the ["Check Your Data" R Markdown file](https://github.com/vsfarrar/SEISMIC-equity-measures/blob/main/check_your_data.Rmd) to check your variables and ensure your data is formatted as expected before running the report-generating code.
