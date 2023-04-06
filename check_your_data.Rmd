@@ -15,6 +15,8 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 ```
 
+### Load your data
+
 First, load your data in the chunk below, changing the file directory to where your formatted data is located. **Data must be formatted as a .csv file**, otherwise this step will not work.
 
 ```{r load your data}
@@ -23,13 +25,11 @@ First, load your data in the chunk below, changing the file directory to where y
 dat <- read.csv("~/Documents/GitHub/LAK-sandbox/SEISMIC_synthetic_data_2023-01-26.csv")
 ```
 
-Next, we will check that all the required variables are in your dataset and named properly. Extra variables in your data are ok, but all the expected variables are required by the code, otherwise the code will run.
+### Check all required variables are present
 
-If any of the variables list "FALSE", the variable needs to be added or renamed before running the code.
+Next, we will check that all the required variables are in your dataset and named properly. Extra variables in your data are ok, but all the expected variables are required by the code, otherwise the code will NOT run.
 
-The list of variables in your dataset are also reported under the table. If this variable/column exists, but is not named properly, you can use the function `dplyr::rename` to rename the variable. (Type `?rename` into console for function details).
-
-For the list of variables, see "Variables to Include" in the [Data Preparation Guide](https://htmlpreview.github.io/?https://github.com/vsfarrar/SEISMIC-equity-measures/blob/main/data_preparation_guide.html).
+If any of the variables output from the following chunk say "FALSE", the variable needs to be added or renamed before running the code.
 
 ```{r check required variables}
 #required variable list from Data Dictionary in Data Preparation Guide
@@ -39,11 +39,20 @@ For the list of variables, see "Variables to Include" in the [Data Preparation G
 as.data.frame(required_vars) %>%
   mutate(in_dataset = required_vars %in% colnames(dat))
 
-#show colnames
-cat("Existing columns/variables in dataset: \n")
-colnames(dat)
-
 ```
+
+The list of variables in your dataset are also reported under the table. If this variable/column exists, but is not named properly, you can use the function `dplyr::rename` to rename the variable. (Type `?rename` into console for function details).
+
+For the list of variables, see "Variables to Include" in the [Data Preparation Guide](https://htmlpreview.github.io/?https://github.com/vsfarrar/SEISMIC-equity-measures/blob/main/data_preparation_guide.html).
+
+```{r report list of variables}
+cat("Existing variable names are:")
+colnames(dat)
+```
+
+## Check values within variables are correctly formatted
+
+### Check binary-coded demographic variables
 
 Next, let's view the variable ranges and expected values. We'll begin with the demographic variables. The following 5 variables should all be binary coded, with values being 0/1 or NA if missing:
 
@@ -72,6 +81,8 @@ apply(demo_vars,2,function(x) { all(x %in% 0:1 | is.na(x))})
 
 If any of the variables returned FALSE, you can enter that variable in the code below to see the values that are represented in that variable below, along with their sample size. This may show values you may need to recode to binary or filter out.
 
+🛑 Edit the code below [if needed]:
+
 ```{r view value range}
 #if binary coding returns FALSE in above chunk, replace "variable" in the code below with the name of the variable you would like to examine
 dat %>% count(variable)
@@ -96,19 +107,28 @@ To recode levels of a variable, a couple of options are available:
 
     -   requires installing and loading the `naniar` package. See `?replace_with_na` for function details
 
+### Check ethnicity variables
+
 Next, let's check the ethnicity category variable, `ethniccode_cat`, which has more allowable levels (0-3).
 
 The below code will check that `ethniccode_cat` falls between 0 and 3, or is *NA*. It also returns the values of this variable, along with their sample size. Use the above functions to recode or replace any stray values.
 
-```{r check ethniccode_cat}
+```{r check ethniccode_cat values}
 #check that ethniccode_cat is between 0 and 3 (or NA is properly entered as NA)
 all(dat$ethniccode_cat %in% 0:3 | is.na(dat$ethniccode_cat))
 
+```
+
+```{r show counts of ethniccode_cat}
 #return a count of all levels of ethniccode_cat
 dat %>% count(ethniccode_cat)
 ```
 
+### Check course year and term variables
+
 Next, we will check that course years are entered properly. Course years need to be in YYYY format (i.e. should have 4 digits). This code also returns the range of years in the dataset - you will need to check if this is the range you expect given the data you are using.
+
+💭 **Check: Does the range of dates shown match what you expect given your dataset?**
 
 ```{r check course years}
 #convert crs_year to numeric if it is not already in that format
@@ -136,3 +156,17 @@ all(dat$crs_semq %in% c("01","03","05","07","10") | is.na(dat$crs_semq))
 dat %>% count(dat$crs_semq)
 
 ```
+
+### Check numeric variables (grades, GPAO)
+
+Lastly, we will check the numeric ranges for our numeric variables, `numgrade` (course grade, converted to numeric) and `gpao` (GPAO). The below chunk returns the range (Min., Max.) for each of these variables, as well as the 1st and 3rd quartiles, the median, and the mean. It also returns the number of missing, or *NA* variables.
+
+Check your
+
+```{r view range/stats for numeric vars}
+#return summary statistics for the numeric required variables, numgrade and gpao
+dat %>% select(numgrade, gpao) %>% summary()
+
+```
+
+Now, we are ready to generate the report for your local SELC team! Navigate to the `questions_version3_demo.Rmd` document and begin running the code there!
