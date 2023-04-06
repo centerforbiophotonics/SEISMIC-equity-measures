@@ -4,9 +4,9 @@
 
 More information about the SELC grant can be found here: [The SELC Grant \| SEISMIC Collaboration](https://www.seismicproject.org/seismic-central/the_selc_grant/).
 
-**Collaborators:** [Victoria Farrar](mailto:vsfarrar@ucdavis.edu)^1^, [Nita Tarchinski](maito:nitaked@umich.edu)^2^, Matt Steinwachs^1^, Jenna Thomas^1^
+**Collaborators:** [Victoria Farrar](mailto:vsfarrar@ucdavis.edu) ^1^, [Nita Tarchinski](mailto:nitaked@umich.edu) ^2^, Matt Steinwachs ^1^, Jenna Thomas ^1^
 
-^1^University of California Davis ^2^University of Michigan
+^1^ University of California Davis ^2^ University of Michigan
 
 ## Current Documents
 
