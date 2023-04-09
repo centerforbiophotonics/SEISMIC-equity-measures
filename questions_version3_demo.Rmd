@@ -3,8 +3,6 @@ title: "SEISMIC Equity Measures"
 subtitle: "Level 1"
 output:
   rmdformats::readthedown
-css:
-  custom.css
 date: "2023-03-14"
 ---
 
@@ -29,17 +27,21 @@ theme_seismic <-
 ```{r load data, echo = FALSE}
 #load data 
 #change this file name to the source of your properly formatted data file 
-dat <- read.csv(file = "~/Documents/GitHub/LAK-sandbox/SEISMIC_synthetic_data_2023-01-26.csv")
+dat <- read.csv(file = "~/Downloads/synthetic_data_SEISMIC-format_BIO300_2023-04-08.csv")
 ```
 
 ```{r select course of interest, results = "asis"}
 #if the dataset has more than one course in it, define the course of interest here
 #what you enter must match the entry in the dataset
-course_of_interest <- "BIO300"
+course_of_interest <- "BIS101"
 
 #this command will include the selected course of interest in the R markdown report. 
 #Do not edit this line:
 cat(paste("The course of interest is:", course_of_interest))
+
+#this command will include the range of dates in the R markdown report. 
+#Do not edit this line:
+cat("\n", paste("The range for this data is:", min(dat$crs_year), "-", max(dat$crs_year)))
 ```
 
 # Who is in this course?
@@ -58,13 +60,9 @@ What is the makeup of the course by
 
 -   STEM major
 
--   X major
-
 -   in-state
 
 -   international
-
--   military
 
 ```{r demographics bar plot, message=FALSE, warning=FALSE}
 #bar plot with percent of all students in the class by demographics
@@ -109,6 +107,44 @@ ggplot(aes(x = demo_var, y = perc, fill = demo_var)) +
   #hide redundant color legend
   theme(legend.position = "none")
 ```
+```{r plot specific ethnicities, message=TRUE, warning=TRUE}
+#Breakdown of specific ethnicities: 
+dat %>% 
+  #select course of interest only
+  filter(crs_name == course_of_interest) %>%
+  #add n for all students in course
+  add_tally(name = "n_course") %>%
+  #pivot to a long format dataframe
+  pivot_longer(cols = c(white, black_afram, hispanic_latinx, indigenous_am_indian, asian, pacific_islander),
+               names_to = "ethnicity",
+               values_to = "value") %>% 
+  group_by(ethnicity, value) %>% 
+  #count sample size by each group, then divide by course total
+  summarise(n_total = n(),
+            n_course = mean(n_course)) %>% 
+  #convert to percent
+  mutate(perc = n_total/n_course *100) %>% #percent for each level
+  #select only students that belong to marginalized backgrounds
+  filter(value == 1) %>%
+  #PLOT #
+  #rename labels to be more interpretable
+  mutate(ethnicity = factor(ethnicity, 
+                           levels = c("white", "black_afram", "hispanic_latinx", "indigenous_am_indian", "asian", "pacific_islander"),
+                           labels = c("White", "Black/African-American", "Hispanic/Latinx", "Indigenous/American Indian", "Asian", "Pacific Islander or Native Hawaiian"))) %>%
+ggplot(aes(x = ethnicity, y = perc, fill = ethnicity)) + 
+  #add barplot for percent
+  geom_col(color = "black") + 
+  #add labels for actual percent values
+  geom_text(aes(label = round(perc,0)), vjust = -1) + 
+  labs(x = "Student ethnicity", y = "Percent of class (%)") + 
+  #ylim
+  ylim(0,100)+
+  theme_seismic +
+  #hide redundant color legend
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
 
 **Guiding questions:**
 
@@ -180,7 +216,7 @@ mean_grade_coi <- mean(dat$numgrade[dat$crs_name == course_of_interest], na.rm =
 dat %>%
   filter(crs_name == course_of_interest) %>%
   #pivot to a long format dataframe
-  pivot_longer(cols = female:lowincomeflag, 
+  pivot_longer(cols = c(ethniccode_cat, female, firstgen, lowincomeflag, international, transfer), 
                names_to = "demo_var",
                values_to = "value") %>% 
   #select all students who do belong to the group of interest
@@ -189,7 +225,7 @@ dat %>%
   mutate(demo_var = factor(demo_var, 
                            labels = c("PEER", "Woman", "FirstGen", "LowIncome", "International", "Transfer"))) %>%
   #PLOT
-  ggplot(aes(x = demo_var, y = numgrade, color = demo_var)) +   
+  ggplot(aes(x = demo_var, y = numgrade, color = demo_var)) + 
   #points for mean
   stat_summary(geom = "point", fun = "mean") + 
   #add 95% CI errorbars
@@ -305,9 +341,9 @@ dat <-
     TRUE ~ "NA"))
 ```
 
-### How do course grades and grade anomalies compare across levels of SAI? 
+### How do course grades and grade anomalies compare across levels of SAI?
 
-The below plots show raw grades and grade anomaly partitioned by the number of systemic advantages students have access to. 
+The below plots show raw grades and grade anomaly partitioned by the number of systemic advantages students have access to.
 
 ```{r raw grades by SAI}
 #raw grades by SAI
@@ -349,9 +385,9 @@ dat %>%
 
 **Guiding questions:**
 
--   Are different levels of SAI significantly different from each other in terms of course outcomes (i.e., do 95% confidence intervals overlap)? Is there a linear relationship between SAI and grade, or is the relationship more mixed? Is there a point where students fall "below" average grades or grade anomalies? How can we better serve those students in this course? 
+-   Are different levels of SAI significantly different from each other in terms of course outcomes (i.e., do 95% confidence intervals overlap)? Is there a linear relationship between SAI and grade, or is the relationship more mixed? Is there a point where students fall "below" average grades or grade anomalies? How can we better serve those students in this course?
 
-- If we see differences across levels of SAI, what elements of the course structure might lead to some of these differences with student systemic advantages?
+-   If we see differences across levels of SAI, what elements of the course structure might lead to some of these differences with student systemic advantages?
 
 ```{r R coding resources, include = FALSE}
 #R coding resources used
