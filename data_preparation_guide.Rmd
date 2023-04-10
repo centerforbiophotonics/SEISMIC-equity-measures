@@ -11,7 +11,7 @@ library(parameters)
 
 In order to use the code included in the R Markdown files that generate reports, you will need to access the following variables in your institutional data, and format it following these guidelines.
 
-If you have questions, contact [Nita Tarchinski](mailto:nitaked@umich.edu ).
+If you have questions, contact [Nita Tarchinski](mailto:nitaked@umich.edu).
 
 # Dataset Preparation
 
@@ -29,8 +29,10 @@ Below is an example from the synthetic dataset. The first 3 columns, `crs_name`,
 synthdat <- read.csv(file = "~/Documents/GitHub/LAK-sandbox/SEISMIC_synthetic_data_2023-01-26.csv")
 
 synthdat %>%
-  select(crs_name, crs_section, n_section, st_id, female, firstgen,ethniccode_cat,international,transfer,lowincomeflag, numgrade, gpao) %>%
-  arrange(crs_section) %>%
+  filter(crs_name == "BIO300") %>%
+  mutate(crs_year = str_sub(crs_section, start = 0, end = 4),
+         crs_semq = str_sub(crs_section, start = 5, end = 6)) %>%
+  select(crs_name, crs_term = crs_section, crs_year, crs_semq, st_id, female, firstgen,ethniccode_cat,international,transfer,lowincomeflag, numgrade, gpao) %>%
   head() %>%
   print_html()
 ```
@@ -124,6 +126,8 @@ For the code to run, the following variables are required:
 +----------------+-----------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | gpao           | numeric   | Grade point average omitting the course of interest (GPAO). Student's cumulative grade point average at the end of the term listed in `crs_term`, minus the grade in the course of interest (`crs_name`).                                                    |
 +----------------+-----------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+*This data dictionary is modified from the original for SEISMIC Working Group 1 ("Measurements") originally developed by S. Fiorini, R. Matz, and B. Koester.*
 
 # Exclusion Criteria
 
