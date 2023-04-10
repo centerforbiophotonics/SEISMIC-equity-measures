@@ -30,7 +30,7 @@ First, load your data in the chunk below, changing the file directory to where y
 ```{r load your data}
 #load your data
 #change the `file = [directory]` to the directory where your file is located
-dat <- read.csv("~/Documents/GitHub/LAK-sandbox/SEISMIC_synthetic_data_2023-01-26.csv")
+dat <- read.csv("~/Downloads/synthetic_data_SEISMIC-format_BIO300_2023-04-08.csv")
 ```
 
 ### Check all required variables are present
@@ -41,7 +41,7 @@ If any of the variables output from the following chunk say "FALSE", the variabl
 
 ```{r check required variables}
 #required variable list from Data Dictionary in Data Preparation Guide
- required_vars <- c("st_id","female","ethniccode_cat","firstgen","lowincomeflag","transfer", "international", "crs_name", "crs_term", "crs_year", "crs_semq","crs_section", "numgrade", "gpao")
+ required_vars <- c("st_id","female","ethniccode_cat", "white", "black_afram", "hispanic_latinx", "indigenous_am_indian", 'asian', 'pacific_islander', "firstgen","lowincomeflag","transfer", "international", "crs_name", "crs_term", "crs_year", "crs_semq","crs_section", "numgrade", "gpao")
 
  #check that each variable is in the dataset
 as.data.frame(required_vars) %>%
@@ -57,6 +57,8 @@ For the list of variables, see "Variables to Include" in the [Data Preparation G
 cat("Existing variable names are:")
 colnames(dat)
 ```
+
+You cannot proceed with checking your values until all of the variables are present and named properly.
 
 ## Check values within variables are correctly formatted
 
@@ -80,7 +82,8 @@ The code chunk below will check that the values for these variables are either 0
 #check demographic values are binary coded
 demo_vars <-
 dat %>%
-  select(female, firstgen, lowincomeflag, transfer, international)
+  select(female, firstgen, lowincomeflag, transfer, international,
+         white, black_afram, hispanic_latinx, indigenous_am_indian, asian, pacific_islander, crs_retake)
 
 #check that each of these variables is coded using binary (or NA is properly entered as NA)
 apply(demo_vars,2,function(x) { all(x %in% 0:1 | is.na(x))})
@@ -161,7 +164,7 @@ We will also check if `crs_semq`, which stores information about semester or qua
 all(dat$crs_semq %in% c("01","03","05","07","10") | is.na(dat$crs_semq))
 
 #return a count of all values of crs_semq
-dat %>% count(dat$crs_semq)
+dat %>% count(crs_semq)
 
 ```
 
