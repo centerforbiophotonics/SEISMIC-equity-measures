@@ -107,7 +107,12 @@ ggplot(aes(x = demo_var, y = perc, fill = demo_var)) +
   #hide redundant color legend
   theme(legend.position = "none")
 ```
-```{r plot specific ethnicities, message=TRUE, warning=TRUE}
+
+```{r plot specific ethnicities, message=F, warning=F}
+#Create a list of labels of ethnicities to be more interpretable for x axis labels
+ethnicity_labels <- c("white"= "White", "black_afram" = "Black/African-American", "hispanic_latinx" = "Hispanic/Latinx/Chicanx", "indigenous_am_indian" = "Indigenous/American Indian", "asian" = "Asian", 
+                      "pacific_islander" = "Pacific Islander/Native Hawaiian") 
+
 #Breakdown of specific ethnicities: 
 dat %>% 
   #select course of interest only
@@ -127,24 +132,24 @@ dat %>%
   #select only students that belong to marginalized backgrounds
   filter(value == 1) %>%
   #PLOT #
-  #rename labels to be more interpretable
-  mutate(ethnicity = factor(ethnicity, 
-                           levels = c("white", "black_afram", "hispanic_latinx", "indigenous_am_indian", "asian", "pacific_islander"),
-                           labels = c("White", "Black/African-American", "Hispanic/Latinx", "Indigenous/American Indian", "Asian", "Pacific Islander or Native Hawaiian"))) %>%
+  ungroup() %>%
+  mutate(ethnicity = forcats::fct_reorder(ethnicity, desc(perc))) %>% 
 ggplot(aes(x = ethnicity, y = perc, fill = ethnicity)) + 
   #add barplot for percent
   geom_col(color = "black") + 
   #add labels for actual percent values
-  geom_text(aes(label = round(perc,0)), vjust = -1) + 
+  geom_text(aes(label = round(perc,0)), hjust = -1) + 
   labs(x = "Student ethnicity", y = "Percent of class (%)") + 
   #ylim
   ylim(0,100)+
+  scale_x_discrete(labels = ethnicity_labels) + 
+  coord_flip() + 
   theme_seismic +
   #hide redundant color legend
   theme(legend.position = "none",
-        axis.text.x = element_text(angle = 45, hjust = 1))
-```
+        axis.text.x = element_text(angle = 90, hjust = 1)) 
 
+```
 
 **Guiding questions:**
 
@@ -194,8 +199,6 @@ ggplot(aes(x = as.factor(crs_section), y = perc, color = demo_var)) +
   theme_seismic + 
   theme(axis.text.x = element_text(angle = 90))
 
-
-
 ```
 
 **Guiding questions:**
@@ -207,7 +210,7 @@ ggplot(aes(x = as.factor(crs_section), y = perc, color = demo_var)) +
 
 ## How do course outcomes compare for different student groups?
 
-```{r raw grades by identity}
+```{r raw grades ~ identity}
 #different identities with raw grades on average across identities 
 
 #calculate overall mean grade for course (will be plotted as an average line)
@@ -224,10 +227,11 @@ dat %>%
   #rename labels to be more interpretable
   mutate(demo_var = factor(demo_var, 
                            labels = c("PEER", "Woman", "FirstGen", "LowIncome", "International", "Transfer"))) %>%
+  add_count(demo_var, name = "n") %>%
   #PLOT
   ggplot(aes(x = demo_var, y = numgrade, color = demo_var)) + 
   #points for mean
-  stat_summary(geom = "point", fun = "mean") + 
+  stat_summary(aes(size = n), geom = "point", fun = "mean") + 
   #add 95% CI errorbars
   stat_summary(geom = "errorbar", fun.data = "mean_cl_normal", width = 0.1) + 
   #plot average line for mean grade
@@ -236,6 +240,36 @@ dat %>%
   labs(x = "Student identity", y = "Average grade", color = "Student identity",
        caption = "Mean ± 95% CI shown \n Dashed line is overall average grade") + 
   theme_bw()
+```
+```{r raw grade ~ ethnicity}
+# raw grade by specific ethnicities
+
+dat %>%
+  filter(crs_name == course_of_interest) %>%
+  #pivot to a long format dataframe
+  pivot_longer(cols = c(white, black_afram, hispanic_latinx, indigenous_am_indian, asian, pacific_islander),
+               names_to = "ethnicity",
+               values_to = "value") %>% 
+  #select all students who do belong to the group of interest
+  filter(value == 1 ) %>%
+  mutate(ethnicity = fct_reorder(ethnicity, numgrade, .fun = "mean")) %>%
+  #PLOT
+  ggplot(aes(x = ethnicity, y = numgrade, color = ethnicity)) + 
+  #points for mean
+  stat_summary(geom = "point", fun = "mean") + 
+  #add 95% CI errorbars
+  stat_summary(geom = "errorbar", fun.data = "mean_cl_normal", width = 0.1) + 
+  #plot average line for mean grade
+  geom_hline(yintercept = mean_grade_coi, linetype = "dashed") +
+  #relabel x axis labels to be more interpretable
+  scale_x_discrete(labels = ethnicity_labels) + 
+  #labels
+  labs(x = "Student identity", y = "Average grade", color = "Student identity",
+       caption = "Mean ± 95% CI shown \n Dashed line is overall average grade") + 
+  coord_flip()+
+  theme_seismic +
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 90, hjust = 1)) 
 ```
 
 ## How does overall prior performance at the university (i.e., GPAO, prior GPA) compare to student outcomes in my course?
@@ -250,7 +284,7 @@ Grade anomalies can be:
 
 SEISMIC projects often use grade point average omitting the course of interest (**GPAO**), because this metric has been found to be the best metric of prior academic preparation in previous studies (compared to high school GPA or standardized test scores, [Koester et al.,2016](https://doi.org/10.48550/arXiv.1608.07565)). GPAO can also be especially useful for transfer students, who may not have a prior GPA at our institution if they just transferred.
 
-```{r grade anomaly by identity}
+```{r grade anomaly ~ identity}
 #different identities with average grade anomaly across identities 
 
 #calculate overall mean grade for course (will be plotted as an average line)
@@ -261,7 +295,7 @@ aga_coi <- mean(dat$numgrade[dat$crs_name == course_of_interest], na.rm = T) -
 dat %>%
   filter(crs_name == course_of_interest) %>%
   #pivot to a long format dataframe
-  pivot_longer(cols = female:lowincomeflag, 
+  pivot_longer(cols = c(ethniccode_cat, female, firstgen, lowincomeflag, international, transfer), 
                names_to = "demo_var",
                values_to = "value") %>% 
   #select all students who do belong to the group of interest
@@ -269,10 +303,11 @@ dat %>%
   #rename labels to be more interpretable
   mutate(demo_var = factor(demo_var, 
                            labels = c("PEER", "Woman", "FirstGen", "LowIncome", "International", "Transfer"))) %>%
+  add_count(demo_var, name = "n") %>%
   #PLOT
   ggplot(aes(x = demo_var, y = numgrade-gpao, color = demo_var)) +   
   #points for mean
-  stat_summary(geom = "point", fun = "mean") + 
+  stat_summary(aes(size = n), geom = "point", fun = "mean") + 
   #add 95% CI errorbars
   stat_summary(geom = "errorbar", fun.data = "mean_cl_normal", width = 0.1) + 
   #plot average line for mean grade
@@ -286,12 +321,46 @@ dat %>%
   theme_seismic
 ```
 
+```{r grade anomaly ~ ethnicity}
+# plot grade anomaly by specific ethnicity
+
+dat %>%
+  filter(crs_name == course_of_interest) %>%
+  #pivot to a long format dataframe
+  pivot_longer(cols = c(white, black_afram, hispanic_latinx, indigenous_am_indian, asian, pacific_islander),
+               names_to = "ethnicity",
+               values_to = "value") %>% 
+  #select all students who do belong to the group of interest
+  filter(value == 1 ) %>%
+  mutate(ethnicity = fct_reorder(ethnicity, numgrade-gpao, .fun = "mean")) %>%
+  add_count(ethnicity, name = "n") %>%
+  #PLOT
+  ggplot(aes(x = ethnicity, y = numgrade-gpao, color = ethnicity)) + 
+  #points for mean
+  stat_summary(aes(size = n), geom = "point", fun = "mean") + 
+  #add 95% CI errorbars
+  stat_summary(geom = "errorbar", fun.data = "mean_cl_normal", width = 0.1) + 
+  #plot average line for mean grade
+  geom_hline(yintercept = aga_coi, linetype = "dashed") +
+  geom_hline(yintercept = 0) + #plot the 0 line
+  #relabel x axis labels to be more interpretable
+  scale_x_discrete(labels = ethnicity_labels) + 
+  scale_size_continuous(trans = "log10", breaks = c(10,100,1000))+ #point size for readability
+  #labels
+  labs(x = "Student identity", y = "Average grade anomaly", color = "Student identity",
+       caption = "Mean ± 95% CI shown \n Dashed line is overall average grade") + 
+  coord_flip()+
+  theme_seismic +
+  theme(legend.position = "bottom", 
+        axis.text.x = element_text(angle = 90, hjust = 1)) 
+```
+
 **Guiding questions:**
 
--   Are students recieving a grade bonus or a grade penalty on average in this course? (see dashed line for overall course average)
+-   Are students receiving a grade bonus or a grade penalty on average in this course? (see dashed line for overall course average)
 -   Are there any marginalized demographic groups that are receiving more of a grade penalty or more of a grade bonus? Reflecting on the course structure and its place in the curriculum context, can you think of any reasons that might be?
 
-## How do course outcomes differ across the spectrum of systemic advantges students may have access to in higher education?
+## How do course outcomes differ across the spectrum of systemic advantages students may have access to in higher education?
 
 How can we view the cumulative effect of systemic advantages students may have access to (conferred by demographic identities) overall in the context of a course?
 
@@ -349,9 +418,10 @@ The below plots show raw grades and grade anomaly partitioned by the number of s
 #raw grades by SAI
 dat %>%
   mutate(sai = as.numeric(sai)) %>%
+  add_count(sai, name = "n") %>% #add sample size per SAI
   filter(crs_name == course_of_interest) %>%
   ggplot(aes(x = sai, y = numgrade, color = sai))+ 
-      stat_summary(geom = "point", fun = "mean", 
+      stat_summary(aes(size = n), geom = "point", fun = "mean", 
                  position = position_dodge(0.2)) + 
     stat_summary(geom = "errorbar", fun.data = "mean_cl_normal", 
                  width = 0.1, position = position_dodge(0.2)) +
@@ -367,9 +437,10 @@ dat %>%
 
 dat %>%
   mutate(sai = as.numeric(sai)) %>%
+  add_count(sai, name = "n") %>% #add sample size per SAI
   filter(crs_name == course_of_interest) %>%
   ggplot(aes(x = sai, y = numgrade-gpao, color = sai))+ 
-      stat_summary(geom = "point", fun = "mean", 
+      stat_summary(aes(size = n), geom = "point", fun = "mean", 
                  position = position_dodge(0.2)) + 
     stat_summary(geom = "errorbar", fun.data = "mean_cl_normal", 
                  width = 0.1, position = position_dodge(0.2)) +
