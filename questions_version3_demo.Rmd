@@ -233,7 +233,8 @@ dat %>%
   #select all students who do belong to the group of interest
   filter(value == 1 ) %>%
   #rename labels to be more interpretable
-  mutate(demo_var = factor(demo_var, 
+ mutate(demo_var = factor(demo_var, 
+                           levels = c("ethniccode_cat","female","firstgen","lowincomeflag","international","transfer"),
                            labels = c("PEER", "Woman", "FirstGen", "LowIncome", "International", "Transfer"))) %>%
   add_count(demo_var, name = "n") %>%
   #PLOT
@@ -267,7 +268,8 @@ dat %>%
   #select all students who do belong to the group of interest
   filter(value == 1 ) %>%
   #rename labels to be more interpretable
-  mutate(demo_var = factor(demo_var, 
+ mutate(demo_var = factor(demo_var, 
+                           levels = c("ethniccode_cat","female","firstgen","lowincomeflag","international","transfer"),
                            labels = c("PEER", "Woman", "FirstGen", "LowIncome", "International", "Transfer"))) %>%
   ggplot(aes(x = demo_var, y = numgrade, fill = demo_var)) + 
   #add density half-plot with the 1st and 3rd quartiles demarcated
@@ -348,8 +350,9 @@ dat %>%
   #select all students who do belong to the group of interest
   filter(value == 1 ) %>%
   #rename labels to be more interpretable
-  mutate(demo_var = factor(demo_var, 
-                           labels = c("PEER", "Woman", "FirstGen", "LowIncome", "International", "Transfer"))) %>%
+ mutate(demo_var = factor(demo_var, 
+                           levels = c("ethniccode_cat","female","firstgen","lowincomeflag","international","transfer"),
+                           labels = c("PEER", "Woman", "FirstGen", "LowIncome", "International", "Transfer")))%>%
   add_count(demo_var, name = "n") %>%
   #PLOT
   ggplot(aes(x = demo_var, y = numgrade-gpao, color = demo_var)) +   
@@ -472,6 +475,16 @@ SAI adds together all of the advantages a student may have across these four dem
 > 💭 Can you think of any other systemic advantages not included in this index that likely influence student's outcomes in a course? What would be the challenges to adding those identities or advantages to this index?
 
 ------------------------------------------------------------------------
+```{r default missing demographics to 0, message=FALSE, warning=FALSE}
+#for SAI calculations, any NA demographic variables will need to be conservatively coded as 0 (defaulted to the majoritarian group)
+#this allows those students to still be included in SAI calculations
+
+#Convert Demographics to 0 (conservative, instead of excluding)
+dat <-
+  dat %>%
+  mutate(across(.cols = c(ethniccode_cat, firstgen, international, female, transfer, lowincomeflag), as.character)) %>%
+  tidyr::replace_na(list(ethniccode_cat = "0", firstgen = "0", international = "0", female = "0", transfer = "0", lowincomeflag = "0"))
+```
 
 ```{r SAI calculation, message=FALSE, warning=FALSE}
 #this code goes through all possible combinations of the 4 advantage axes and assigns an SAI based on that students' values
