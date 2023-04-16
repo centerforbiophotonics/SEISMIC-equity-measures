@@ -60,7 +60,7 @@ What is the makeup of the course by
 
 -   transfer status
 
--   [ STEM major ]{style="color: red;"} (**not currently in plots/demo dataset**)
+-   [STEM major (*not currently in plots/demo dataset*)]{style="color: red;"}
 
 -   international
 
@@ -99,13 +99,14 @@ ggplot(aes(x = demo_var, y = perc, fill = demo_var)) +
   #add barplot for percent
   geom_col(color = "black") + 
   #add labels for actual percent values
-  geom_text(aes(label = round(perc,0)), vjust = -1) + 
+  geom_text(aes(label = round(perc,0)), hjust = -1) + 
   labs(x = "Student identity", y = "Percent of class (%)") + 
   #set y axis to 100
   ylim(0,100)+
   theme_seismic +
   #hide redundant color legend
-  theme(legend.position = "none")
+  theme(legend.position = "none") + 
+  coord_flip()
 ```
 
 ```{r plot specific ethnicities, message=F, warning=F}
@@ -143,11 +144,10 @@ ggplot(aes(x = ethnicity, y = perc, fill = ethnicity)) +
   #ylim
   ylim(0,100)+
   scale_x_discrete(labels = ethnicity_labels) + 
-  coord_flip() + 
   theme_seismic +
   #hide redundant color legend
-  theme(legend.position = "none",
-        axis.text.x = element_text(angle = 90, hjust = 1)) 
+  theme(legend.position = "none") +
+  coord_flip()
 
 ```
 
@@ -247,12 +247,15 @@ dat %>%
   #labels
   labs(x = "Student identity", y = "Average grade", color = "Student identity",
        caption = "Mean ± 95% CI shown \n Dashed line is overall average grade") + 
-  theme_bw()
+  theme_seismic + 
+  coord_flip()
 ```
 
 However, means and standard errors only tell part of the story. We can also examine the full distribution of the grades for each identity. The plot below shows the distribution (density plot), with the majority (25th - 75th percentiles) shaded in the darker color. Means are plotted as points along with standard errors.
 
-```{r raw grade distributions by identity}
+[*To team: what do you think of these plots to show data distribution? Useful? Not useful?*]{style="color: red;"}
+
+```{r raw grade distributions by identity, message=FALSE, warning=FALSE}
 #plots grade distributions, along with means/SEM, for demographic identities
 
 dat %>%
@@ -285,7 +288,7 @@ dat %>%
   coord_flip()
 ```
 
-```{r raw grade ~ ethnicity}
+```{r raw grade ~ ethnicity, message=FALSE, warning=FALSE}
 # raw grade (mean and SEM) by specific ethnicities
 
 dat %>%
@@ -312,8 +315,8 @@ dat %>%
        caption = "Mean ± 95% CI shown \n Dashed line is overall average grade") + 
   coord_flip()+
   theme_seismic +
-  theme(legend.position = "none",
-        axis.text.x = element_text(angle = 90, hjust = 1)) 
+  theme(legend.position = "none") + 
+  coord_flip()
 ```
 
 ## How does overall prior performance at the university (i.e., GPAO, prior GPA) compare to student outcomes in my course?
@@ -328,7 +331,7 @@ Grade anomalies can be:
 
 SEISMIC projects often use grade point average omitting the course of interest (**GPAO**), because this metric has been found to be the best metric of prior academic preparation in previous studies (compared to high school GPA or standardized test scores, [Koester et al.,2016](https://doi.org/10.48550/arXiv.1608.07565)). GPAO can also be especially useful for transfer students, who may not have a prior GPA at our institution if they just transferred.
 
-```{r grade anomaly ~ identity}
+```{r grade anomaly ~ identity, message=FALSE, warning=FALSE}
 #different identities with average grade anomaly across identities 
 
 #calculate overall mean grade for course (will be plotted as an average line)
@@ -358,14 +361,17 @@ dat %>%
   geom_hline(yintercept = aga_coi, linetype = "dashed") +
   #plot line and annotations for penalty vs bonus
   geom_hline(yintercept = 0) +  
-  annotate(geom = "text", x = 1, y = c(0.1,-0.1), label = c("grade bonus", "grade penalty"), color = c("blue", "red"), hjust = -0.1) + 
+  annotate(geom = "text", x = 1, y = c(0.1,-0.1), label = c("grade \nbonus", "grade \npenalty"), color = c("blue", "red"), vjust = -0.1) + 
   #labels
   labs(x = "Student identity", y = "Grade anomaly \n(course grade-GPAO)", color = "Student identity",
        caption = "Mean ± 95% CI shown \n Dashed line is course average grade anomaly") + 
-  theme_seismic
+  theme_seismic + 
+  coord_flip()
 ```
 
-```{r grade anomaly distributions}
+[*Are plotting both boxplots, distributions, AND means useful in a single plot?*]{style="color: red;"}
+
+```{r grade anomaly distributions, message=FALSE, warning=FALSE}
 #grade anomaly distributions 
 
 dat %>%
@@ -384,12 +390,13 @@ dat %>%
   ggdist::stat_slab(side = "right", scale = 0.4, show.legend = F,
                     position = position_dodge(width = 0.8),
                     aes(fill_ramp = after_stat(level)),.width = c(.50, .95,1)) + 
-  #add mean +/- sem piint
-  stat_summary(fun.data = "mean_cl_normal", show.legend = T, 
-               size = 0.3, position = position_dodge2(width = 0.8)) +
   #boxplots too
   geom_boxplot(width = .1,alpha = .5,outlier.alpha=0,
                position = position_dodge(width  = .8),show.legend = FALSE) +
+
+  #add mean +/- sem piint
+  stat_summary(fun.data = "mean_cl_normal", show.legend = T, 
+               size = 0.3, position = position_dodge2(width = 0.8)) +
   #overall average line
   geom_hline(yintercept = aga_coi, linetype = "dashed") + 
   theme_seismic + 
@@ -402,7 +409,7 @@ dat %>%
   coord_flip()
 ```
 
-```{r grade anomaly ~ ethnicity}
+```{r grade anomaly ~ ethnicity, message=FALSE, warning=FALSE}
 # plot grade anomaly by specific ethnicity
 
 dat %>%
@@ -430,10 +437,9 @@ dat %>%
   #labels
   labs(x = "Student identity", y = "Average grade anomaly", color = "Student identity",
        caption = "Mean ± 95% CI shown \n Dashed line is overall average grade") + 
-  coord_flip()+
   theme_seismic +
-  theme(legend.position = "bottom", 
-        axis.text.x = element_text(angle = 90, hjust = 1)) 
+  theme(legend.position = "none") + 
+  coord_flip()
 ```
 
 **Guiding questions:**
@@ -467,7 +473,7 @@ SAI adds together all of the advantages a student may have across these four dem
 
 ------------------------------------------------------------------------
 
-```{r SAI calculation}
+```{r SAI calculation, message=FALSE, warning=FALSE}
 #this code goes through all possible combinations of the 4 advantage axes and assigns an SAI based on that students' values
 #as ethniccode_cat == 1 is the "BIPOC" label, all other categories are considered advantaged 
 dat <-
@@ -495,7 +501,7 @@ dat <-
 
 The below plots show raw grades and grade anomaly partitioned by the number of systemic advantages students have access to.
 
-```{r raw grades by SAI}
+```{r raw grades by SAI, message=FALSE, warning=FALSE}
 #raw grades by SAI
 dat %>%
   mutate(sai = as.numeric(sai)) %>%
@@ -509,7 +515,8 @@ dat %>%
    geom_hline(yintercept = mean_grade_coi, linetype = "dashed") + 
   labs(x = "SAI", y = "Course grade", color = "SAI",
        caption = "Mean ± 95% CI shown \n Dashed line is overall average grade") + 
-  theme_seismic 
+  theme_seismic + 
+  coord_flip()
 
 ```
 
@@ -528,10 +535,11 @@ dat %>%
    geom_hline(yintercept = aga_coi, linetype = "dashed") + 
     #plot line and annotations for penalty vs bonus
   geom_hline(yintercept = 0) +  
-  annotate(geom = "text", x = 0, y = c(0.1,-0.1), label = c("grade bonus", "grade penalty"), color = c("blue", "red"), hjust = -0.1) + 
+  annotate(geom = "text", x = 1, y = c(0.1,-0.1), label = c("grade \nbonus", "grade \npenalty"), color = c("blue", "red"), vjust = -0.1)  + 
   labs(x = "SAI", y = "Grade anomaly \n(course grade - GPAO)", color = "SAI",
        caption = "Mean ± 95% CI shown \n Dashed line is overall average grade") + 
-  theme_seismic
+  theme_seismic + 
+  coord_flip()
 
 ```
 
