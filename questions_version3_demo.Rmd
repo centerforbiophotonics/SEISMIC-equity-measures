@@ -3,7 +3,7 @@ title: "SEISMIC Equity Measures"
 subtitle: "Level 1"
 output:
   rmdformats::readthedown
-date: "2023-03-14"
+date: "`r Sys.Date()`"
 ---
 
 *(This R Markdown is a demo example based upon Questions (version 3) in [this Google Doc](https://docs.google.com/document/d/1TceXPFyIDZ0ZC06XFtYz6fWkgvnNYbpq7F11voeGLFA/edit#heading=h.h9qcp91x0k23)).*
@@ -60,9 +60,7 @@ What is the makeup of the course by
 
 -   transfer status
 
--   STEM major
-
--   in-state
+-   [ STEM major ]{style="color: red;"} (**not currently in plots/demo dataset**)
 
 -   international
 
@@ -78,7 +76,7 @@ dat %>%
   #add n for all students in course
   add_tally(name = "n_course") %>%
   #pivot to a long format dataframe
-  pivot_longer(cols = female:lowincomeflag, 
+  pivot_longer(cols = c(ethniccode_cat, female, firstgen, lowincomeflag, international, transfer), 
                names_to = "demo_var",
                values_to = "value") %>% 
   group_by(demo_var, value) %>% 
@@ -171,11 +169,11 @@ dat %>%
   #add n for all students in course section
   add_count(crs_section, name = "n_section") %>%
   #pivot to a long format dataframe
-  pivot_longer(cols = female:lowincomeflag, 
+  pivot_longer(cols = c(ethniccode_cat, female, firstgen, lowincomeflag, international, transfer), 
                names_to = "demo_var",
                values_to = "value") %>% 
   #group by course section
-  group_by(crs_section, demo_var, value) %>% 
+  group_by(crs_year, crs_semq, demo_var, value) %>% 
   #count sample size by each group, then divide by course total
   summarise(n_total = n(),
             n_course = mean(n_section)) %>% 
@@ -183,21 +181,29 @@ dat %>%
   mutate(perc = n_total/n_course *100) %>% #percent for each level
   #select only students that belong to marginalized backgrounds
   filter(value == 1) %>%
-  #rename labels to be more interpretable
+  #create a semq text label for more clear x axis labels 
+  mutate(semq_text = recode(as.character(crs_semq), "1" = "W", "3" = "Sp", "5" = "SuI", "7" = "SuII", "10" = "F")) %>%
+  #create a crs_section variable to maintain x axis chronological ordering
+  mutate(crs_section = paste0(crs_year, crs_semq)) %>%
+  #create course label that orders readable labels create above chronologically
+  mutate(crs_label = forcats::fct_reorder(as.factor(paste0(semq_text, crs_year)), as.integer(crs_section))) %>%
+  #rename demographic labels to be more interpretable
   mutate(demo_var = factor(demo_var, 
                            levels = c("ethniccode_cat","female","firstgen","lowincomeflag","international","transfer"),
                            labels = c("PEER", "Woman", "FirstGen", "LowIncome", "International", "Transfer"))) %>%
+  #remove missing demographic variables before plotting
+  drop_na(demo_var) %>%
   #PLOT ####
-ggplot(aes(x = as.factor(crs_section), y = perc, color = demo_var)) + 
-  geom_point() + 
+ggplot(aes(x = crs_label, y = perc, color = demo_var)) + 
+  geom_point(aes(shape = semq_text), size = 2) + #shape corresponds to term
   geom_line(aes(group = demo_var)) + 
-  labs(x = "Course Offering", y = "Percent of class (%)",
-       color = "Student identity", 
-       caption = "Offerings shown as year (YYYY) \nand quarter (winter -01, spring-03, fall-10)") + 
+  labs(x = "Course Term", y = "Percent of class (%)",
+       color = "Student identity", shape = NULL) + 
   #set y axis to 100
   ylim(0,100)+
   #optional: separate plots for each demographic variable
   #facet_wrap(~demo_var) + 
+  scale_shape_discrete(labels = c("Fall", "Spring", "Winter")) +
   theme_seismic + 
   theme(axis.text.x = element_text(angle = 90))
 
@@ -212,8 +218,8 @@ ggplot(aes(x = as.factor(crs_section), y = perc, color = demo_var)) +
 
 ## How do course outcomes compare for different student groups?
 
-```{r raw grades ~ identity}
-#different identities with raw grades on average across identities 
+```{r raw grades ~ identity, message=FALSE, warning=FALSE}
+#mean grades (+/-SEM) for different identities
 
 #calculate overall mean grade for course (will be plotted as an average line)
 mean_grade_coi <- mean(dat$numgrade[dat$crs_name == course_of_interest], na.rm = T)
@@ -244,9 +250,11 @@ dat %>%
   theme_bw()
 ```
 
-However, means and standard errors only tell part of the story. We can also examine the full distribution of the grades for each identity. The plot below shows the distribution (density plot), with the majority (25th - 75th percentiles) shaded in the darker color. Means are plotted as points along with standard errors. 
+However, means and standard errors only tell part of the story. We can also examine the full distribution of the grades for each identity. The plot below shows the distribution (density plot), with the majority (25th - 75th percentiles) shaded in the darker color. Means are plotted as points along with standard errors.
 
 ```{r raw grade distributions by identity}
+#plots grade distributions, along with means/SEM, for demographic identities
+
 dat %>%
   filter(crs_name == course_of_interest) %>%
   #pivot to a long format dataframe
@@ -277,9 +285,8 @@ dat %>%
   coord_flip()
 ```
 
-
 ```{r raw grade ~ ethnicity}
-# raw grade by specific ethnicities
+# raw grade (mean and SEM) by specific ethnicities
 
 dat %>%
   filter(crs_name == course_of_interest) %>%
@@ -357,6 +364,7 @@ dat %>%
        caption = "Mean ± 95% CI shown \n Dashed line is course average grade anomaly") + 
   theme_seismic
 ```
+
 ```{r grade anomaly distributions}
 #grade anomaly distributions 
 
