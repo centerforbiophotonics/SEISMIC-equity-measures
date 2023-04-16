@@ -14,6 +14,8 @@ knitr::opts_chunk$set(echo = FALSE, warnings = FALSE, messages = FALSE)
 library(tidyverse)
 library(rmdformats) #output format: readthedown
 library(kableExtra) #pretty html tables
+library(gghalves) #for half-half geoms
+library(ggdist) #for density plots 
 
 #create some plot settings
 theme_seismic <- 
@@ -241,6 +243,41 @@ dat %>%
        caption = "Mean ± 95% CI shown \n Dashed line is overall average grade") + 
   theme_bw()
 ```
+
+However, means and standard errors only tell part of the story. We can also examine the full distribution of the grades for each identity. The plot below shows the distribution (density plot), with the majority (25th - 75th percentiles) shaded in the darker color. Means are plotted as points along with standard errors. 
+
+```{r raw grade distributions by identity}
+dat %>%
+  filter(crs_name == course_of_interest) %>%
+  #pivot to a long format dataframe
+  pivot_longer(cols = c(ethniccode_cat, female, firstgen, lowincomeflag, international, transfer), 
+               names_to = "demo_var",
+               values_to = "value") %>% 
+  #select all students who do belong to the group of interest
+  filter(value == 1 ) %>%
+  #rename labels to be more interpretable
+  mutate(demo_var = factor(demo_var, 
+                           labels = c("PEER", "Woman", "FirstGen", "LowIncome", "International", "Transfer"))) %>%
+  ggplot(aes(x = demo_var, y = numgrade, fill = demo_var)) + 
+  #add density half-plot with the 1st and 3rd quartiles demarcated
+  ggdist::stat_slab(side = "right", scale = 0.4, show.legend = F,
+                    position = position_dodge(width = 0.8),
+                    aes(fill_ramp = after_stat(level)),.width = c(.50, .95,1)) + 
+  #add mean +/- sem piint
+  stat_summary(fun.data = "mean_cl_normal", show.legend = T, 
+               size = 0.3, position = position_dodge2(width = 0.8)) +
+  geom_hline(yintercept = mean_grade_coi, linetype = "dashed") + 
+  theme_seismic + 
+  theme(legend.position = "none") + 
+  guides(fill_ramp = "none") + 
+  labs(x = NULL, y = "Course grade",
+       caption = "Shaded part of distribution is the 1st-3rd quartiles (25-75%iles)
+       \n Points show means +/- SEM",
+       ) + 
+  coord_flip()
+```
+
+
 ```{r raw grade ~ ethnicity}
 # raw grade by specific ethnicities
 
@@ -319,6 +356,42 @@ dat %>%
   labs(x = "Student identity", y = "Grade anomaly \n(course grade-GPAO)", color = "Student identity",
        caption = "Mean ± 95% CI shown \n Dashed line is course average grade anomaly") + 
   theme_seismic
+```
+```{r grade anomaly distributions}
+#grade anomaly distributions 
+
+dat %>%
+  filter(crs_name == course_of_interest) %>%
+  #pivot to a long format dataframe
+  pivot_longer(cols = c(ethniccode_cat, female, firstgen, lowincomeflag, international, transfer), 
+               names_to = "demo_var",
+               values_to = "value") %>% 
+  #select all students who do belong to the group of interest
+  filter(value == 1 ) %>%
+  #rename labels to be more interpretable
+  mutate(demo_var = factor(demo_var, 
+                           labels = c("PEER", "Woman", "FirstGen", "LowIncome", "International", "Transfer"))) %>%
+  ggplot(aes(x = demo_var, y = numgrade-gpao, fill = demo_var)) + 
+  #add density half-plot with the 1st and 3rd quartiles demarcated
+  ggdist::stat_slab(side = "right", scale = 0.4, show.legend = F,
+                    position = position_dodge(width = 0.8),
+                    aes(fill_ramp = after_stat(level)),.width = c(.50, .95,1)) + 
+  #add mean +/- sem piint
+  stat_summary(fun.data = "mean_cl_normal", show.legend = T, 
+               size = 0.3, position = position_dodge2(width = 0.8)) +
+  #boxplots too
+  geom_boxplot(width = .1,alpha = .5,outlier.alpha=0,
+               position = position_dodge(width  = .8),show.legend = FALSE) +
+  #overall average line
+  geom_hline(yintercept = aga_coi, linetype = "dashed") + 
+  theme_seismic + 
+  theme(legend.position = "none") + 
+  guides(fill_ramp = "none") + 
+  labs(x = NULL, y = "Grade anomaly \n (Grade - GPAO)",
+       caption = "Shaded part of distribution is the 1st-3rd quartiles (25-75%iles)
+       \n Points show means +/- SEM",
+       ) + 
+  coord_flip()
 ```
 
 ```{r grade anomaly ~ ethnicity}
@@ -462,5 +535,8 @@ dat %>%
 
 ```{r R coding resources, include = FALSE}
 #R coding resources used
+
+#"fadeplot" variations on raincloud plots
+#https://dallasnova.rbind.io/post/efficient-data-visualization-with-faded-raincloud-plots-delete-boxplot/
 
 ```
