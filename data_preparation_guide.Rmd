@@ -170,6 +170,10 @@ For the code to run, the following variables are required:
 
 *This data dictionary is modified from the original for SEISMIC Working Group 1 ("Measurements") originally developed by S. Fiorini, R. Matz, and B. Koester.*
 
+### Difficult to access data for a specific demographic variable?
+If it is difficult to access data for one of the following demographic variables: 
+`female`, `international`, `firstgen`, `transfer`, or `lowincomeflag`, it is okay to enter NA for that entire column and exclude that specific demographic variable from your analysis. The code and plots created in the report should still run. Just be sure you have entered any missing variables as *NA* (and not as another variable, such as -99) and that the variable is still present in the dataframe as a column (even if full of *NA*).
+
 # Exclusion Criteria
 
 For the SELC grant project Level 1 analyses, these are the initial exclusion criteria (which filters / data to exclude from our dataset) :
