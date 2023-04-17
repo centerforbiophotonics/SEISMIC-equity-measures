@@ -108,6 +108,11 @@ ggplot(aes(x = demo_var, y = perc, fill = demo_var)) +
   theme(legend.position = "none") + 
   coord_flip()
 ```
+Persons historically excluded based on ethnicity or race (PEER; Asai 2020) is a category that includes Black/African-American, Indigenous/Native American, and Hispanic/Latino/a/x students. The definition of PEER closely aligns with the defintiion of "underrepresented minorities" used by the National Science Foundation (NSF 2019). 
+
+However, the different racial and ethnic groups included in the PEER label may have different experiences in the STEM courses and this may lead to more or less equitable outcomes for these groups. For this reason, it is also important to disaggregate our data by student ethnicity. 
+
+The following shows the specific racial/ethnicity breakdown of students in the course of interest. 
 
 ```{r plot specific ethnicities, message=F, warning=F}
 #Create a list of labels of ethnicities to be more interpretable for x axis labels
@@ -154,7 +159,7 @@ ggplot(aes(x = ethnicity, y = perc, fill = ethnicity)) +
 **Guiding questions:**
 
 -   Do any of the percentages of students in the course surprise you? In what way?
--   Given the demographic breakdown of your course, are there any changes or groups you would be specifically interested in examining course outcomes for?
+-   Given the demographic breakdown of your course, are there any groups you would be specifically interested in examining course outcomes for?
 -   Do you think it could be useful to show the demographic breakdown to your students? How might you present this data to your students?
 
 ## How have these demographics changed over time?
@@ -302,10 +307,11 @@ dat %>%
   #select all students who do belong to the group of interest
   filter(value == 1 ) %>%
   mutate(ethnicity = fct_reorder(ethnicity, numgrade, .fun = "mean")) %>%
+  add_count(ethnicity, name = "n") %>%
   #PLOT
   ggplot(aes(x = ethnicity, y = numgrade, color = ethnicity)) + 
   #points for mean
-  stat_summary(geom = "point", fun = "mean") + 
+  stat_summary(aes(size = n), geom = "point", fun = "mean") + 
   #add 95% CI errorbars
   stat_summary(geom = "errorbar", fun.data = "mean_cl_normal", width = 0.1) + 
   #plot average line for mean grade
