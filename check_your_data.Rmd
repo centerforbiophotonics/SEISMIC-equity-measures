@@ -30,7 +30,7 @@ First, load your data in the chunk below, changing the file directory to where y
 ```{r load your data}
 #load your data
 #change the `file = [directory]` to the directory where your file is located
-dat <- read.csv("~/Downloads/synthetic_data_SEISMIC-format_BIO300_2023-04-08.csv")
+dat <- read.csv("~/Downloads/synthetic_data_SEISMIC-format_BIO300_2023-04-27.csv")
 ```
 
 ### Check all required variables are present
@@ -41,7 +41,7 @@ If any of the variables output from the following chunk say "FALSE", the variabl
 
 ```{r check required variables}
 #required variable list from Data Dictionary in Data Preparation Guide
- required_vars <- c("st_id","female","ethniccode_cat", "white", "black_afram", "hispanic_latinx", "indigenous_am_indian", 'asian', 'pacific_islander', "firstgen","lowincomeflag","transfer", "international", "crs_name", "crs_term", "crs_year", "crs_semq","crs_section", "numgrade", "gpao")
+ required_vars <- c("st_id","female","ethniccode_cat", "white", "black_afram", "hispanic_latinx", "indigenous_am_indian", 'asian', 'pacific_islander', "firstgen","lowincomeflag","transfer", "international", "crs_name", "crs_term", "crs_year", "crs_semq", "major", "stem_major", "numgrade", "gpao")
 
  #check that each variable is in the dataset
 as.data.frame(required_vars) %>%
@@ -76,6 +76,10 @@ Next, let's view the variable ranges and expected values. We'll begin with the d
 
 -   international
 
+-   crs_retake
+
+-   stem_major
+
 The code chunk below will check that the values for these variables are either 0,1, or NA.
 
 ```{r check demographic values}
@@ -83,7 +87,7 @@ The code chunk below will check that the values for these variables are either 0
 demo_vars <-
 dat %>%
   select(female, firstgen, lowincomeflag, transfer, international,
-         white, black_afram, hispanic_latinx, indigenous_am_indian, asian, pacific_islander, crs_retake)
+         white, black_afram, hispanic_latinx, indigenous_am_indian, asian, pacific_islander, crs_retake, stem_major)
 
 #check that each of these variables is coded using binary (or NA is properly entered as NA)
 apply(demo_vars,2,function(x) { all(x %in% 0:1 | is.na(x))})
