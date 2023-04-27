@@ -60,7 +60,7 @@ What is the makeup of the course by
 
 -   transfer status
 
--   [STEM major (*not currently in plots/demo dataset*)]{style="color: red;"}
+-   STEM major
 
 -   international
 
@@ -76,7 +76,7 @@ dat %>%
   #add n for all students in course
   add_tally(name = "n_course") %>%
   #pivot to a long format dataframe
-  pivot_longer(cols = c(ethniccode_cat, female, firstgen, lowincomeflag, international, transfer), 
+  pivot_longer(cols = c(ethniccode_cat, female, firstgen, lowincomeflag, international, transfer, stem_major), 
                names_to = "demo_var",
                values_to = "value") %>% 
   group_by(demo_var, value) %>% 
@@ -93,8 +93,8 @@ dat %>%
 demog_percent %>%
   #rename labels to be more interpretable
   mutate(demo_var = factor(demo_var, 
-                           levels = c("ethniccode_cat","female","firstgen","lowincomeflag","international","transfer"),
-                           labels = c("PEER", "Woman", "FirstGen", "LowIncome", "International", "Transfer"))) %>%
+                           levels = c("ethniccode_cat","female","firstgen","lowincomeflag","international","transfer", "stem_major"),
+                           labels = c("PEER", "Woman", "FirstGen", "LowIncome", "International", "Transfer", "STEM Major"))) %>%
 ggplot(aes(x = demo_var, y = perc, fill = demo_var)) + 
   #add barplot for percent
   geom_col(color = "black") + 
@@ -174,7 +174,7 @@ dat %>%
   #add n for all students in course section
   add_count(crs_section, name = "n_section") %>%
   #pivot to a long format dataframe
-  pivot_longer(cols = c(ethniccode_cat, female, firstgen, lowincomeflag, international, transfer), 
+  pivot_longer(cols = c(ethniccode_cat, female, firstgen, lowincomeflag, international, transfer, stem_major), 
                names_to = "demo_var",
                values_to = "value") %>% 
   #group by course section
@@ -194,8 +194,8 @@ dat %>%
   mutate(crs_label = forcats::fct_reorder(as.factor(paste0(semq_text, crs_year)), as.integer(crs_section))) %>%
   #rename demographic labels to be more interpretable
   mutate(demo_var = factor(demo_var, 
-                           levels = c("ethniccode_cat","female","firstgen","lowincomeflag","international","transfer"),
-                           labels = c("PEER", "Woman", "FirstGen", "LowIncome", "International", "Transfer"))) %>%
+                           levels = c("ethniccode_cat","female","firstgen","lowincomeflag","international","transfer", "stem_major"),
+                           labels = c("PEER", "Woman", "FirstGen", "LowIncome", "International", "Transfer", "STEM Major"))) %>%
   #remove missing demographic variables before plotting
   drop_na(demo_var) %>%
   #PLOT ####
@@ -232,15 +232,15 @@ mean_grade_coi <- mean(dat$numgrade[dat$crs_name == course_of_interest], na.rm =
 dat %>%
   filter(crs_name == course_of_interest) %>%
   #pivot to a long format dataframe
-  pivot_longer(cols = c(ethniccode_cat, female, firstgen, lowincomeflag, international, transfer), 
+  pivot_longer(cols = c(ethniccode_cat, female, firstgen, lowincomeflag, international, transfer, stem_major), 
                names_to = "demo_var",
                values_to = "value") %>% 
   #select all students who do belong to the group of interest
   filter(value == 1 ) %>%
   #rename labels to be more interpretable
  mutate(demo_var = factor(demo_var, 
-                           levels = c("ethniccode_cat","female","firstgen","lowincomeflag","international","transfer"),
-                           labels = c("PEER", "Woman", "FirstGen", "LowIncome", "International", "Transfer"))) %>%
+                           levels = c("ethniccode_cat","female","firstgen","lowincomeflag","international","transfer", "stem_major"),
+                           labels = c("PEER", "Woman", "FirstGen", "LowIncome", "International", "Transfer", "STEM Major"))) %>%
   add_count(demo_var, name = "n") %>%
   #PLOT
   ggplot(aes(x = demo_var, y = numgrade, color = demo_var)) + 
@@ -267,15 +267,15 @@ However, means and standard errors only tell part of the story. We can also exam
 dat %>%
   filter(crs_name == course_of_interest) %>%
   #pivot to a long format dataframe
-  pivot_longer(cols = c(ethniccode_cat, female, firstgen, lowincomeflag, international, transfer), 
+  pivot_longer(cols = c(ethniccode_cat, female, firstgen, lowincomeflag, international, transfer, stem_major), 
                names_to = "demo_var",
                values_to = "value") %>% 
   #select all students who do belong to the group of interest
   filter(value == 1 ) %>%
   #rename labels to be more interpretable
  mutate(demo_var = factor(demo_var, 
-                           levels = c("ethniccode_cat","female","firstgen","lowincomeflag","international","transfer"),
-                           labels = c("PEER", "Woman", "FirstGen", "LowIncome", "International", "Transfer"))) %>%
+                           levels = c("ethniccode_cat","female","firstgen","lowincomeflag","international","transfer", "stem_major"),
+                           labels = c("PEER", "Woman", "FirstGen", "LowIncome", "International", "Transfer", "STEM Major"))) %>%
   ggplot(aes(x = demo_var, y = numgrade, fill = demo_var)) + 
   #add density half-plot with the 1st and 3rd quartiles demarcated
   ggdist::stat_slab(side = "right", scale = 0.4, show.legend = F,
@@ -350,15 +350,15 @@ aga_coi <- mean(dat$numgrade[dat$crs_name == course_of_interest], na.rm = T) -
 dat %>%
   filter(crs_name == course_of_interest) %>%
   #pivot to a long format dataframe
-  pivot_longer(cols = c(ethniccode_cat, female, firstgen, lowincomeflag, international, transfer), 
+  pivot_longer(cols = c(ethniccode_cat, female, firstgen, lowincomeflag, international, transfer, stem_major), 
                names_to = "demo_var",
                values_to = "value") %>% 
   #select all students who do belong to the group of interest
   filter(value == 1 ) %>%
   #rename labels to be more interpretable
  mutate(demo_var = factor(demo_var, 
-                           levels = c("ethniccode_cat","female","firstgen","lowincomeflag","international","transfer"),
-                           labels = c("PEER", "Woman", "FirstGen", "LowIncome", "International", "Transfer")))%>%
+                           levels = c("ethniccode_cat","female","firstgen","lowincomeflag","international","transfer", "stem_major"),
+                           labels = c("PEER", "Woman", "FirstGen", "LowIncome", "International", "Transfer", "STEM Major")))%>%
   add_count(demo_var, name = "n") %>%
   #PLOT
   ggplot(aes(x = demo_var, y = numgrade-gpao, color = demo_var)) +   
@@ -386,14 +386,14 @@ dat %>%
 dat %>%
   filter(crs_name == course_of_interest) %>%
   #pivot to a long format dataframe
-  pivot_longer(cols = c(ethniccode_cat, female, firstgen, lowincomeflag, international, transfer), 
+  pivot_longer(cols = c(ethniccode_cat, female, firstgen, lowincomeflag, international, transfer, stem_major), 
                names_to = "demo_var",
                values_to = "value") %>% 
   #select all students who do belong to the group of interest
   filter(value == 1 ) %>%
   #rename labels to be more interpretable
   mutate(demo_var = factor(demo_var, 
-                           labels = c("PEER", "Woman", "FirstGen", "LowIncome", "International", "Transfer"))) %>%
+                           labels = c("PEER", "Woman", "FirstGen", "LowIncome", "International", "Transfer", "STEM Major"))) %>%
   ggplot(aes(x = demo_var, y = numgrade-gpao, fill = demo_var)) + 
   #add density half-plot with the 1st and 3rd quartiles demarcated
   ggdist::stat_slab(side = "right", scale = 0.4, show.legend = F,
@@ -488,8 +488,8 @@ SAI adds together all of the advantages a student may have across these four dem
 #Convert Demographics to 0 (conservative, instead of excluding)
 dat <-
   dat %>%
-  mutate(across(.cols = c(ethniccode_cat, firstgen, international, female, transfer, lowincomeflag), as.character)) %>%
-  tidyr::replace_na(list(ethniccode_cat = "0", firstgen = "0", international = "0", female = "0", transfer = "0", lowincomeflag = "0"))
+  mutate(across(.cols = c(ethniccode_cat, firstgen, female, lowincomeflag), as.character)) %>%
+  tidyr::replace_na(list(ethniccode_cat = "0", firstgen = "0", female = "0", lowincomeflag = "0"))
 ```
 
 ```{r SAI calculation, message=FALSE, warning=FALSE}
