@@ -321,7 +321,7 @@ dat %>%
   guides(fill_ramp = "none") + 
   labs(x = NULL, y = "Course grade",
        caption = "Shaded part of distribution is the 1st-3rd quartiles (25-75%iles)
-       \n Points show means +/- SEM",
+       \n Points show mean ± 95% CI ",
        ) + 
   coord_flip()
 ```
