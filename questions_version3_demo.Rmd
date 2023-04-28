@@ -1,12 +1,16 @@
 ---
-title: "SEISMIC Equity Measures"
-subtitle: "Level 1"
+title: "SEISMIC Equity Learning Communities "
+subtitle: "Level 1 Report"
 output:
   rmdformats::readthedown
 date: "`r Sys.Date()`"
 ---
+# Introduction
 
-*(This R Markdown is a demo example based upon Questions (version 3) in [this Google Doc](https://docs.google.com/document/d/1TceXPFyIDZ0ZC06XFtYz6fWkgvnNYbpq7F11voeGLFA/edit#heading=h.h9qcp91x0k23)).*
+This report is the first in a series created for the SEISMIC Equity Learning Communities (SELC) project. The goal of this report, as part of the SELC project, is to allow faculty and department leaders to view institutional data from their courses of interest to evaluate whether students experience equitable outcomes in those courses. This first "Level 1" report will give an overview of the demographic composition of these courses across a range of student identities, show how course grades map onto these demographics and how these patterns have changed over time, and will also compare course grades to students' other coursework through the concept of grade anomaly. This data is meant to facilitate discussions about how to improve equitable outcomes and elevate pedagogical techniques that might support historically marginalized students. 
+
+We want to emphasize that the student identities explored here are not exhaustive. There are many identities that may influence students' experiences, and thus outcomes, in the classroom, and only some of these identities are collected in registrar-available or quantitative data. Quantitative data is readily-available and allows us to quickly show patterns across student groups or over time. However, aspects of quantitative analysis - such as the binary categorizations, or analyzing statistics aggregated over whole groups - can obscure many diverse and intersectional aspects of an individual student's experiences. As you read through the report, remember that each data point represents an individual who deserves the opportunity to succeed in these courses. 
+
 
 ```{r setup, include=FALSE}
 #hide code, warnings, and messages by default
@@ -16,6 +20,7 @@ library(rmdformats) #output format: readthedown
 library(kableExtra) #pretty html tables
 library(gghalves) #for half-half geoms
 library(ggdist) #for density plots 
+library(cowplot) #for two panel plots
 
 #create some plot settings
 theme_seismic <- 
@@ -29,13 +34,13 @@ theme_seismic <-
 ```{r load data, echo = FALSE}
 #load data 
 #change this file name to the source of your properly formatted data file 
-dat <- read.csv(file = "~/Downloads/synthetic_data_SEISMIC-format_BIO300_2023-04-08.csv")
+dat <- read.csv(file = "~/Downloads/synthetic_data_SEISMIC-format_BIO300_2023-04-27.csv")
 ```
 
 ```{r select course of interest, results = "asis"}
 #if the dataset has more than one course in it, define the course of interest here
 #what you enter must match the entry in the dataset
-course_of_interest <- "BIS101"
+course_of_interest <- "BIO300"
 
 #this command will include the selected course of interest in the R markdown report. 
 #Do not edit this line:
@@ -46,25 +51,19 @@ cat(paste("The course of interest is:", course_of_interest))
 cat("\n", paste("The range for this data is:", min(dat$crs_year), "-", max(dat$crs_year)))
 ```
 
+```{r define majors of interest, include = FALSE}
+majors_of_interest <- c("Biological Sciences", "Chemistry")
+```
+
 # Who is in this course?
 
-What is the makeup of the course by
+Before evaluating student course outcomes, it is important to understand: who takes this course? What demographic and academic groups do students in this course hold? 
 
--   race/ethnicity
+The plot below shows the percent of students across all terms of the course of interest that hold the following identities: declared a STEM major, transferred from another 2- or 4- year institution, are international students or are permament residents, come from a low socioeconomic family background, are the first in their family to go to college or pursue a Bachelor's degree (first-generation, or FirstGen), are women, or come from a background historically excluded from science based on ethnicity and/or race (PEER; Asai, 2020).
 
--   gender
+Note that these identities are not mutually exclusive; a single student can belong to any or all of these groups.
 
--   first-generation status
-
--   socioeconomic status
-
--   transfer status
-
--   STEM major
-
--   international
-
-```{r demographics bar plot, message=FALSE, warning=FALSE}
+```{r percent by identity, message=FALSE, warning=FALSE}
 #bar plot with percent of all students in the class by demographics
 
 #underlying table
@@ -110,11 +109,11 @@ ggplot(aes(x = demo_var, y = perc, fill = demo_var)) +
 ```
 Persons historically excluded based on ethnicity or race (PEER; Asai 2020) is a category that includes Black/African-American, Indigenous/Native American, and Hispanic/Latino/a/x students. The definition of PEER closely aligns with the defintiion of "underrepresented minorities" used by the National Science Foundation (NSF 2019). 
 
-However, the different racial and ethnic groups included in the PEER label may have different experiences in the STEM courses and this may lead to more or less equitable outcomes for these groups. For this reason, it is also important to disaggregate our data by student ethnicity. 
+However, the different racial and ethnic groups included in the PEER label may have different experiences in the STEM courses. These diverse experiences may be masked by the overall PEER/non-PEER categorization; certain ethnicities may experience more or less equitable outcomes. For this reason, it is also important to disaggregate our data by student ethnicity. 
 
-The following shows the specific racial/ethnicity breakdown of students in the course of interest. 
+The following plot shows the percent of students in the course of interest (across all terms), broken down by specific racial/ethnicity.
 
-```{r plot specific ethnicities, message=F, warning=F}
+```{r percent by ethnicity, message=F, warning=F}
 #Create a list of labels of ethnicities to be more interpretable for x axis labels
 ethnicity_labels <- c("white"= "White", "black_afram" = "Black/African-American", "hispanic_latinx" = "Hispanic/Latinx/Chicanx", "indigenous_am_indian" = "Indigenous/American Indian", "asian" = "Asian", 
                       "pacific_islander" = "Pacific Islander/Native Hawaiian") 
@@ -159,12 +158,17 @@ ggplot(aes(x = ethnicity, y = perc, fill = ethnicity)) +
 **Guiding questions:**
 
 -   Do any of the percentages of students in the course surprise you? In what way?
+- What groups are *not* included in these figures? 
 -   Given the demographic breakdown of your course, are there any groups you would be specifically interested in examining course outcomes for?
 -   Do you think it could be useful to show the demographic breakdown to your students? How might you present this data to your students?
 
 ## How have these demographics changed over time?
 
-```{r demographics over time, message=FALSE, warning=FALSE}
+While overall percentages are informative, we can also examine trends in representation of these different student groups across course terms.
+
+The below plot shows the percent of students in *each term* of the coures of interest across the range of terms in the dataset. Student identities are shown in different colored lines over time. Individual terms (winter, spring, summer or fall) are labeled on the x-axis. 
+
+```{r percent by identity - over time, message=FALSE, warning=FALSE}
 #different identities with the percent over time
   #could be facet grid or not
 
@@ -187,7 +191,7 @@ dat %>%
   #select only students that belong to marginalized backgrounds
   filter(value == 1) %>%
   #create a semq text label for more clear x axis labels 
-  mutate(semq_text = recode(as.character(crs_semq), "1" = "W", "3" = "Sp", "5" = "SuI", "7" = "SuII", "10" = "F")) %>%
+  mutate(semq_text = recode(as.character(crs_semq), "1" = "W", "01" = "W", "03"= "Sp", "3" = "Sp", "05" = "SuI", "5" = "SuI", "07" = "SuII", "7" = "SuII", "10" = "F")) %>%
   #create a crs_section variable to maintain x axis chronological ordering
   mutate(crs_section = paste0(crs_year, crs_semq)) %>%
   #create course label that orders readable labels create above chronologically
@@ -198,17 +202,15 @@ dat %>%
                            labels = c("PEER", "Woman", "FirstGen", "LowIncome", "International", "Transfer", "STEM Major"))) %>%
   #remove missing demographic variables before plotting
   drop_na(demo_var) %>%
-  #PLOT ####
+  #PLOT 
 ggplot(aes(x = crs_label, y = perc, color = demo_var)) + 
   geom_point(aes(shape = semq_text), size = 2) + #shape corresponds to term
   geom_line(aes(group = demo_var)) + 
   labs(x = "Course Term", y = "Percent of class (%)",
        color = "Student identity", shape = NULL) + 
-  #set y axis to 100
-  ylim(0,100)+
   #optional: separate plots for each demographic variable
   #facet_wrap(~demo_var) + 
-  scale_shape_discrete(labels = c("Fall", "Spring", "Winter")) +
+  scale_shape_discrete(labels = c("F" = "Fall", "Sp" = "Spring", "W" = "Winter", "SuI" = "Summer I", "SuII" = "Summer II")) +
   theme_seismic + 
   theme(axis.text.x = element_text(angle = 90))
 
@@ -217,7 +219,38 @@ ggplot(aes(x = crs_label, y = perc, color = demo_var)) +
 **Guiding questions:**
 
 -   What groups, if any, are growing in the classroom in recent years?
+- Are there any yearly patterns or differences between summer terms and main terms?
 -   Are there any change to the classroom course content or structure that could better meet the needs or specific challenges of these groups?
+
+### Student Majors 
+
+```{r percent ~ majors of interest, message=FALSE, warning=FALSE}
+#plot of the percent of only majors of interest (defined above)
+
+dat %>% 
+  #select course of interest only
+  filter(crs_name == course_of_interest) |>
+  #add n for all students in course
+  add_tally(name = "n_course") %>%
+  #select majors of interest only (defined above)
+  filter(major %in% majors_of_interest) %>%
+  group_by(major, stem_major) %>% 
+  #count sample size by each group, then divide by course total
+  summarise(n_total = n(),
+            n_course = mean(n_course)) %>% 
+  #convert to percent
+  mutate(perc = n_total/n_course *100) |> #percent for each level
+  ggplot(aes(x = major, y = perc, fill = major)) + 
+  #add barplot for percent
+  geom_col(color = "black") + 
+  #add labels for actual percent values
+  geom_text(aes(label = round(perc,0)), hjust = 1.2) + 
+  labs(x = "Major", y = "Percent of class (%)") + 
+  theme_seismic +
+  #hide redundant color legend
+  theme(legend.position = "none") + 
+  coord_flip()
+```
 
 # Grades in this course
 
@@ -258,8 +291,6 @@ dat %>%
 ```
 
 However, means and standard errors only tell part of the story. We can also examine the full distribution of the grades for each identity. The plot below shows the distribution (density plot), with the majority (25th - 75th percentiles) shaded in the darker color. Means are plotted as points along with standard errors.
-
-[*To team: what do you think of these plots to show data distribution? Useful? Not useful?*]{style="color: red;"}
 
 ```{r raw grade distributions by identity, message=FALSE, warning=FALSE}
 #plots grade distributions, along with means/SEM, for demographic identities
@@ -567,6 +598,11 @@ dat %>%
 -   Are different levels of SAI significantly different from each other in terms of course outcomes (i.e., do 95% confidence intervals overlap)? Is there a linear relationship between SAI and grade, or is the relationship more mixed? Is there a point where students fall "below" average grades or grade anomalies? How can we better serve those students in this course?
 
 -   If we see differences across levels of SAI, what elements of the course structure might lead to some of these differences with student systemic advantages?
+
+
+### Acknowledgements
+
+This report is heavily inspired by the Foundational Course Initiative reports from the University of Michigan, created by Dr. Heather Rypkema. 
 
 ```{r R coding resources, include = FALSE}
 #R coding resources used
