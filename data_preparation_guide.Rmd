@@ -28,7 +28,7 @@ Below is an example from the synthetic dataset. The first 3 columns, `crs_name`,
 **Note: The exact order in your dataset will not matter for running the code - only that all of the variables are present and named as described below.**
 
 ```{r load synthetic data, echo=FALSE, paged.print=TRUE}
-synthdat <- read.csv(file = "~/Downloads/synthetic_data_SEISMIC-format_BIO300_2023-04-27.csv")
+synthdat <- read.csv(file = "~/Downloads/synthetic_data_SEISMIC-format_BIO300_2023-04-29.csv")
 
 synthdat %>%
   mutate(crs_retake = 0) %>%
