@@ -610,7 +610,7 @@ ggplot(aes(x = crs_label, y = numgrade, color = demo_var)) +
 #issue: aes(size = n_section) does not seem to be working in stat_summary
 ```
 
-
+[*Victoria has made changes up to this point as of 4/29/2023*]{style="color: red;"}
 
 # Comparing course grades to grades in other courses
 
