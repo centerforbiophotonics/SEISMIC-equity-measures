@@ -52,11 +52,11 @@ crs_term,character,"Academic term the course was offered. Any format can be used
 ,,"Note: specific course years, semesters/quarters, and sections are stored in other variables."
 crs_year,numeric,Calendar year the course was offered. Enter in “YYYY” format.
 crs_semq,numeric,Semester or quarter the course was offered. Use the following notation:
-,,01: Spring or Winter semester; Winter quarter (UC)
-,,03: Spring quarter (UC)
-,,"05: Summer session, or Summer session 1/I"
-,,07: Summer session 2/II
-,,10: Fall semester or Fall quarter (UCs)
+,,1:  Winter semester; Winter quarter (UC)
+,,2: Spring semester or Spring quarter (UC)
+,,"3: Summer session, or Summer session 1/I"
+,,4: Summer session 2/II
+,,5: Fall semester or Fall quarter (UCs)
 numgrade,numeric,Student’s final course grade in the course listed in crs_name and term in crs_term
 ,,Please convert to a numeric grade using your institution’s grading conventions. (Example scale from UC Davis here)
 ,,Note: Typically ranges from 0-4.0

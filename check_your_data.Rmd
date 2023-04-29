@@ -165,7 +165,7 @@ We will also check if `crs_semq`, which stores information about semester or qua
 
 ```{r check crs_semq variable}
 #check that crs_semq is in the allowed values
-all(dat$crs_semq %in% c("01","03","05","07","10") | is.na(dat$crs_semq))
+all(as.numeric(dat$crs_semq) %in% c(1:5) | is.na(dat$crs_semq))
 
 #return a count of all values of crs_semq
 dat %>% count(crs_semq)
