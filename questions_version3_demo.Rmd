@@ -38,7 +38,7 @@ seismic_colors <- c("#eb7e36","#4671c6","#70ac49","#a6a6a6","#ffbe07", "#429dda"
 ```{r load data, echo = FALSE}
 #load data 
 #change this file name to the source of your properly formatted data file 
-dat <- read.csv(file = "~/Downloads/synthetic_data_SEISMIC-format_BIO300_2023-04-27.csv")
+dat <- read.csv(file = "~/Downloads/synthetic_data_SEISMIC-format_BIO300_2023-04-29.csv")
 ```
 
 ```{r select course of interest, results = "asis"}
@@ -201,7 +201,7 @@ dat %>%
   #select only students that belong to marginalized backgrounds
   filter(value == 1) %>%
   #create a semq text label for more clear x axis labels 
-  mutate(semq_text = recode(as.character(crs_semq), "1" = "W", "01" = "W", "03"= "Sp", "3" = "Sp", "05" = "SuI", "5" = "SuI", "07" = "SuII", "7" = "SuII", "10" = "F")) %>%
+  mutate(semq_text = recode(as.character(crs_semq), "1" = "W", "2" = "Sp", "3" = "SuI", "4" = "SuII", "5" = "F")) %>%
   #create a crs_section variable to maintain x axis chronological ordering
   mutate(crs_section = paste0(crs_year, crs_semq)) %>%
   #create course label that orders readable labels create above chronologically
@@ -479,17 +479,92 @@ dat %>%
 
 -  What additional information about this course or these students would you want to collect to answer these questions?
 
-### How have grades across student groups changed over time?
+## How have grades across student groups changed over time?
 
-We can also evaluate how grading and grade distributions have changed over time in this course. 
+We can also evaluate how grading and grade distributions have changed over time in this course.
 
-```{r overall grade distribution over time, warning = FALSE, message= FALSE}
+Below, we can see general trends in grade distribution over time, where the distribution of grades is shown as a density plot. The color of the line represents the term. 
+
+```{r overall grade distribution - over time, warning = FALSE, message= FALSE}
+#overall grade distribution as a density plot over time (color = terms)
+
+dat %>%
+  filter(crs_name == course_of_interest) %>%
+    #create a semq text label for more clear x axis labels 
+  mutate(semq_text = recode(as.character(crs_semq), "1" = "W", "2" = "Sp", "3" = "SuI", "4" = "SuII", "5" = "F")) %>%
+  #create a crs_section variable to maintain x axis chronological ordering
+  mutate(crs_section = paste0(crs_year, crs_semq)) %>%
+  #create course label that orders readable labels create above chronologically
+  mutate(crs_label = forcats::fct_reorder(as.factor(paste0(semq_text, crs_year)), as.integer(crs_section))) %>%
+ ggplot(aes(x = numgrade)) + 
+  geom_density(aes(color = crs_label), alpha = 0.3) +
+  labs(x = "Course Grade (numeric scale)", y = "Density", color = "Term") + 
+  theme_seismic
 
 ```
 
-The below plot shows the trends over time for each student identity (indicated by color), with points representing mean grades for all students of that identity in that term, and errorbars are the 95% confidence interval. 
+The below plot shows the trends over time for each student identity (each identity has its own separate plot), with points representing mean grades for all students of that identity in that term, and errorbars are the 95% confidence interval. The majoritarian group (i.e., students who do not hold the indicated identity) is shown in gray across all plots. The overall course average, across all students and all terms, is shown with a dashed line. 
 
-```{r mean grades by identity - over time, waring = FALSE, message= FALSE}
+```{r mean grades by identity - over time (facets), message= FALSE, warning=FALSE}
+dat %>%
+  #filter course of interest
+  filter(crs_name == course_of_interest) %>%
+  #create a true "PEER" variable that compares PEER to white/Asian combined
+  mutate(peer = ifelse(ethniccode_cat == 1, 1, 0)) %>%
+  #create a semq text label for more clear x axis labels 
+  mutate(semq_text = recode(as.character(crs_semq), "1" = "W", "2" = "Sp", "3" = "SuI", "4" = "SuII", "5" = "F")) %>%
+  #create a crs_section variable to maintain x axis chronological ordering
+  mutate(crs_section = paste0(crs_year, crs_semq)) %>%
+  #create course label that orders readable labels create above chronologically
+  mutate(crs_label = forcats::fct_reorder(as.factor(paste0(semq_text, crs_year)), as.integer(crs_section))) %>%
+  #pivot to a long format dataframe
+  pivot_longer(cols = c(peer, female, firstgen, lowincomeflag, international, transfer, stem_major), 
+               names_to = "demo_var",
+               values_to = "value")  %>%
+  #calculate sample size for each group
+  add_count(demo_var, value, name = "n") %>%
+  #create a color code grouping based on demographic variable, with color for minoritized groups only
+  mutate(color_code = ifelse(value == 0, "majority", demo_var)) %>%
+  #rename labels to be more interpretable
+  mutate(demo_var = factor(demo_var, 
+                           levels = c("peer","female","firstgen","lowincomeflag","international","transfer", "stem_major"),
+                           labels = c("PEER", "Woman", "FirstGen", "LowIncome", "International", "Transfer", "STEM Major"))) %>%
+
+  #remove missing demographic variables before plotting
+  drop_na(demo_var) %>%
+  #PLOT 
+  ggplot(aes(x = crs_label, y = numgrade, color = color_code, shape = as.factor(value))) + 
+  #mean +/- 95% CI errorbars
+  stat_summary(fun.data = "mean_cl_normal") + 
+  #lines that connect each group over time
+  stat_summary(geom = "line", fun.data = "mean_cl_normal", aes(group = interaction(demo_var, value))) + 
+  labs(x = "Course Term", y = "Course grade",
+       color = "Student identity", shape = NULL) + 
+  #add average line for mean grade
+  geom_hline(yintercept = mean_grade_coi, linetype = "dashed") +
+  #optional: separate plots for each demographic variable (note: plot very messy w/o this)
+  facet_wrap(~demo_var) + 
+  #use seismic color palette
+  scale_color_manual(values = c("majority" = "gray",
+                                "peer" = "#eb7e36", "female" = "#4671c6", "firstgen" = "#70ac49", "lowincomeflag" = "black", "international" = "#ffbe07", "transfer" = "#429dda", "stem_major" = "#B35050")) + 
+  #make shape legend more interpretable
+  scale_shape_discrete(name = "Student holds identity?", labels = c("0" = "no", "1" = "yes")) + 
+  theme_seismic + 
+  theme(axis.text.x = element_text(angle = 90)) + 
+  # reposition legend to bottom
+  theme(legend.position =  "bottom") + 
+  #hide redundant color label
+  guides(color = "none")
+```
+**Guiding questions:**
+
+-   Have the overall trends in course grades been stable over time, or have they changed in recent terms?
+
+-   If there are any overall equity gaps associated with specific student identities, have they narrowed in recent years, or widened? Are there any pedagogical or structural changes that may relate to any changes seen over time?
+
+```{r mean grades by identity - over time, eval=FALSE, message=FALSE, include=FALSE, waring=FALSE}
+#this chunk currently turned off - makes a rather ugly plot
+
 dat %>%
   #filter course of interest
   filter(crs_name == course_of_interest) %>%
@@ -508,7 +583,7 @@ dat %>%
   #calculate sample size for each group
   add_count(crs_year, crs_semq, demo_var, name = "n_sectn") %>%
   #create a semq text label for more clear x axis labels 
-  mutate(semq_text = recode(as.character(crs_semq), "1" = "W", "01" = "W", "03"= "Sp", "3" = "Sp", "05" = "SuI", "5" = "SuI", "07" = "SuII", "7" = "SuII", "10" = "F")) %>%
+  mutate(semq_text = recode(as.character(crs_semq), "1" = "W", "2" = "Sp", "3" = "SuI", "4" = "SuII", "5" = "F")) %>%
   #create a crs_section variable to maintain x axis chronological ordering
   mutate(crs_section = paste0(crs_year, crs_semq)) %>%
   #create course label that orders readable labels create above chronologically
@@ -530,7 +605,6 @@ ggplot(aes(x = crs_label, y = numgrade, color = demo_var)) +
   theme(axis.text.x = element_text(angle = 90))
 
 #issue: aes(size = n_section) does not seem to be working in stat_summary
-#issue: this seems like an ugly plot :P 
 ```
 # Comparing course grades to grades in other courses
 
@@ -663,6 +737,8 @@ dat %>%
 -   Are students receiving a grade bonus or a grade penalty on average in this course? (see dashed line for overall course average)
 -   Are there any marginalized demographic groups that are receiving more of a grade penalty or more of a grade bonus? Reflecting on the course structure and its place in the curriculum context, can you think of any reasons that might be?
 
+# Examing the impact of students' systemic advantages 
+
 ## How do course outcomes differ across the spectrum of systemic advantages students may have access to in higher education?
 
 How can we view the cumulative effect of systemic advantages students may have access to (conferred by demographic identities) overall in the context of a course?
@@ -729,17 +805,23 @@ dat <-
 The below plots show raw grades and grade anomaly partitioned by the number of systemic advantages students have access to.
 
 ```{r raw grades by SAI, message=FALSE, warning=FALSE}
+
+#sai colors
+sai_colors <- c("0" = "#B35050", "1" = "#eb7e36", "2" = "#ffbe07", "3" = "#70ac49", "4" = "#4671c6")
+
 #raw grades by SAI
 dat %>%
   mutate(sai = as.numeric(sai)) %>%
   add_count(sai, name = "n") %>% #add sample size per SAI
   filter(crs_name == course_of_interest) %>%
-  ggplot(aes(x = sai, y = numgrade, color = sai))+ 
+  ggplot(aes(x = sai, y = numgrade, color = as.factor(sai)))+ 
       stat_summary(aes(size = n), geom = "point", fun = "mean", 
                  position = position_dodge(0.2)) + 
     stat_summary(geom = "errorbar", fun.data = "mean_cl_normal", 
                  width = 0.1, position = position_dodge(0.2)) +
-   geom_hline(yintercept = mean_grade_coi, linetype = "dashed") + 
+   geom_hline(yintercept = mean_grade_coi, linetype = "dashed") +
+  #use custom SAI colors
+  scale_color_manual(values = sai_colors) +
   labs(x = "SAI", y = "Course grade", color = "SAI",
        caption = "Mean ± 95% CI shown \n Dashed line is overall average grade") + 
   theme_seismic + 
