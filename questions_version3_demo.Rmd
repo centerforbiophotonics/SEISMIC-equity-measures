@@ -343,7 +343,7 @@ dat %>%
 
 ## How do course outcomes compare for different student groups?
 
-The overall grade distribution gives us a sense for grade patterns in this course. However, from an equity perspective, we want to examine and compare the distributions for different student identities. 
+The overall grade distribution gives us a sense for grade patterns in this course. However, from an equity perspective, we want to examine and compare the distributions for different student identities.
 
 The below plot shows the full distribution of the grades for multiple student identities, both academic (STEM major, transfer students) and demographic (PEER, women, low income, first-generation, international). The distribution is shown as a density plot with the majority (25th - 75th percentiles) shaded in a darker color. This region represents the "box" portion of a box plot. Below each distribution, points represent means along with the 95% confidence interval as errorbars around the point. If 95% confidence intervals do not overlap between two groups, the means are statistically significantly different. Medians are shown as a vertical line. The dashed line shows the overall mean grade across all students (across all terms in the dataset).
 
@@ -392,9 +392,10 @@ dat %>%
        ) + 
   coord_flip()
 ```
+
 While viewing the full distribution of grades allows us to view the full range, sometimes comparing average grades, especially between majority and historically-excluded / minoritized groups can be informative when evaluating equity in course outcomes.
 
-The below plot shows only the means (points) and 95% confidence intervals (errorbars) for students that hold the listed identity (triangles, in the historically excluded/minoritized group) and students who do not hold that identity (circles, students in the majority). The size of the point corresponds to the sample size. The x-axis range has been zoomed in so we can better evaluate differences between groups. 
+The below plot shows only the means (points) and 95% confidence intervals (errorbars) for students that hold the listed identity (triangles, in the historically excluded/minoritized group) and students who do not hold that identity (circles, students in the majority). The size of the point corresponds to the sample size. The x-axis range has been zoomed in so we can better evaluate differences between groups.
 
 Note that it is more useful to compare between students who do and do not hold each identity than across groups, as the student identities are not mutually exclusive (a single student may belong to any and all of these identities).
 
@@ -434,7 +435,8 @@ dat %>%
   theme_seismic + 
   coord_flip()
 ```
-As discussed previously, the "PEER" category can mask the nuanced different experiences of students of specific ethnic or racial groups. To explore the differences in course grades, mean course grades by ethnicities are disaggregted below. 
+
+As discussed previously, the "PEER" category can mask the nuanced different experiences of students of specific ethnic or racial groups. To explore the differences in course grades, mean course grades by ethnicities are disaggregted below.
 
 Once again, the plot shows means and 95% confidence intervals. The size of the point corresponds to the sample size across all terms of the course. The dashed line represents the overall average grade across all students (in all terms in the dataset).
 
@@ -475,15 +477,15 @@ dat %>%
 
 -   Is this course supporting students differently? Why might this course support some students better than others?
 
--   For what students is this course working well for? 
+-   For what students is this course working well for?
 
--  What additional information about this course or these students would you want to collect to answer these questions?
+-   What additional information about this course or these students would you want to collect to answer these questions?
 
 ## How have grades across student groups changed over time?
 
 We can also evaluate how grading and grade distributions have changed over time in this course.
 
-Below, we can see general trends in grade distribution over time, where the distribution of grades is shown as a density plot. The color of the line represents the term. 
+Below, we can see general trends in grade distribution over time, where the distribution of grades is shown as a density plot. The color of the line represents the term.
 
 ```{r overall grade distribution - over time, warning = FALSE, message= FALSE}
 #overall grade distribution as a density plot over time (color = terms)
@@ -503,7 +505,7 @@ dat %>%
 
 ```
 
-The below plot shows the trends over time for each student identity (each identity has its own separate plot), with points representing mean grades for all students of that identity in that term, and errorbars are the 95% confidence interval. The majoritarian group (i.e., students who do not hold the indicated identity) is shown in gray across all plots. The overall course average, across all students and all terms, is shown with a dashed line. 
+The below plot shows the trends over time for each student identity (each identity has its own separate plot), with points representing mean grades for all students of that identity in that term, and errorbars are the 95% confidence interval. The majoritarian group (i.e., students who do not hold the indicated identity) is shown in gray across all plots. The overall course average, across all students and all terms, is shown with a dashed line.
 
 ```{r mean grades by identity - over time (facets), message= FALSE, warning=FALSE}
 dat %>%
@@ -556,6 +558,7 @@ dat %>%
   #hide redundant color label
   guides(color = "none")
 ```
+
 **Guiding questions:**
 
 -   Have the overall trends in course grades been stable over time, or have they changed in recent terms?
@@ -606,6 +609,9 @@ ggplot(aes(x = crs_label, y = numgrade, color = demo_var)) +
 
 #issue: aes(size = n_section) does not seem to be working in stat_summary
 ```
+
+
+
 # Comparing course grades to grades in other courses
 
 ## How does overall prior performance at the university (i.e., GPAO, prior GPA) compare to student outcomes in my course?
@@ -737,7 +743,7 @@ dat %>%
 -   Are students receiving a grade bonus or a grade penalty on average in this course? (see dashed line for overall course average)
 -   Are there any marginalized demographic groups that are receiving more of a grade penalty or more of a grade bonus? Reflecting on the course structure and its place in the curriculum context, can you think of any reasons that might be?
 
-# Examing the impact of students' systemic advantages 
+# Examing the impact of students' systemic advantages
 
 ## How do course outcomes differ across the spectrum of systemic advantages students may have access to in higher education?
 
