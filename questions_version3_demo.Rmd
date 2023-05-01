@@ -21,6 +21,7 @@ library(kableExtra) #pretty html tables
 library(gghalves) #for half-half geoms
 library(ggdist) #for density plots 
 library(cowplot) #for two panel plots
+library(RColorBrewer)
 
 #create shared plot settings
 theme_seismic <- 
@@ -610,7 +611,6 @@ ggplot(aes(x = crs_label, y = numgrade, color = demo_var)) +
 #issue: aes(size = n_section) does not seem to be working in stat_summary
 ```
 
-[*Victoria has made changes up to this point as of 4/29/2023*]{style="color: red;"}
 
 # Comparing course grades to grades in other courses
 
@@ -618,22 +618,56 @@ ggplot(aes(x = crs_label, y = numgrade, color = demo_var)) +
 
 One way we can compare outcomes in our course to students' prior performance at our institution is by calculating **grade anomaly**. Grade anomaly subtracts a measure of student's general or prior academic performance, such as prior GPA, from their course grade.
 
+SEISMIC projects often use grade point average omitting the course of interest (**GPAO**), because this metric has been found to be the best metric of prior academic preparation in previous studies (compared to high school GPA or standardized test scores, [Koester et al.,2016](https://doi.org/10.48550/arXiv.1608.07565)). GPAO can also be especially useful for transfer students, who may not have a prior GPA at our institution if they just transferred.
+
 Grade anomalies can be:
 
 -   **Grade penalties** - where students receive *lower* grades in the course relative to their other coursework, or,
 
 -   **Grade bonuses** - where students receive *higher* grades relative to other courses.
 
-SEISMIC projects often use grade point average omitting the course of interest (**GPAO**), because this metric has been found to be the best metric of prior academic preparation in previous studies (compared to high school GPA or standardized test scores, [Koester et al.,2016](https://doi.org/10.48550/arXiv.1608.07565)). GPAO can also be especially useful for transfer students, who may not have a prior GPA at our institution if they just transferred.
+Whether a course confers a grade bonus or a grade penalty depends on what other courses students have taken, or take in the term of interest. In many ways, the grade anomaly depends on where the course is situated in the curricular context (i.e., is this course taken along wiht many other large introductory STEM courses, or are the other courses taken to this point general education or electives?).
 
-```{r grade anomaly ~ identity, message=FALSE, warning=FALSE}
-#different identities with average grade anomaly across identities 
+Importantly, grade bonuses or penalties are not necessarily “good” or “bad”, and it often depends on the goals of the course and the assessment structure. 
+For example, courses that aim to evaluate students’ level of mastery of specific skills or concepts as prerequisites for future coursework (a goal of many introductory STEM courses) tend to confer grade penalties than other courses.
+
+```{r course grade vs gpao, message= FALSE, warning = FALSE}
+#heatmap a la Heather Rypkema's report 
+#issue: should the breaks be manually specified so there is a 1:1 on x and y axes?
+
+#bin data for heatmap tiles
+heatmap <- 
+dat %>%
+  filter(crs_name == course_of_interest) %>%
+  drop_na(gpao) %>%
+  #create 10 bins of GPAO and grade
+  mutate(gpao_bin = cut(gpao,breaks = 10),
+         grade_bin = cut(numgrade,breaks = 10)) %>%
+  #get sample size for each tile
+  count(gpao_bin,grade_bin) 
+
+#re-level the bins to keep the left limit only
+levels(heatmap$gpao_bin) <- sub(".(.+),(.+).", "\\1"  , levels(heatmap$gpao_bin))
+levels(heatmap$grade_bin) <- sub(".(.+),(.+).", "\\1"  , levels(heatmap$grade_bin))
+
+#plot heatmap
+  ggplot(heatmap, aes(x = gpao_bin, y = grade_bin, fill = n)) +
+  geom_tile() + 
+  scale_fill_distiller(palette = "Spectral" ) + 
+  geom_abline(yintercept = 0, slope = 1) + 
+  labs(x = "GPAO", y = "Course Grade", fill = "N") + 
+  theme_seismic
+
+```
+
+
+```{r grade anomaly distributions by identity, message= FALSE, warning=FALSE}
 
 #calculate overall mean grade for course (will be plotted as an average line)
 aga_coi <- mean(dat$numgrade[dat$crs_name == course_of_interest], na.rm = T) - 
            mean(dat$gpao[dat$crs_name == course_of_interest], na.rm = T)
 
-
+#plot
 dat %>%
   filter(crs_name == course_of_interest) %>%
   #pivot to a long format dataframe
@@ -645,10 +679,54 @@ dat %>%
   #rename labels to be more interpretable
  mutate(demo_var = factor(demo_var, 
                            levels = c("ethniccode_cat","female","firstgen","lowincomeflag","international","transfer", "stem_major"),
-                           labels = c("PEER", "Woman", "FirstGen", "LowIncome", "International", "Transfer", "STEM Major")))%>%
-  add_count(demo_var, name = "n") %>%
+                           labels = c("PEER", "Woman", "FirstGen", "LowIncome", "International", "Transfer", "STEM Major"))) %>%
   #PLOT
-  ggplot(aes(x = demo_var, y = numgrade-gpao, color = demo_var)) +   
+  ggplot(aes(x = demo_var, y = numgrade-gpao, fill = demo_var)) + 
+  #add density half-plot with the 1st and 3rd quartiles demarcated
+  ggdist::stat_slab(side = "right", scale = 0.4, show.legend = F,
+                    position = position_dodge(width = 0.8),
+                    aes(fill_ramp = after_stat(level)),.width = c(.50, .95,1)) + 
+  stat_dots(side = "left",scale = 0.8, show.legend = T,
+            position = position_dodge(width = .8),aes(color = demo_var)) + 
+  #add mean +/- 95% CI points and errorbars
+  stat_summary(fun.data = "mean_cl_normal", show.legend = T, 
+               size = 0.3, position = position_dodge2(width = 0.8)) +
+  #add median as vertical line
+  stat_summary(fun.y = "median", geom = "point", shape = 108,
+               size = 5, position = position_dodgejust(justification = 0))  +
+  #add line for overall average
+  geom_hline(yintercept = aga_coi, linetype = "dashed") + 
+  #add line for zero
+  geom_hline(yintercept = 0) + 
+  #use seismic colors
+  scale_fill_manual(values = seismic_colors)+
+  scale_color_manual(values = seismic_colors)+
+  theme_seismic + 
+  theme(legend.position = "none") + 
+  guides(fill_ramp = "none") + 
+  labs(x = NULL, y = "Grade anomaly\n(course grade - GPAO)",
+       caption = "Dashed line is overall mean grade anomaly",
+       ) + 
+  coord_flip()
+```
+
+```{r grade anomaly by identity, message=FALSE, warning=FALSE}
+#different identities with average grade anomaly across identities 
+dat %>%
+  filter(crs_name == course_of_interest) %>%
+  #create a true "PEER" variable that compares PEER to white/Asian combined
+  mutate(peer = ifelse(ethniccode_cat == 1, 1, 0)) %>%
+  #pivot to a long format dataframe
+  pivot_longer(cols = c(peer, female, firstgen, lowincomeflag, international, transfer, stem_major), 
+               names_to = "demo_var",
+               values_to = "value") %>% 
+  #rename labels to be more interpretable
+ mutate(demo_var = factor(demo_var, 
+                           levels = c("peer","female","firstgen","lowincomeflag","international","transfer", "stem_major"),
+                           labels = c("PEER", "Woman", "FirstGen", "LowIncome", "International", "Transfer", "STEM Major"))) %>%
+  add_count(demo_var, value, name = "n") %>%
+  #PLOT
+  ggplot(aes(x = demo_var, y = numgrade-gpao, color = demo_var, shape = as.factor(value))) + 
   #points for mean
   stat_summary(aes(size = n), geom = "point", fun = "mean") + 
   #add 95% CI errorbars
@@ -657,55 +735,21 @@ dat %>%
   geom_hline(yintercept = aga_coi, linetype = "dashed") +
   #plot line and annotations for penalty vs bonus
   geom_hline(yintercept = 0) +  
+  #more interpretable labels for shape 
+  scale_shape_discrete(labels = c("0" = "no", "1" = "yes"), name = "Student holds identity?") + 
+  #use seismic colors; turn off color legend
+  scale_color_manual(guide = "none", values = seismic_colors) + 
   annotate(geom = "text", x = 1, y = c(0.1,-0.1), label = c("grade \nbonus", "grade \npenalty"), color = c("blue", "red"), vjust = -0.1) + 
   #labels
-  labs(x = "Student identity", y = "Grade anomaly \n(course grade-GPAO)", color = "Student identity",
-       caption = "Mean ± 95% CI shown \n Dashed line is course average grade anomaly") + 
+  labs(x = "Student identity", y = "Average grade", color = "Student identity", size = "N",
+       caption = "Mean ± 95% CI shown \n Dashed line is overall average grade") + 
+  #make points in shape legend larger
+  guides(shape = guide_legend(override.aes = list(size = 3))) +
   theme_seismic + 
   coord_flip()
 ```
 
-[*Are plotting both boxplots, distributions, AND means useful in a single plot?*]{style="color: red;"}
-
-```{r grade anomaly distributions, message=FALSE, warning=FALSE}
-#grade anomaly distributions 
-
-dat %>%
-  filter(crs_name == course_of_interest) %>%
-  #pivot to a long format dataframe
-  pivot_longer(cols = c(ethniccode_cat, female, firstgen, lowincomeflag, international, transfer, stem_major), 
-               names_to = "demo_var",
-               values_to = "value") %>% 
-  #select all students who do belong to the group of interest
-  filter(value == 1 ) %>%
-  #rename labels to be more interpretable
-  mutate(demo_var = factor(demo_var, 
-                           labels = c("PEER", "Woman", "FirstGen", "LowIncome", "International", "Transfer", "STEM Major"))) %>%
-  ggplot(aes(x = demo_var, y = numgrade-gpao, fill = demo_var)) + 
-  #add density half-plot with the 1st and 3rd quartiles demarcated
-  ggdist::stat_slab(side = "right", scale = 0.4, show.legend = F,
-                    position = position_dodge(width = 0.8),
-                    aes(fill_ramp = after_stat(level)),.width = c(.50, .95,1)) + 
-  #boxplots too
-  geom_boxplot(width = .1,alpha = .5,outlier.alpha=0,
-               position = position_dodge(width  = .8),show.legend = FALSE) +
-
-  #add mean +/- sem piint
-  stat_summary(fun.data = "mean_cl_normal", show.legend = T, 
-               size = 0.3, position = position_dodge2(width = 0.8)) +
-  #overall average line
-  geom_hline(yintercept = aga_coi, linetype = "dashed") + 
-  theme_seismic + 
-  theme(legend.position = "none") + 
-  guides(fill_ramp = "none") + 
-  labs(x = NULL, y = "Grade anomaly \n (Grade - GPAO)",
-       caption = "Shaded part of distribution is the 1st-3rd quartiles (25-75%iles)
-       \n Points show means +/- SEM",
-       ) + 
-  coord_flip()
-```
-
-```{r grade anomaly ~ ethnicity, message=FALSE, warning=FALSE}
+```{r grade anomaly by ethnicity, message=FALSE, warning=FALSE}
 # plot grade anomaly by specific ethnicity
 
 dat %>%
@@ -731,17 +775,20 @@ dat %>%
   scale_x_discrete(labels = ethnicity_labels) + 
   scale_size_continuous(trans = "log10", breaks = c(10,100,1000))+ #point size for readability
   #labels
-  labs(x = "Student identity", y = "Average grade anomaly", color = "Student identity",
-       caption = "Mean ± 95% CI shown \n Dashed line is overall average grade") + 
+  labs(x = "Student identity", y = "Average grade anomaly", size = "N",
+       caption = "Mean ± 95% CI shown \n Dashed line is overall average grade anomaly") + 
   theme_seismic +
-  theme(legend.position = "none") + 
+  guides(color = "none") + 
   coord_flip()
 ```
 
 **Guiding questions:**
 
+- Does examining grade anomaly give further information on equitable outcomes than course grades alone?
 -   Are students receiving a grade bonus or a grade penalty on average in this course? (see dashed line for overall course average)
 -   Are there any marginalized demographic groups that are receiving more of a grade penalty or more of a grade bonus? Reflecting on the course structure and its place in the curriculum context, can you think of any reasons that might be?
+
+[*Victoria has made changes up to this point as of 4/30/2023*]{style="color: red;"}
 
 # Examing the impact of students' systemic advantages
 
