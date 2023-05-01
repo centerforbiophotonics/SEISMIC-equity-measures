@@ -48,7 +48,7 @@ fig1 <-
   #rename labels to be more interpretable
   mutate(demo_var = factor(demo_var, 
                            levels = c("ethniccode_cat","female","firstgen","lowincomeflag","international","transfer"),
-                           labels = c("PEER", "Women", "FirstGen", "LowIncome", "International", "Transfer"))) %>%
+                           labels = c("PEER*", "Women", "First Generation", "Low Income", "International", "Transfer"))) %>%
   arrange(desc(demo_var)) %>%
   #PLOT 
   ggplot(aes(x = fct_reorder(demo_var, perc), y = perc, fill = demo_var)) + 
@@ -57,12 +57,14 @@ fig1 <-
   #add labels for actual percent values
   geom_text(aes(label = round(perc,0)), hjust = -1, size = 5) + 
   scale_fill_manual(values = c("#eb7e36","#4671c6","#70ac49","#ffbe07","#B35050","#a6a6a6")) + 
-  labs(x = "Student identity", y = "Percent of class (%)") + 
+  labs(x = NULL, y = "Percent of class (%)", 
+       caption = "*Persons excluded based on ethnicity and/or race \n (PEER; Asai 2020)") + 
   #set y axis to 100
   ylim(0,100)+
   theme_seismic +
   #hide redundant color legend
   theme(legend.position = "none") + 
+  theme(plot.caption = element_text(size = 10, hjust = 0.5)) + 
   coord_flip()
 
 #__export plot ####
@@ -82,39 +84,47 @@ aga_coi <- mean(dat$numgrade[dat$crs_name == course_of_interest], na.rm = T) -
 fig2 <- 
   dat %>%
   filter(crs_name == course_of_interest) %>%
+  #create a true "PEER" variable that compares PEER to white/Asian combined
+  mutate(peer = ifelse(ethniccode_cat == 1, 1, 0)) %>%
   #pivot to a long format dataframe
-  pivot_longer(cols = c(ethniccode_cat, female, firstgen, lowincomeflag, international, transfer), 
+  pivot_longer(cols = c(peer, female, firstgen, lowincomeflag, international, transfer), 
                names_to = "demo_var",
                values_to = "value") %>% 
-  #select all students who do belong to the group of interest
-  filter(value == 1 ) %>%
   #rename labels to be more interpretable
   mutate(demo_var = factor(demo_var, 
-                           levels = c("ethniccode_cat","female","firstgen","lowincomeflag","international","transfer"),
-                           labels = c("PEER", "Woman", "FirstGen", "LowIncome", "International", "Transfer")))%>%
-  add_count(demo_var, name = "n") %>%
+                           levels = c("peer","female","firstgen","lowincomeflag","international","transfer"),
+                           labels = c("PEER", "Woman", "First Generation", "Low Income", "International", "Transfer"))) %>%
+  add_count(demo_var, value, name = "n") %>%
   #PLOT
-  ggplot(aes(x = fct_reorder(demo_var, n), y = numgrade-gpao, color = fct_reorder(demo_var, n))) +   
+  ggplot(aes(x = demo_var, y = numgrade-gpao, color = demo_var, shape = as.factor(value))) + 
   #points for mean
   stat_summary(aes(size = n), geom = "point", fun = "mean") + 
   #add 95% CI errorbars
   stat_summary(geom = "errorbar", fun.data = "mean_cl_normal", width = 0.1) + 
   #plot average line for mean grade
   geom_hline(yintercept = aga_coi, linetype = "dashed") +
-  #plot line and annotations for penalty vs bonus
-  geom_hline(yintercept = 0) + 
-  scale_y_continuous(breaks = seq(-0.8,0.2,by = 0.2)) +
+  geom_hline(yintercept = 0) +
+  #more interpretable labels for shape 
+  scale_shape_discrete(labels = c("0" = "student NOT in group", "1" = "student in group")) + 
+  #labels
+  labs(x = "Student identity", y = "Average grade", color = "Student identity", size = "N",
+       caption = "Mean ± 95% CI shown \n Dashed line is overall average grade") + 
+  scale_y_continuous(breaks = seq(-0.8,0.4,by = 0.2)) +
   scale_color_manual(guide ="none",
                      values = rev(c("#eb7e36","#4671c6","#70ac49","#ffbe07","#B35050","#a6a6a6"))) + 
-  annotate(geom = "text", x = 2, y = c(0.05,-0.05), label = c("grade bonus", "grade penalty"), 
+  annotate(geom = "text", x = 2, y = c(0.01,-0.05), label = c("grade bonus", "grade penalty"), 
            color = c("blue", "red"),vjust = -0.01, size = 4, angle = 270) + 
   #labels
-  labs(size = "N", x = "Student identity", y = "Grade anomaly \n(course grade-GPAO)", color = "Student identity",
+  labs(size = "N", x = NULL, y = "Grade anomaly \n(course grade-GPAO)", color = "Student identity",
+       shape = NULL,
        caption = "Mean ± 95% CI shown \n Dashed line is course average grade anomaly") + 
   theme_seismic + 
   theme(text = element_text(size = 16)) + 
   theme(plot.caption = element_text(size = 10, hjust = 0.5)) + 
-  coord_flip()
+  #make points in shape legend larger
+  guides(shape = guide_legend(override.aes = list(size = 3))) +
+  coord_flip() 
+
 
 
 #__export plot ####
