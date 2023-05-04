@@ -12,6 +12,7 @@ This report is the first in a series created for the SEISMIC Equity Learning Com
 
 We want to emphasize that the student identities explored here are not exhaustive. There are many identities that may influence students' experiences, and thus outcomes, in the classroom, and only some of these identities are collected in registrar-available or quantitative data. Quantitative data is readily-available and allows us to quickly show patterns across student groups or over time. However, aspects of quantitative analysis - such as the binary categorizations, or analyzing statistics aggregated over whole groups - can obscure many diverse and intersectional aspects of an individual student's experiences. As you read through the report, remember that each data point represents an individual who deserves the opportunity to succeed in these courses.
 
+
 ```{r setup, include=FALSE}
 #hide code, warnings, and messages by default
 knitr::opts_chunk$set(echo = FALSE, warnings = FALSE, messages = FALSE)
@@ -21,7 +22,7 @@ library(kableExtra) #pretty html tables
 library(gghalves) #for half-half geoms
 library(ggdist) #for density plots 
 library(cowplot) #for two panel plots
-library(RColorBrewer)
+library(viridis) #colorblind palettes
 
 #create shared plot settings
 theme_seismic <- 
@@ -631,7 +632,9 @@ Whether a course confers a grade bonus or a grade penalty depends on what other 
 Importantly, grade bonuses or penalties are not necessarily “good” or “bad”, and it often depends on the goals of the course and the assessment structure. 
 For example, courses that aim to evaluate students’ level of mastery of specific skills or concepts as prerequisites for future coursework (a goal of many introductory STEM courses) tend to confer grade penalties than other courses.
 
-```{r course grade vs gpao, message= FALSE, warning = FALSE}
+First, we can explore what the distribution of course grades are versus GPAO. The plot below shows the sample size of students for different combinations of GPAO versus course grade. The line shows the one-to-one line, so areas below the line represent grade penalties (GPAO > grade), areas above grade bonuses (GPAO < grade). Lighter colors represent more students that fall in that quadrant. 
+
+```{r course grade vs gpao heatmap, message= FALSE, warning = FALSE}
 #heatmap a la Heather Rypkema's report 
 #issue: should the breaks be manually specified so there is a 1:1 on x and y axes?
 
@@ -640,21 +643,21 @@ heatmap <-
 dat %>%
   filter(crs_name == course_of_interest) %>%
   drop_na(gpao) %>%
-  #create 10 bins of GPAO and grade
-  mutate(gpao_bin = cut(gpao,breaks = 10),
-         grade_bin = cut(numgrade,breaks = 10)) %>%
-  #get sample size for each tile
-  count(gpao_bin,grade_bin) 
+  #create gpao bin
+  mutate(gpaobin=.1*floor(10*gpao)) %>%
+  count(gpaobin,numgrade) %>%
+  complete(., gpaobin, numgrade, fill = list(n = 0))
 
-#re-level the bins to keep the left limit only
-levels(heatmap$gpao_bin) <- sub(".(.+),(.+).", "\\1"  , levels(heatmap$gpao_bin))
-levels(heatmap$grade_bin) <- sub(".(.+),(.+).", "\\1"  , levels(heatmap$grade_bin))
+yticks<-c(0,1,2,3,4)
+glab<-c("F","D","C","B","A")
 
 #plot heatmap
-  ggplot(heatmap, aes(x = gpao_bin, y = grade_bin, fill = n)) +
+  ggplot(heatmap, aes(x = gpaobin, y = numgrade, fill = n)) +
   geom_tile() + 
-  scale_fill_distiller(palette = "Spectral" ) + 
-  geom_abline(yintercept = 0, slope = 1) + 
+  geom_abline(yintercept = 0, slope = 1, linewidth = 1) + 
+  scale_fill_viridis() + 
+  scale_y_continuous(breaks=yticks,labels=glab)+
+  scale_x_continuous(breaks=yticks,labels=glab)+
   labs(x = "GPAO", y = "Course Grade", fill = "N") + 
   theme_seismic
 

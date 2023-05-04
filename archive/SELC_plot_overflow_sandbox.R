@@ -75,3 +75,46 @@ dat %>%
   theme(legend.position =  "bottom") + 
   #hide redundant color label
   guides(color = "none")
+
+
+#editing HR code for heatmap
+
+
+gpaogradeTally<-dat%>% 
+  mutate(gpaobin=.1*floor(10*gpao)) %>%
+  select(numgrade,gpaobin) %>% na.omit() %>% 
+  group_by(numgrade,gpaobin)%>% tally()
+
+yticks<-c(0,1,2,3,4)
+
+gpaolevels<-as.character(seq(0,4.,.1))
+gradelevels<-c("0","0.7","1","1.3","1.7", "2","2.3", "2.7" ,"3" ,  "3.3", "3.7" ,"4")
+
+gpaogradeTally$numgrade<-ordered(as.factor(gpaogradeTally$numgrade),levels=gradelevels)
+gpaogradeTally$gpaobin<-ordered(as.factor(gpaogradeTally$gpaobin),levels=gpaolevels)
+
+glab<-c("F","D","C","B","A")
+
+
+p<-ggplot(gpaogradeTally, aes(gpaobin, numgrade)) + 
+  geom_tile(aes(fill = n), colour = "grey90") + 
+  scale_y_discrete(breaks=yticks,labels=glab)+
+  scale_x_discrete(breaks=yticks,labels=glab)+
+  geom_segment(mapping=aes(x="0",y="0",xend="4",yend="4"),color="black",linewidth=1) +
+  scale_fill_viridis() + 
+  theme_seismic 
+
+
+scale_fill_gradientn(colours = rev(gradient_pal),values=c(0,1),trans="sqrt")+
+  # scale_fill_gradient2(low = "white",mid=UMICHprimary[2],high =UMICHprimary[1],trans = "log10",values=c(0,1,10))+
+  #scale_fill_gradient(low = "white",high =UMICHprimary[1],trans = "log10")+
+  ylab("Course Grade")+
+  xlab("Grade Point Average (all other courses)")+
+  ggtitle("Course Grade vs. GPAO")+
+  geom_segment(mapping=aes(x="0",y="0",xend="4",yend="4"),color="black",size=1)+
+  theme_bw() %+replace%
+  theme(legend.text=element_text(size=12),
+        aspect.ratio = 0.6)
+print(p) 
+#ggsave("page15-heatmap.jpg",width=6.5,height=5.25,dpi=150,units="in")  
+
