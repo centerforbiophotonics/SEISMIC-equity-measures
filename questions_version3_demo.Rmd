@@ -33,6 +33,7 @@ theme_seismic <-
         strip.background = element_rect(color = "black", size = 1))
 
 #create SEISMIC color palettes
+#note: SEISMIC colors are NOT colorblind friendly. 
 seismic_colors <- c("#eb7e36","#4671c6","#70ac49","#a6a6a6","#ffbe07", "#429dda","#B35050","#7ed233")
 
 ```
@@ -1004,7 +1005,7 @@ dat %>%
 
 ### Acknowledgements
 
-This report is heavily inspired by the Foundational Course Initiative reports from the University of Michigan, created by Dr. Heather Rypkema.
+This report is heavily inspired by the Foundational Course Initiative reports from the University of Michigan, created by Dr. Heather Rypkema and refined by the Assessment Toolkit team. The R code in this report was initially drafted by Victoria Farrar (UC Davis) with feedback from Nita Tarchinski (Michigan), Matthew Steinwachs (UC Davis), Jenna Thomas (UC Davis), Tim MckKay (Michigan), Heather Rypkema (Michigan) and Marco Molinaro (University of Maryland). 
 
 ```{r R coding resources, include = FALSE}
 #R coding resources used
