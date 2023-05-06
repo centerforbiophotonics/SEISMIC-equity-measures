@@ -997,6 +997,33 @@ dat %>%
 
 ```
 
+```{r sai by gender, warning=FALSE, message=FALSE}
+#2 panel plot of raw grades by SAI by gender and grade anomaly by SAI by gender
+
+dat %>%
+  mutate(sai = as.numeric(sai)) %>%
+  #filter course of interest only 
+  filter(crs_name == course_of_interest) %>%
+  #edit sai to remove advantage conferred by gender
+  mutate(sai = ifelse(female == 0, sai-1, sai)) %>%
+  #pivot longer with all numeric metrics in one column for plotting
+  pivot_longer(cols = c(numgrade,gpao),
+               names_to = "metric",
+               values_to = "value") %>%
+  #rename the labels for the
+  mutate(metric = factor(metric, labels = c("GPAO", "Course Grade"))) %>%
+  ggplot(aes(x = sai, y = value, 
+             color = as.factor(female), shape = as.factor(female))) + 
+  stat_summary(geom = "point", fun.data = mean_se, size = 3) + 
+  stat_summary(geom = "errorbar", fun.data = mean_cl_normal, size = 1, width = 0) +
+  labs(x = "Systemic Advantage Index", y = "Grade/GPA value", color = NULL, shape = NULL) +
+  scale_color_manual(values = c("black", "#B9B9B9"), labels = c("M","W")) +
+  scale_shape_discrete(labels = c("M","W")) + 
+  facet_wrap(~metric) + 
+  theme_seismic
+```
+
+
 **Guiding questions:**
 
 -   Are different levels of SAI significantly different from each other in terms of course outcomes (i.e., do 95% confidence intervals overlap)? Is there a linear relationship between SAI and grade, or is the relationship more mixed? Is there a point where students fall "below" average grades or grade anomalies? How can we better serve those students in this course?
