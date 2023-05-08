@@ -929,6 +929,7 @@ SAI adds together all of the advantages a student may have across these four dem
 > 💭 Can you think of any other systemic advantages not included in this index that likely influence student's outcomes in a course? What would be the challenges to adding those identities or advantages to this index?
 
 ------------------------------------------------------------------------
+The SAI approximates an intersectional approach, where we can consider how multiple axes of student identities may affect student experiences, and thus, course outcomes. However, SAI is limited in its intersectional approach in two ways. First, it collapses down various, diverse student identities within one index. For example, SAI = 2 contains six vastly different student identities and experiences, which undoubtedly do not share the same challenges and experiences in higher education. Second, SAI assumes all advantages act additively, rather than considering some cases where they interact in a non-additive way. 
 
 ```{r default missing demographics to 0, message=FALSE, warning=FALSE}
 #for SAI calculations, any NA demographic variables will need to be conservatively coded as 0 (defaulted to the majoritarian group)
@@ -967,7 +968,7 @@ dat <-
 
 ### How do course grades and grade anomalies compare across levels of SAI?
 
-The below plots show raw grades and grade anomaly partitioned by the number of systemic advantages students have access to.
+The below plots show raw grades and grade anomaly partitioned by the number of systemic advantages students have access to. Points represent means, errorbars 95% confidence intervals around the mean. The dashed line represents the overall course average, across all students and terms. The size of the point corresponds to the sample size across all terms of the course. 
 
 ```{r raw grades by SAI, message=FALSE, warning=FALSE}
 
@@ -986,7 +987,7 @@ dat %>%
                  width = 0.1, position = position_dodge(0.2)) +
    geom_hline(yintercept = mean_grade_coi, linetype = "dashed") +
   #use custom SAI colors
-  scale_color_manual(values = sai_colors) +
+  scale_color_manual(values = sai_colors, guide = "none") +
   labs(x = "SAI", y = "Course grade", color = "SAI",
        caption = "Mean ± 95% CI shown \n Dashed line is overall average grade") + 
   theme_seismic + 
@@ -1009,16 +1010,17 @@ dat %>%
     #plot line and annotations for penalty vs bonus
   geom_hline(yintercept = 0) +  
     #use custom SAI colors
-  scale_color_manual(values = sai_colors) +
+  scale_color_manual(values = sai_colors, guide = "none") +
   #add a text label 
   annotate(geom = "text", x = 2, y = c(0.01,-0.05), label = c("grade bonus", "grade penalty"), 
            color = c("blue", "red"),vjust = -0.01, size = 4, angle = 270) + 
   labs(x = "SAI", y = "Grade anomaly \n(course grade - GPAO)", color = "SAI",
-       caption = "Mean ± 95% CI shown \n Dashed line is overall average grade") + 
+       caption = "Mean ± 95% CI shown \n Dashed line is overall average grade anomaly") + 
   theme_seismic + 
   coord_flip()
 
 ```
+In some STEM courses, there are significant gender gaps between men and women. (You may have already observed that in the above grade or grade anomaly distributions). To explore how gender may interact with other advantages, we can show SAI for men and women separately. In the below two panel plot, we can see the trends for GPAO and course grade across SAI levels for men (circles) and women (triangles). Points show means and errorbars 95% confidence intervals. If the 95% confidence intervals overlap between the genders, the two groups do not significantly differ. 
 
 ```{r sai by gender, warning=FALSE, message=FALSE}
 #2 panel plot of raw grades by SAI by gender and grade anomaly by SAI by gender
@@ -1039,8 +1041,9 @@ dat %>%
              color = as.factor(sai), shape = as.factor(female))) + 
   stat_summary(geom = "point", fun.data = mean_se, size = 3) + 
   stat_summary(geom = "errorbar", fun.data = mean_cl_normal, size = 1, width = 0) +
-  scale_color_manual(values = sai_colors) +
+  scale_color_manual(values = sai_colors, guide = "none") +
   scale_shape_discrete(labels = c("M","W")) + 
+  labs(x = "SAI", y = "Value", shape = "Gender") + 
   facet_wrap(~metric) + 
   theme_seismic
 ```
