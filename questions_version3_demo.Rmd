@@ -1045,11 +1045,98 @@ dat %>%
   theme_seismic
 ```
 
+```{r calculate advantages, warning = FALSE, message=FALSE}
+#more granular than SAI - show specific advantage combinations
+#"Marco plot" 
+
+#create advantage labels for each group 
+advantage_labels <- c("All", "W", "PEER", "LI","FG", "PEER + FG", "PEER + LI", "PEER + W", "FG + LI", "FG + W", "LI + W", "FG + LI + W", "PEER + FG + W", "PEER + LI+W", "PEER + FG + LI", "PEER + FG + LI + W")
+
+#create variables that outline the number of advantages a student has at the levels of Gender, PEER, FirstGen, and LowIncome
+dat<-
+dat %>%
+  mutate(peer = ifelse(ethniccode_cat == 1, 1, 0)) %>%
+  mutate(advantage = case_when(
+    female == "0" & peer == "0" & firstgen == "0" & lowincomeflag == "0"  ~ "0",
+    female == "1" & peer == "0" & firstgen == "0" & lowincomeflag == "0"  ~ "1A",
+    female == "0" & peer == "1" & firstgen == "0" & lowincomeflag == "0"  ~ "1B", 
+    female == "0" & peer == "0" & firstgen == "0" & lowincomeflag == "1"  ~ "1C", 
+    female == "0" & peer == "0" & firstgen == "1" & lowincomeflag == "0"  ~ "1D", 
+    female == "0" & peer == "1" & firstgen == "1" & lowincomeflag == "0"  ~ "2A", 
+    female == "0" & peer == "1" & firstgen == "0" & lowincomeflag == "1"  ~ "2B", 
+    female == "1" & peer == "1" & firstgen == "0" & lowincomeflag == "0"  ~ "2C", 
+    female == "0" & peer == "0" & firstgen == "1" & lowincomeflag == "1"  ~ "2D", 
+    female == "1" & peer == "0" & firstgen == "1" & lowincomeflag == "0"  ~ "2E", 
+    female == "1" & peer == "0" & firstgen == "0" & lowincomeflag == "1"  ~ "2F", 
+    female == "1" & peer == "0" & firstgen == "1" & lowincomeflag == "1"  ~ "3A", 
+    female == "1" & peer == "1" & firstgen == "1" & lowincomeflag == "0"  ~ "3B",
+    female == "1" & peer == "1" & firstgen == "0" & lowincomeflag == "1"  ~ "3C", 
+    female == "0" & peer == "1" & firstgen == "1" & lowincomeflag == "1"  ~ "3D",
+    female == "1" & peer == "1" & firstgen == "1" & lowincomeflag == "1"  ~ "4",
+    TRUE ~ "NA")) %>%
+    mutate(advantage_no = 4 - as.numeric(str_extract(advantage, "(\\d)+"))) %>% #selects numbers from a string 
+    mutate(advantage = as.factor(advantage)) 
+```
+
+Given the limitations above, we might want to examine specific intersections of advantages, rather than just a numeric index. The below plot further investigates intersections of student identities by showing course outcomes for specific advantage combinations. These specific combinations are collapsed in the SAI index, but here, are disaggregated by the specific identity a student holds. 
+
+The two plots below show actual course grades and grade anomalies. In both plots, points show means and 95% confidence intervals as errorbars. Dashed lines repersent the overall course average. Color corresponds to that groups' SAI. The specific identities the student holds are indicated on the y axis; FG = First Generation, LI = Low Income family background, W = Woman, and PEER = Person from a background historically excluded based on ethnicity/race. The "All" group corresponds to students will access to all listed advantages (i.e., a non-PEER, non-Low-Income, continuing-generation man).
+
+```{r grade by advantage combo, warning = FALSE, message=FALSE}
+#"Marco" plot: show means and 95% CI for all advantage combinations
+
+dat %>%
+  #filter course of interest
+  filter(crs_name == course_of_interest) %>%
+  ggplot(aes(x = advantage, y = numgrade, color = as.factor(advantage_no) )) +
+  #plot means and 95% confidence intervals
+    stat_summary(fun.data = "mean_cl_normal") + 
+  #add line for course average
+    geom_hline(yintercept = mean_grade_coi, linetype = "dashed") + 
+  #axis labels
+    labs(x = NULL, y = "Course grade", title = "Grades by specific advantages" ) + 
+    scale_x_discrete(labels = advantage_labels) + 
+  #use custom SAI colors
+    scale_color_manual(name = "SAI", values = sai_colors) + 
+    theme_seismic +
+  #center title 
+    theme(plot.title = element_text(hjust = 0.5)) + 
+  coord_flip()
+```
+```{r grade anomaly by advantage combo, warning = FALSE, message=FALSE}
+#"Marco" plot: show means and 95% CI for all advantage combinations
+
+dat %>%
+  #filter course of interest
+  filter(crs_name == course_of_interest) %>%
+  ggplot(aes(x = advantage, y = numgrade-gpao, color = as.factor(advantage_no) )) +
+  #plot means and 95% confidence intervals
+    stat_summary(fun.data = "mean_cl_normal") + 
+  #add line for course average
+    geom_hline(yintercept = aga_coi, linetype = "dashed") + 
+  #add 0 line
+    geom_hline(yintercept = 0) +
+  #axis labels
+    labs(x = NULL, y = "Course grade - GPAO", title = "Grade anomaly by specific advantages" ) + 
+    scale_x_discrete(labels = advantage_labels) + 
+  #use custom SAI colors
+    scale_color_manual(name = "SAI", values = sai_colors) + 
+    #add a text label 
+  annotate(geom = "text", x = 4, y = c(0.01,-0.05), label = c("grade bonus", "grade penalty"), 
+           color = c("blue", "red"),vjust = -0.01, size = 4, angle = 270) +
+    theme_seismic +
+  #center title 
+    theme(plot.title = element_text(hjust = 0.5)) + 
+  coord_flip()
+```
+
 **Guiding questions:**
 
 -   Are different levels of SAI significantly different from each other in terms of course outcomes (i.e., do 95% confidence intervals overlap)? Is there a linear relationship between SAI and grade, or is the relationship more mixed? Is there a point where students fall "below" average grades or grade anomalies? How can we better serve those students in this course?
 
 -   If we see differences across levels of SAI, what elements of the course structure might lead to some of these differences with student systemic advantages?
+
+- Do you observe any nuanced relationships between specific advantage combinations that were masked by the overall SAI index?
 
 ### Acknowledgements
 
