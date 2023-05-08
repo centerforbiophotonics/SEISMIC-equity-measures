@@ -132,6 +132,8 @@ ggplot(aes(x = demo_var, y = perc, fill = demo_var)) +
   geom_text(aes(label = round(perc,0)), hjust = -1) + 
   #add separating line between academic and demographic values
   geom_vline(xintercept = 5.5) + 
+  #annotate the sections
+  annotate(geom = "text", x = c(6,5), y = 75, label = c("Academic", "Demographic") ) +
   labs(x = "Student identity", y = "Percent of class (%)") + 
   scale_fill_manual(values = seismic_colors) + 
   #set y axis to 100
@@ -423,8 +425,6 @@ dat %>%
                size = 5, position = position_dodgejust(justification = 0))  +
   #add line for overall average
   geom_hline(yintercept = mean_grade_coi, linetype = "dashed") + 
-  #add separating line between academic and demographic values
-  geom_vline(xintercept = 5.5) + 
   #use seismic colors
   scale_fill_manual(values = seismic_colors)+
   theme_seismic + 
@@ -831,7 +831,7 @@ dat %>%
   #PLOT
   ggplot(aes(x = demo_var, y = numgrade-gpao, color = demo_var, shape = as.factor(value))) + 
   #points for mean
-  stat_summary(geom = "point", fun = "mean") + 
+  stat_summary(geom = "point", fun = "mean", size = 3) + 
   #add 95% CI errorbars
   stat_summary(geom = "errorbar", fun.data = "mean_cl_normal", width = 0.1) + 
   #plot average line for mean grade
@@ -872,7 +872,7 @@ dat %>%
   #PLOT
   ggplot(aes(x = ethnicity, y = numgrade-gpao, color = ethnicity)) + 
   #points for mean
-  stat_summary(geom = "point", fun = "mean") + 
+  stat_summary(geom = "point", fun = "mean", size = 3) + 
   #add 95% CI errorbars
   stat_summary(geom = "errorbar", fun.data = "mean_cl_normal", width = 0.1) + 
   #plot average line for mean grade
