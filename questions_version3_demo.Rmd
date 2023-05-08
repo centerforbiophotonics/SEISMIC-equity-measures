@@ -31,7 +31,8 @@ theme_seismic <-
   theme(axis.text = element_text(color = "black"), 
         strip.text = element_text(color = "black"), 
         panel.border = element_rect(color = "black", fill = NA, size = 1), 
-        strip.background = element_rect(color = "black", size = 1))
+        strip.background = element_rect(color = "black", size = 1)) + 
+    theme(plot.caption = element_text(size = 10, hjust = 0.5)) 
 
 #create SEISMIC color palettes
 #note: SEISMIC colors are NOT colorblind friendly. 
@@ -346,16 +347,16 @@ Student final grades are the main course outcome available from registrar data. 
 
 ## What is the grade distribution in this course?
 
-The below plot shows the overall grade distribution for this course across all terms. Note that the histogram shows course grade numerically, in the scale that grades can range from at your institution (at most, this is from 0 to 4, with whole numbers representing letter grades, and decimals to either side the plus/minus grades).
+The below plot shows the overall grade distribution for this course across all terms. Note that this plot excludes students who did not take the course for a lettergrade (pass/non pass) or withdrew. 
 
 ```{r overall grade distribution, warning = FALSE, message=FALSE}
-#issue: if we want letter grades on x axis, need a letter grade column in the dataframe
+
 dat %>%
   filter(crs_name == course_of_interest) %>%
- ggplot(aes(x = numgrade, y = after_stat(count)/sum(after_stat(count)))) +  
+ ggplot(aes(x = fct_reorder(lettergrade, numgrade), y = after_stat(count)/sum(after_stat(count)))) +  
         geom_bar(color = "black", fill =  seismic_colors[2]) + 
         scale_y_continuous(labels = scales::percent) + 
-  labs(x = "Course Grade (numeric scale)", y = "Percent") + 
+  labs(x = "Course Grade", y = "Percent") + 
   theme_seismic
 ```
 
@@ -376,9 +377,18 @@ dat %>%
 
 ## How do course outcomes compare for different student groups?
 
-The overall grade distribution gives us a sense for grade patterns in this course. However, from an equity perspective, we want to examine and compare the distributions for different student identities.
+The overall grade distribution gives us a sense for grade patterns in this course. The overall grade distribution gives us a sense for grade patterns in this course. However, from an equity perspective, we want to examine and compare the distributions for different student identities.
 
-The below plot shows the full distribution of the grades for multiple student identities, both academic (STEM major, transfer students) and demographic (PEER, women, low income, first-generation, international). The distribution is shown as a density plot with the majority (25th - 75th percentiles) shaded in a darker color. This region represents the "box" portion of a box plot. Below each distribution, points represent means along with the 95% confidence interval as errorbars around the point. If 95% confidence intervals do not overlap between two groups, the means are statistically significantly different. Medians are shown as a vertical line. The dashed line shows the overall mean grade across all students (across all terms in the dataset).
+The below plot shows the full distribution of the grades for multiple student identities, both academic (STEM major, transfer students) and demographic (PEER, women, low income, first-generation, international). 
+
+* The distribution is shown as a density plot with the majority (25th - 75th percentiles) shaded in a darker color. This region represents the "box" portion of a box plot. 
+
+* The mean and the 95% confidence interval around the mean is shown as a point and errorbar below each distribution. 
+    + If 95% confidence intervals do not overlap between two groups, the means are statistically significantly different. 
+
+* The medians is shown as a small vertical line on each distribution. 
+
+* The overall mean grade across all students (across all terms in the dataset) is shown as a dashed vertical line. 
 
 ```{r raw grade distributions and means by identity, message=FALSE, warning=FALSE}
 #plots grade distributions, along with means/SEM, for demographic identities
@@ -421,14 +431,24 @@ dat %>%
   theme(legend.position = "none") + 
   guides(fill_ramp = "none") + 
   labs(x = NULL, y = "Course grade",
-       caption = "Dashed line is overall mean grade (across all students)",
+       caption = "Points = means, vertical lines = medians \n Dashed line = overall mean grade (across all students)",
        ) + 
   coord_flip()
 ```
 
 While viewing the full distribution of grades allows us to view the full range, sometimes comparing average grades, especially between majority and historically-excluded / minoritized groups can be informative when evaluating equity in course outcomes.
 
-The below plot shows only the means (points) and 95% confidence intervals (errorbars) for students that hold the listed identity (triangles, in the historically excluded/minoritized group) and students who do not hold that identity (circles, students in the majority). The size of the point corresponds to the sample size. The x-axis range has been zoomed in so we can better evaluate differences between groups.
+The below plot shows the overall average grades for students, disaggregated by whether they hold a certain identity or not.The x-axis range has been zoomed in so we can better evaluate differences between groups. 
+
+In this plot: 
+
+* Means and 95% confidence intervals are shown as points and errorbars. 
+
+* Student identities are represented by shape; triangles represent students in the historically excluded/minoritized group and circles are students in the majoirty/ historically supported/accepted group. 
+
+* The sample size for each group corresponds to the size of the point. 
+
+* The overall average grade for all students in all terms of the course is shown as a dashed line. 
 
 Note that it is more useful to compare between students who do and do not hold each identity than across groups, as the student identities are not mutually exclusive (a single student may belong to any and all of these identities).
 
@@ -451,7 +471,7 @@ dat %>%
   #PLOT
   ggplot(aes(x = demo_var, y = numgrade, color = demo_var, shape = as.factor(value))) + 
   #points for mean
-  stat_summary(aes(size = n), geom = "point", fun = "mean") + 
+  stat_summary(geom = "point", fun = "mean", size = 3) + 
   #add 95% CI errorbars
   stat_summary(geom = "errorbar", fun.data = "mean_cl_normal", width = 0.1) + 
   #plot average line for mean grade
@@ -461,7 +481,7 @@ dat %>%
   #use seismic colors; turn off color legend
   scale_color_manual(guide = "none", values = seismic_colors) + 
   #labels
-  labs(x = "Student identity", y = "Average grade", color = "Student identity", size = "N",
+  labs(x = "Student identity", y = "Average grade", color = "Student identity",
        caption = "Mean ± 95% CI shown \n Dashed line is overall average grade") + 
   #make points in shape legend larger
   guides(shape = guide_legend(override.aes = list(size = 3))) +
@@ -471,7 +491,12 @@ dat %>%
 
 As discussed previously, the "PEER" category can mask the nuanced different experiences of students of specific ethnic or racial groups. To explore the differences in course grades, mean course grades by ethnicities are disaggregted below.
 
-Once again, the plot shows means and 95% confidence intervals. The size of the point corresponds to the sample size across all terms of the course. The dashed line represents the overall average grade across all students (in all terms in the dataset).
+In this plot:
+* Means and 95% confidence intervals are shown as points and errorbars. 
+
+* The sample size for each group corresponds to the size of the point. 
+
+* The overall average grade for all students in all terms of the course is shown as a dashed line. 
 
 ```{r mean raw grade by ethnicity, message=FALSE, warning=FALSE}
 # raw grade (mean and SEM) by specific ethnicities
@@ -565,7 +590,16 @@ dat %>%
 
 ```
 
-The below plot shows the trends over time for each student identity (each identity has its own separate plot), with points representing mean grades for all students of that identity in that term, and errorbars are the 95% confidence interval. The majoritarian group (i.e., students who do not hold the indicated identity) is shown in gray across all plots. The overall course average, across all students and all terms, is shown with a dashed line.
+The below plot shows the trends over time for each student identity.
+
+* Each axis of identity is a separate plot. 
+
+* Means and 95% confidence intervals are shown as points and vertical errorbars. 
+
+* The majoritarian group (i.e., students who do not hold the indicated identity) is shown in gray circles across all plots. Students who do hold the identity are shown in colored triangles. 
+
+*The overall course average, across all students and all terms, is shown with a dashed line.
+
 
 ```{r mean grades by identity - over time (facets), message= FALSE, warning=FALSE,fig.height= 8, fig.width = 8}
 
@@ -777,7 +811,7 @@ dat %>%
   coord_flip()
 ```
 
-The below plot focuses on the mean grade anomaly for each of the student demographics, comparing the majority group (circles) to the historically excluded / marginalized group (triangles). Points show means, flanked by the 95% confidence interval for each group. The size of the point corresponds to the sample size of students in that group.
+The below plot focuses on the mean grade anomaly for each of the student demographics, comparing the majority group (circles) to the historically excluded / marginalized group (triangles). Points show means, flanked by the 95% confidence interval for each group. 
 
 ```{r grade anomaly by identity, message=FALSE, warning=FALSE}
 #different identities with average grade anomaly across identities 
@@ -797,7 +831,7 @@ dat %>%
   #PLOT
   ggplot(aes(x = demo_var, y = numgrade-gpao, color = demo_var, shape = as.factor(value))) + 
   #points for mean
-  stat_summary(aes(size = n), geom = "point", fun = "mean") + 
+  stat_summary(geom = "point", fun = "mean") + 
   #add 95% CI errorbars
   stat_summary(geom = "errorbar", fun.data = "mean_cl_normal", width = 0.1) + 
   #plot average line for mean grade
@@ -812,7 +846,7 @@ dat %>%
   annotate(geom = "text", x = 2, y = c(0.01,-0.05), label = c("grade bonus", "grade penalty"), 
            color = c("blue", "red"),vjust = -0.01, size = 4, angle = 270) +
   #labels
-  labs(x = "Student identity", y = "Grade anomaly", color = "Student identity", size = "N",
+  labs(x = "Student identity", y = "Grade anomaly", color = "Student identity", 
        caption = "Mean ± 95% CI shown \n Dashed line is overall average grade") + 
   #make points in shape legend larger
   guides(shape = guide_legend(override.aes = list(size = 3))) +
@@ -820,7 +854,7 @@ dat %>%
   coord_flip()
 ```
 
-Similarly, we can also further disaggregate the PEER group into specific student races/ethnicities. The below plot shows grade anomalies by student ethnicity. Points represent mean grade anomaly, error bars the 95% confidence interval. Point size corresponds to overall sample size of students for each group.
+Similarly, we can also further disaggregate the PEER group into specific student races/ethnicities. The below plot shows grade anomalies by student ethnicity. Points represent mean grade anomaly, error bars the 95% confidence interval. 
 
 ```{r grade anomaly by ethnicity, message=FALSE, warning=FALSE}
 # plot grade anomaly by specific ethnicity
@@ -838,7 +872,7 @@ dat %>%
   #PLOT
   ggplot(aes(x = ethnicity, y = numgrade-gpao, color = ethnicity)) + 
   #points for mean
-  stat_summary(aes(size = n), geom = "point", fun = "mean") + 
+  stat_summary(geom = "point", fun = "mean") + 
   #add 95% CI errorbars
   stat_summary(geom = "errorbar", fun.data = "mean_cl_normal", width = 0.1) + 
   #plot average line for mean grade
@@ -851,7 +885,7 @@ dat %>%
   annotate(geom = "text", x = 2, y = c(0.01,-0.05), label = c("grade bonus", "grade penalty"), 
            color = c("blue", "red"),vjust = -0.01, size = 4, angle = 270) +
   #labels
-  labs(x = "Student identity", y = "Grade anomaly", size = "N",
+  labs(x = "Student identity", y = "Grade anomaly", 
        caption = "Mean ± 95% CI shown \n Dashed line is overall average grade anomaly") + 
   theme_seismic +
   guides(color = "none") + 
@@ -939,7 +973,7 @@ dat %>%
   stat_summary(fun.data = "mean_cl_normal") + 
   #lines that connect each group over time
   stat_summary(geom = "line", fun.data = "mean_cl_normal", aes(group = interaction(demo_var, value))) + 
-  labs(x = "Course Term", y = "Course grade",
+  labs(x = "Course Term", y = "Grade anomaly",
        color = "Student identity", shape = NULL) + 
   #add average line for mean grade
   geom_hline(yintercept = aga_coi, linetype = "dashed") +
@@ -988,12 +1022,6 @@ SAI, or the **Systemic Advantage Index** is one approach. This metric takes into
 SAI adds together all of the advantages a student may have across these four demographic axes and assigns an index. The table below shows SAI for multiple combinations of identities. For instance, a Latino, first-generation, low income man (column second from left) would be considered to have SAI = 1, while a white, continuing-generation woman from a high income family would be considered to have SAI = 3 (column second from right).
 
 ![](SAI_assignment.tif)
-
-------------------------------------------------------------------------
-
-> 💭 Can you think of any other systemic advantages not included in this index that likely influence student's outcomes in a course? What would be the challenges to adding those identities or advantages to this index?
-
-------------------------------------------------------------------------
 
 The SAI approximates an intersectional approach, where we can consider how multiple axes of student identities may affect student experiences, and thus, course outcomes. However, SAI is limited in its intersectional approach in two ways. First, it collapses down various, diverse student identities within one index. For example, SAI = 2 contains six vastly different student identities and experiences, which undoubtedly do not share the same challenges and experiences in higher education. Second, SAI assumes all advantages act additively, rather than considering some cases where they interact in a non-additive way.
 
@@ -1110,7 +1138,7 @@ dat %>%
   stat_summary(geom = "errorbar", fun.data = mean_cl_normal, size = 1, width = 0) +
   scale_color_manual(values = sai_colors, guide = "none") +
   scale_shape_discrete(labels = c("M","W")) + 
-  labs(x = "SAI", y = "Value", shape = "Gender") + 
+  labs(x = "SAI (excluding Gender)", y = "Value", shape = "Gender") + 
   facet_wrap(~metric) + 
   theme_seismic
 ```
@@ -1150,7 +1178,20 @@ dat %>%
 
 Given the limitations above, we might want to examine specific intersections of advantages, rather than just a numeric index. The below plot further investigates intersections of student identities by showing course outcomes for specific advantage combinations. These specific combinations are collapsed in the SAI index, but here, are disaggregated by the specific identity a student holds.
 
-The two plots below show actual course grades and grade anomalies. In both plots, points show means and 95% confidence intervals as errorbars. Dashed lines repersent the overall course average. Color corresponds to that groups' SAI. The specific identities the student holds are indicated on the y axis; FG = First Generation, LI = Low Income family background, W = Woman, and PEER = Person from a background historically excluded based on ethnicity/race. The "All" group corresponds to students will access to all listed advantages (i.e., a non-PEER, non-Low-Income, continuing-generation man).
+The two plots below show actual course grades and grade anomalies. In both plots, 
+
+* Points show means and 95% confidence intervals are points and errorbars. 
+
+* Dashed lines repersent the overall course average. 
+
+* Color corresponds to that groups' SAI. 
+
+* The y axis specifies the identities students hold; 
+    + FG = First Generation
+    + LI = Low Income family background
+    + W = Woman
+    + PEER = Person from a background historically excluded based on ethnicity/race. 
+    + The "All" group corresponds to students will access to all listed advantages (i.e., a non-PEER, non-Low-Income, continuing-generation man).
 
 ```{r grade by advantage combo, warning = FALSE, message=FALSE}
 #"Marco" plot: show means and 95% CI for all advantage combinations
@@ -1210,9 +1251,11 @@ dat %>%
 -   If we see differences across levels of SAI, what elements of the course structure might lead to some of these differences with student systemic advantages?
 
 -   Do you observe any nuanced relationships between specific advantage combinations that were masked by the overall SAI index?
+
+- Can you think of any other systemic advantages not included in this index that likely influence student's outcomes in a course? What would be the challenges to adding those identities or advantages to this index?
 ::::
 
-## Feedback
+# Feedback
 
 Please provide any feedback you may have on this demo report to the SELC team here: [May Institute Feedback Form](https://docs.google.com/forms/d/e/1FAIpQLSdIPV9uwb1q6xSXrF0hH3zyYSko8Nh_gGAv106D6S_PNmLBOw/viewform?usp=sf_link).
 
