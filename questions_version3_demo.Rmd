@@ -446,8 +446,6 @@ In this plot:
 
 * Student identities are represented by shape; triangles represent students in the historically excluded/minoritized group and circles are students in the majoirty/ historically supported/accepted group. 
 
-* The sample size for each group corresponds to the size of the point. 
-
 * The overall average grade for all students in all terms of the course is shown as a dashed line. 
 
 Note that it is more useful to compare between students who do and do not hold each identity than across groups, as the student identities are not mutually exclusive (a single student may belong to any and all of these identities).
@@ -494,8 +492,6 @@ As discussed previously, the "PEER" category can mask the nuanced different expe
 In this plot:
 * Means and 95% confidence intervals are shown as points and errorbars. 
 
-* The sample size for each group corresponds to the size of the point. 
-
 * The overall average grade for all students in all terms of the course is shown as a dashed line. 
 
 ```{r mean raw grade by ethnicity, message=FALSE, warning=FALSE}
@@ -514,7 +510,7 @@ dat %>%
   #PLOT
   ggplot(aes(x = ethnicity, y = numgrade, color = ethnicity)) + 
   #points for mean
-  stat_summary(aes(size = n), geom = "point", fun = "mean") + 
+  stat_summary(geom = "point", fun = "mean") + 
   #add 95% CI errorbars
   stat_summary(geom = "errorbar", fun.data = "mean_cl_normal", width = 0.1) + 
   #plot average line for mean grade
@@ -524,7 +520,7 @@ dat %>%
   #use seismic colors; hide redundant color legend
   scale_color_manual(values = seismic_colors, guide = "none") +
   #labels
-  labs(x = "Student ethnicity", y = "Average grade", size = "N",
+  labs(x = "Student ethnicity", y = "Average grade",
        caption = "Mean ± 95% CI shown \n Dashed line is overall average grade") + 
   coord_flip()+
   theme_seismic +
