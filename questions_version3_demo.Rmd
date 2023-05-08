@@ -12,7 +12,6 @@ This report is the first in a series created for the SEISMIC Equity Learning Com
 
 We want to emphasize that the student identities explored here are not exhaustive. There are many identities that may influence students' experiences, and thus outcomes, in the classroom, and only some of these identities are collected in registrar-available or quantitative data. Quantitative data is readily-available and allows us to quickly show patterns across student groups or over time. However, aspects of quantitative analysis - such as the binary categorizations, or analyzing statistics aggregated over whole groups - can obscure many diverse and intersectional aspects of an individual student's experiences. As you read through the report, remember that each data point represents an individual who deserves the opportunity to succeed in these courses.
 
-
 ```{r setup, include=FALSE}
 #hide code, warnings, and messages by default
 knitr::opts_chunk$set(echo = FALSE, warnings = FALSE, messages = FALSE)
@@ -23,6 +22,7 @@ library(gghalves) #for half-half geoms
 library(ggdist) #for density plots 
 library(cowplot) #for two panel plots
 library(viridis) #colorblind palettes
+library(knitr)
 
 #create shared plot settings
 theme_seismic <- 
@@ -35,7 +35,6 @@ theme_seismic <-
 #create SEISMIC color palettes
 #note: SEISMIC colors are NOT colorblind friendly. 
 seismic_colors <- c("#eb7e36","#4671c6","#70ac49","#a6a6a6","#ffbe07", "#429dda","#B35050","#7ed233")
-
 ```
 
 ```{r load data, echo = FALSE}
@@ -301,13 +300,13 @@ dat %>%
   mutate(dummy = "dummy") %>%
   ggplot(aes(fill=moi, y=perc, x=dummy)) + 
   #plot bars in single bar
-  geom_col() + 
+  geom_col(color = "black") + 
   #add labels with percents
   geom_text(aes(label = paste0(moi,"-",round(perc,0),"%")),
             position = position_stack(vjust = 0.5)) +
   labs(x = NULL, y = "Percent(%)") + 
   scale_fill_manual(values = seismic_colors, guide = "none") + 
-  theme_minimal() + 
+  theme_void() + 
   #hide x axis ticks
   theme(axis.text.x = element_blank(),
         axis.ticks.x = element_blank()) 
@@ -490,6 +489,8 @@ We can also evaluate how grading and grade distributions have changed over time 
 
 Below, we can see general trends in grade distribution over time, where the distribution of grades is shown as a density plot. The color of the line represents the term.
 
+[*This plot will be replaced with a stacked bar plot of letter grades over time*]{style="color: red;"}
+
 ```{r overall grade distribution - over time, warning = FALSE, message= FALSE}
 #overall grade distribution as a density plot over time (color = terms)
 
@@ -510,7 +511,8 @@ dat %>%
 
 The below plot shows the trends over time for each student identity (each identity has its own separate plot), with points representing mean grades for all students of that identity in that term, and errorbars are the 95% confidence interval. The majoritarian group (i.e., students who do not hold the indicated identity) is shown in gray across all plots. The overall course average, across all students and all terms, is shown with a dashed line.
 
-```{r mean grades by identity - over time (facets), message= FALSE, warning=FALSE}
+```{r mean grades by identity - over time (facets), message= FALSE, warning=FALSE,fig.height= 8, fig.width = 8}
+
 dat %>%
   #filter course of interest
   filter(crs_name == course_of_interest) %>%
@@ -560,6 +562,7 @@ dat %>%
   theme(legend.position =  "bottom") + 
   #hide redundant color label
   guides(color = "none")
+
 ```
 
 **Guiding questions:**
@@ -613,7 +616,6 @@ ggplot(aes(x = crs_label, y = numgrade, color = demo_var)) +
 #issue: aes(size = n_section) does not seem to be working in stat_summary
 ```
 
-
 # Comparing course grades to grades in other courses
 
 ## How does overall prior performance at the university (i.e., GPAO, prior GPA) compare to student outcomes in my course?
@@ -630,10 +632,9 @@ Grade anomalies can be:
 
 Whether a course confers a grade bonus or a grade penalty depends on what other courses students have taken, or take in the term of interest. In many ways, the grade anomaly depends on where the course is situated in the curricular context (i.e., is this course taken along wiht many other large introductory STEM courses, or are the other courses taken to this point general education or electives?).
 
-Importantly, grade bonuses or penalties are not necessarily “good” or “bad”, and it often depends on the goals of the course and the assessment structure. 
-For example, courses that aim to evaluate students’ level of mastery of specific skills or concepts as prerequisites for future coursework (a goal of many introductory STEM courses) tend to confer grade penalties than other courses.
+Importantly, grade bonuses or penalties are not necessarily "good" or "bad", and it often depends on the goals of the course and the assessment structure. For example, courses that aim to evaluate students' level of mastery of specific skills or concepts as prerequisites for future coursework (a goal of many introductory STEM courses) tend to confer grade penalties than other courses.
 
-First, we can explore what the distribution of course grades are versus GPAO. The plot below shows the sample size of students for different combinations of GPAO versus course grade. The line shows the one-to-one line, so areas below the line represent grade penalties (GPAO > grade), areas above grade bonuses (GPAO < grade). Lighter colors represent more students that fall in that quadrant. 
+First, we can explore what the distribution of course grades are versus GPAO. The plot below shows the sample size of students for different combinations of GPAO versus course grade. The line shows the one-to-one line, so areas below the line represent grade penalties (GPAO \> grade), areas above grade bonuses (GPAO \< grade). Lighter colors represent more students that fall in that quadrant.
 
 ```{r course grade vs gpao heatmap, message= FALSE, warning = FALSE}
 #heatmap a la Heather Rypkema's report 
@@ -661,9 +662,12 @@ glab<-c("F","D","C","B","A")
   scale_x_continuous(breaks=yticks,labels=glab)+
   labs(x = "GPAO", y = "Course Grade", fill = "N") + 
   theme_seismic
+  
+opts_chunk$set(fig.height = 5)
 
 ```
 
+As with actual grades, we can also examine grade anomaly across student demographics. The following plot shows the distribution of grade anomalies for each listed student demographic. The darker portion of the distribution represents the students between the 25th and 75th percentile. The mean is a circle, with errorbars showing the 95% confidence interval around the mean. Vertical lines on each plot represent the median. The dashed line across the whole plot represents the mean grade anomaly across the entire coures (all terms and all students).
 
 ```{r grade anomaly distributions by identity, message= FALSE, warning=FALSE}
 
@@ -714,6 +718,8 @@ dat %>%
   coord_flip()
 ```
 
+The below plot focuses on the mean grade anomaly for each of the student demographics, comparing the majority group (circles) to the historically excluded / marginalized group (triangles). Points show means, flanked by the 95% confidence interval for each group. The size of the point corresponds to the sample size of students in that group.
+
 ```{r grade anomaly by identity, message=FALSE, warning=FALSE}
 #different identities with average grade anomaly across identities 
 dat %>%
@@ -743,7 +749,9 @@ dat %>%
   scale_shape_discrete(labels = c("0" = "no", "1" = "yes"), name = "Student holds identity?") + 
   #use seismic colors; turn off color legend
   scale_color_manual(guide = "none", values = seismic_colors) + 
-  annotate(geom = "text", x = 1, y = c(0.1,-0.1), label = c("grade \nbonus", "grade \npenalty"), color = c("blue", "red"), vjust = -0.1) + 
+  #add a text label 
+  annotate(geom = "text", x = 2, y = c(0.01,-0.05), label = c("grade bonus", "grade penalty"), 
+           color = c("blue", "red"),vjust = -0.01, size = 4, angle = 270) +
   #labels
   labs(x = "Student identity", y = "Grade anomaly", color = "Student identity", size = "N",
        caption = "Mean ± 95% CI shown \n Dashed line is overall average grade") + 
@@ -752,6 +760,8 @@ dat %>%
   theme_seismic + 
   coord_flip()
 ```
+
+Similarly, we can also further disaggregate the PEER group into specific student races/ethnicities. The below plot shows grade anomalies by student ethnicity. Points represent mean grade anomaly, error bars the 95% confidence interval. Point size corresponds to overall sample size of students for each group.
 
 ```{r grade anomaly by ethnicity, message=FALSE, warning=FALSE}
 # plot grade anomaly by specific ethnicity
@@ -778,6 +788,9 @@ dat %>%
   #relabel x axis labels to be more interpretable
   scale_x_discrete(labels = ethnicity_labels) + 
   scale_size_continuous(trans = "log10", breaks = c(10,100,1000))+ #point size for readability
+    #add a text label 
+  annotate(geom = "text", x = 2, y = c(0.01,-0.05), label = c("grade bonus", "grade penalty"), 
+           color = c("blue", "red"),vjust = -0.01, size = 4, angle = 270) +
   #labels
   labs(x = "Student identity", y = "Grade anomaly", size = "N",
        caption = "Mean ± 95% CI shown \n Dashed line is overall average grade anomaly") + 
@@ -785,7 +798,17 @@ dat %>%
   guides(color = "none") + 
   coord_flip()
 ```
-We can also observe these trends over time. 
+
+**Guiding questions:**
+
+-   Does examining grade anomaly give further information on equitable outcomes than course grades alone?
+-   Are students receiving a grade bonus or a grade penalty on average in this course? (see dashed line for overall course average)
+-   Are there any marginalized demographic groups that are receiving more of a grade penalty or more of a grade bonus? Reflecting on the course structure and its place in the curriculum context, can you think of any reasons that might be?
+
+## How does grade anomaly change over time?
+
+We can also observe these trends over time. The below plot shows the trends in average GPAO and course grade over the terms listed in the dataset. The vertical distance between these points shows the size of the grade anomaly, on average, for that term. If the course grade point is above the GPAO, there is a grade bonus, if below, a grade penalty.
+
 ```{r overall grade anomaly - over time, message=FALSE, warning=FALSE}
 #overall grade anomaly over time
 
@@ -818,10 +841,10 @@ dat %>%
   theme(legend.position =  "top")
 ```
 
+Then, we can show trends in grade anomaly for each student demographic over time. Points represent mean grade anomaly for all students of that identity in that term, and errorbars are the 95% confidence interval. The majoritarian group (i.e., students who do not hold the indicated identity) is shown in gray across all plots. The overall course average grade anomaly, across all students and all terms, is shown with a dashed line.
 
-```{r grade anomaly by identity - over time, message=FALSE, warning=FALSE}
+```{r grade anomaly by identity - over time (facets), message=FALSE, warning=FALSE,fig.height= 8, fig.width = 8}
 #plot grade anomaly over time (facet plot)
-
 dat %>%
   #filter course of interest
   filter(crs_name == course_of_interest) %>%
@@ -871,16 +894,13 @@ dat %>%
   theme(legend.position =  "bottom") + 
   #hide redundant color label
   guides(color = "none")
-```
 
+```
 
 **Guiding questions:**
 
-- Does examining grade anomaly give further information on equitable outcomes than course grades alone?
--   Are students receiving a grade bonus or a grade penalty on average in this course? (see dashed line for overall course average)
--   Are there any marginalized demographic groups that are receiving more of a grade penalty or more of a grade bonus? Reflecting on the course structure and its place in the curriculum context, can you think of any reasons that might be?
-
-[*Victoria has made changes up to this point as of 4/30/2023*]{style="color: red;"}
+-   Is the grade anomaly for this course consistent over time? (Is there always a grade bonus or penalty, or does it depend on term or year?)
+-   If grade anomaly fluctuates, what aspects of the course structure or student population might relate to these differences? What data would you want to access to answer this question?
 
 # Examing the impact of students' systemic advantages
 
@@ -971,7 +991,6 @@ dat %>%
        caption = "Mean ± 95% CI shown \n Dashed line is overall average grade") + 
   theme_seismic + 
   coord_flip()
-
 ```
 
 ```{r grade anomaly by SAI, message=FALSE, warning=FALSE}
@@ -981,7 +1000,7 @@ dat %>%
   mutate(sai = as.numeric(sai)) %>%
   add_count(sai, name = "n") %>% #add sample size per SAI
   filter(crs_name == course_of_interest) %>%
-  ggplot(aes(x = sai, y = numgrade-gpao, color = sai))+ 
+  ggplot(aes(x = sai, y = numgrade-gpao, color = as.factor(sai)))+ 
       stat_summary(aes(size = n), geom = "point", fun = "mean", 
                  position = position_dodge(0.2)) + 
     stat_summary(geom = "errorbar", fun.data = "mean_cl_normal", 
@@ -989,7 +1008,11 @@ dat %>%
    geom_hline(yintercept = aga_coi, linetype = "dashed") + 
     #plot line and annotations for penalty vs bonus
   geom_hline(yintercept = 0) +  
-  annotate(geom = "text", x = 1, y = c(0.1,-0.1), label = c("grade \nbonus", "grade \npenalty"), color = c("blue", "red"), vjust = -0.1)  + 
+    #use custom SAI colors
+  scale_color_manual(values = sai_colors) +
+  #add a text label 
+  annotate(geom = "text", x = 2, y = c(0.01,-0.05), label = c("grade bonus", "grade penalty"), 
+           color = c("blue", "red"),vjust = -0.01, size = 4, angle = 270) + 
   labs(x = "SAI", y = "Grade anomaly \n(course grade - GPAO)", color = "SAI",
        caption = "Mean ± 95% CI shown \n Dashed line is overall average grade") + 
   theme_seismic + 
@@ -1013,16 +1036,14 @@ dat %>%
   #rename the labels for the
   mutate(metric = factor(metric, labels = c("GPAO", "Course Grade"))) %>%
   ggplot(aes(x = sai, y = value, 
-             color = as.factor(female), shape = as.factor(female))) + 
+             color = as.factor(sai), shape = as.factor(female))) + 
   stat_summary(geom = "point", fun.data = mean_se, size = 3) + 
   stat_summary(geom = "errorbar", fun.data = mean_cl_normal, size = 1, width = 0) +
-  labs(x = "Systemic Advantage Index", y = "Grade/GPA value", color = NULL, shape = NULL) +
-  scale_color_manual(values = c("black", "#B9B9B9"), labels = c("M","W")) +
+  scale_color_manual(values = sai_colors) +
   scale_shape_discrete(labels = c("M","W")) + 
   facet_wrap(~metric) + 
   theme_seismic
 ```
-
 
 **Guiding questions:**
 
@@ -1032,7 +1053,7 @@ dat %>%
 
 ### Acknowledgements
 
-This report is heavily inspired by the Foundational Course Initiative reports from the University of Michigan, created by Dr. Heather Rypkema and refined by the Assessment Toolkit team. The R code in this report was initially drafted by Victoria Farrar (UC Davis) with feedback from Nita Tarchinski (Michigan), Matthew Steinwachs (UC Davis), Jenna Thomas (UC Davis), Tim MckKay (Michigan), Heather Rypkema (Michigan) and Marco Molinaro (University of Maryland). 
+This report is heavily inspired by the Foundational Course Initiative reports from the University of Michigan, created by Dr. Heather Rypkema and refined by the Assessment Toolkit team. The R code in this report was initially drafted by Victoria Farrar (UC Davis) with feedback from Nita Tarchinski (Michigan), Matthew Steinwachs (UC Davis), Jenna Thomas (UC Davis), Tim MckKay (Michigan), Heather Rypkema (Michigan) and Marco Molinaro (University of Maryland).
 
 ```{r R coding resources, include = FALSE}
 #R coding resources used
