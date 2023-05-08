@@ -1,20 +1,20 @@
 ---
-title: "SEISMIC Equity Learning Communities "
-subtitle: "Level 1 Report"
+title: "SEISMIC Equity Learning Communities Report (DEMO)"
+subtitle: "Course Equity Report (Level 1)"
 output:
   rmdformats::readthedown
 date: "`r Sys.Date()`"
 ---
 
-# Introduction
-
-This report is the first in a series created for the SEISMIC Equity Learning Communities (SELC) project. The goal of this report, as part of the SELC project, is to allow faculty and department leaders to view institutional data from their courses of interest to evaluate whether students experience equitable outcomes in those courses. This first "Level 1" report will give an overview of the demographic composition of these courses across a range of student identities, show how course grades map onto these demographics and how these patterns have changed over time, and will also compare course grades to students' other coursework through the concept of grade anomaly. This data is meant to facilitate discussions about how to improve equitable outcomes and elevate pedagogical techniques that might support historically marginalized students.
-
-We want to emphasize that the student identities explored here are not exhaustive. There are many identities that may influence students' experiences, and thus outcomes, in the classroom, and only some of these identities are collected in registrar-available or quantitative data. Quantitative data is readily-available and allows us to quickly show patterns across student groups or over time. However, aspects of quantitative analysis - such as the binary categorizations, or analyzing statistics aggregated over whole groups - can obscure many diverse and intersectional aspects of an individual student's experiences. As you read through the report, remember that each data point represents an individual who deserves the opportunity to succeed in these courses.
+[*Note: This report is a demo created for the SELC May Institute 2023 using synthetic data.*]{style="color: blue;"}
 
 ```{r setup, include=FALSE}
+#setup 
+
 #hide code, warnings, and messages by default
 knitr::opts_chunk$set(echo = FALSE, warnings = FALSE, messages = FALSE)
+
+#load packages
 library(tidyverse)
 library(rmdformats) #output format: readthedown
 library(kableExtra) #pretty html tables
@@ -23,6 +23,7 @@ library(ggdist) #for density plots
 library(cowplot) #for two panel plots
 library(viridis) #colorblind palettes
 library(knitr)
+library(pander) #for text processing
 
 #create shared plot settings
 theme_seismic <- 
@@ -37,29 +38,52 @@ theme_seismic <-
 seismic_colors <- c("#eb7e36","#4671c6","#70ac49","#a6a6a6","#ffbe07", "#429dda","#B35050","#7ed233")
 ```
 
+```{css css textbox formatting, echo = FALSE}
+.questionbox {
+  padding: 1em;
+  background:#DFDFDF;
+  color: black;
+  border: 2px solid maroon;
+  font-size: 18 px
+}
+
+.center {
+  text-align: center;
+}
+```
+
 ```{r load data, echo = FALSE}
 #load data 
 #change this file name to the source of your properly formatted data file 
-dat <- read.csv(file = "~/Downloads/synthetic_data_SEISMIC-format_BIO300_2023-04-29.csv")
+dat <- read.csv(file = "~/Downloads/synthetic_data_SEISMIC-format_BIO300_2023-05-08.csv")
+
 ```
 
-```{r select course of interest, results = "asis"}
+```{r select course of interest}
 #if the dataset has more than one course in it, define the course of interest here
-#what you enter must match the entry in the dataset
+#what you enter must match the course name in the dataset
 course_of_interest <- "BIO300"
-
-#this command will include the selected course of interest in the R markdown report. 
-#Do not edit this line:
-cat(paste("The course of interest is:", course_of_interest))
-
-#this command will include the range of dates in the R markdown report. 
-#Do not edit this line:
-cat("\n", paste("The range for this data is:", min(dat$crs_year), "-", max(dat$crs_year)))
 ```
 
 ```{r define majors of interest, include = FALSE}
+#define the majors you are specifically interested in plotting and exploring in your dataset
+#entries must match the names in the dataset verbatim
 majors_of_interest <- c("Biological Sciences", "Chemistry")
 ```
+
+# Introduction
+
+This report is the first in a series created for the SEISMIC Equity Learning Communities (SELC) project. The goal of this report, as part of the SELC project, is to allow faculty and department leaders to view institutional data from their courses of interest to evaluate whether students experience equitable outcomes in those courses. This first "Level 1" report will give an overview of the demographic composition of these courses across a range of student identities, show how course grades map onto these demographics and how these patterns have changed over time, and will also compare course grades to students' other coursework through the concept of grade anomaly. This data is meant to facilitate discussions about how to improve equitable outcomes and elevate pedagogical techniques that might support historically marginalized students.
+
+We want to emphasize that the student identities explored here are not exhaustive. There are many identities that may influence students' experiences, and thus outcomes, in the classroom, and only some of these identities are collected in registrar-available or quantitative data. Quantitative data is readily-available and allows us to quickly show patterns across student groups or over time. However, aspects of quantitative analysis - such as the binary categorizations, or analyzing statistics aggregated over whole groups - can obscure many diverse and intersectional aspects of an individual student's experiences. As you read through the report, remember that each data point represents an individual who deserves the opportunity to succeed in these courses.
+
+
+::: {.center data-latex=""}
+**The course of interest is `r course_of_interest`.**
+
+**The course data presented in this report ranges from `r min(dat$crs_year)` to `r max(dat$crs_year)`.**
+:::
+
 
 # Who is in this course?
 
@@ -167,12 +191,15 @@ ggplot(aes(x = ethnicity, y = perc, fill = ethnicity)) +
 
 ```
 
+:::: {.questionbox data-latex=""}
+::: {.center data-latex=""}
 **Guiding questions:**
-
+:::
 -   Do any of the percentages of students in the course surprise you? In what way?
 -   What groups are *not* included in these figures?
 -   Given the demographic breakdown of your course, are there any groups you would be specifically interested in examining course outcomes for?
 -   Do you think it could be useful to show the demographic breakdown to your students? How might you present this data to your students?
+::::
 
 ## How have these demographics changed over time?
 
@@ -230,11 +257,14 @@ ggplot(aes(x = crs_label, y = perc, color = demo_var)) +
 
 ```
 
+:::: {.questionbox data-latex=""}
+::: {.center data-latex=""}
 **Guiding questions:**
-
+:::
 -   What groups, if any, are growing in the classroom in recent years?
 -   Are there any yearly patterns or differences between summer terms and main terms?
 -   Are there any change to the classroom course content or structure that could better meet the needs or specific challenges of these groups?
+::::
 
 ## What majors do students in this course hold?
 
@@ -272,13 +302,11 @@ dat %>%
 
 Additionally, we may only be interested in a few majors, such as the major of the department of the course. If specified, the plot below shows the percent of majors of interest in this course, compared to all other majors.
 
-```{r print majors of interest, results = "asis"}
-#this command will include the majors of interest in the R markdown report. 
-#Do not edit this line:
-cat("The majors of interest are:", majors_of_interest, "\n", sep = "\n")
+::: {.center data-latex=""}
+**The major(s) of interest for this report are `r ifelse(length(majors_of_interest)>=2,pander::p(majors_of_interest, wrap = ''),cat(paste(majors_of_interest, sep = ", ")))`.**
+:::
 
-#issue: the "\n" function does not work in the R markdown text when knitted
-```
+
 
 ```{r percent by majors of interest, message=FALSE, warning=FALSE}
 #plot of the percent of only majors of interest (defined in Chunk 4)
@@ -331,8 +359,10 @@ dat %>%
   theme_seismic
 ```
 
+:::: {.questionbox data-latex=""}
+::: {.center data-latex=""}
 **Guiding questions:**
-
+:::
 -   Does this grade distribution match what you would expect to see for this course? What about what you would *like* to see?
 
 -   If the distribution does not match what you would like to see, how would you alter your assessments or pedagogical structures to better achieve that distribution?
@@ -342,6 +372,7 @@ dat %>%
 -   If you do have a required distribution, are your assessments adequately gauging learning outcomes, so that the final grades mirror the degree of student learning?
 
 -   How well do grades represent student success in this course? What other measures of student outcomes could you use?
+::::
 
 ## How do course outcomes compare for different student groups?
 
@@ -475,13 +506,16 @@ dat %>%
   coord_flip()
 ```
 
+:::: {.questionbox data-latex=""}
+::: {.center data-latex=""}
 **Guiding questions:**
-
+:::
 -   Is this course supporting students differently? Why might this course support some students better than others?
 
 -   For what students is this course working well for?
 
 -   What additional information about this course or these students would you want to collect to answer these questions?
+::::
 
 ## How have grades across student groups changed over time?
 
@@ -489,10 +523,32 @@ We can also evaluate how grading and grade distributions have changed over time 
 
 Below, we can see general trends in grade distribution over time, where the distribution of grades is shown as a density plot. The color of the line represents the term.
 
-[*This plot will be replaced with a stacked bar plot of letter grades over time*]{style="color: red;"}
+```{r grade distribution over time (stacked bar), warning = FALSE, message=FALSE}
+#stacked bar plot with grades by term 
 
-```{r overall grade distribution - over time, warning = FALSE, message= FALSE}
+dat %>%
+  filter(crs_name == course_of_interest) %>%
+  #remove plus/minus from lettergrade, if present
+  mutate(lettergrade = str_replace_all(lettergrade, regex("\\W+"), "")) %>%
+  #create a semq text label for more clear x axis labels 
+  mutate(semq_text = recode(as.character(crs_semq), "1" = "W", "2" = "Sp", "3" = "SuI", "4" = "SuII", "5" = "F")) %>%
+  #create a crs_section variable to maintain x axis chronological ordering
+  mutate(crs_section = paste0(crs_year, crs_semq)) %>%
+  #create course label that orders readable labels create above chronologically
+  mutate(crs_label = forcats::fct_reorder(as.factor(paste0(semq_text, crs_year)), as.integer(crs_section))) %>%
+  add_count(crs_label, lettergrade, name = "n_grade") %>%
+  ggplot(aes(x = crs_label, y = n_grade, fill = lettergrade)) +
+  geom_col(position = "fill") +
+  scale_fill_viridis(discrete = T) + 
+  scale_y_continuous(labels = scales::percent) + 
+  labs(x = "Course Term", y = "Percent", fill = "Lettergrade") + 
+  theme_seismic + 
+  theme(axis.text.x = element_text(angle = 90)) 
+```
+
+```{r grade distribution density over time, eval=FALSE, message=FALSE, warning=FALSE, include=FALSE}
 #overall grade distribution as a density plot over time (color = terms)
+#note: this code no longer run
 
 dat %>%
   filter(crs_name == course_of_interest) %>%
@@ -565,11 +621,14 @@ dat %>%
 
 ```
 
+:::: {.questionbox data-latex=""}
+::: {.center data-latex=""}
 **Guiding questions:**
-
+:::
 -   Have the overall trends in course grades been stable over time, or have they changed in recent terms?
 
 -   If there are any overall equity gaps associated with specific student identities, have they narrowed in recent years, or widened? Are there any pedagogical or structural changes that may relate to any changes seen over time?
+::::
 
 ```{r mean grades by identity - over time, eval=FALSE, message=FALSE, include=FALSE, waring=FALSE}
 #this chunk currently turned off - makes a rather ugly plot
@@ -799,11 +858,14 @@ dat %>%
   coord_flip()
 ```
 
+:::: {.questionbox data-latex=""}
+::: {.center data-latex=""}
 **Guiding questions:**
-
+:::
 -   Does examining grade anomaly give further information on equitable outcomes than course grades alone?
 -   Are students receiving a grade bonus or a grade penalty on average in this course? (see dashed line for overall course average)
 -   Are there any marginalized demographic groups that are receiving more of a grade penalty or more of a grade bonus? Reflecting on the course structure and its place in the curriculum context, can you think of any reasons that might be?
+::::
 
 ## How does grade anomaly change over time?
 
@@ -897,10 +959,13 @@ dat %>%
 
 ```
 
+:::: {.questionbox data-latex=""}
+::: {.center data-latex=""}
 **Guiding questions:**
-
+:::
 -   Is the grade anomaly for this course consistent over time? (Is there always a grade bonus or penalty, or does it depend on term or year?)
 -   If grade anomaly fluctuates, what aspects of the course structure or student population might relate to these differences? What data would you want to access to answer this question?
+::::
 
 # Examing the impact of students' systemic advantages
 
@@ -929,7 +994,8 @@ SAI adds together all of the advantages a student may have across these four dem
 > 💭 Can you think of any other systemic advantages not included in this index that likely influence student's outcomes in a course? What would be the challenges to adding those identities or advantages to this index?
 
 ------------------------------------------------------------------------
-The SAI approximates an intersectional approach, where we can consider how multiple axes of student identities may affect student experiences, and thus, course outcomes. However, SAI is limited in its intersectional approach in two ways. First, it collapses down various, diverse student identities within one index. For example, SAI = 2 contains six vastly different student identities and experiences, which undoubtedly do not share the same challenges and experiences in higher education. Second, SAI assumes all advantages act additively, rather than considering some cases where they interact in a non-additive way. 
+
+The SAI approximates an intersectional approach, where we can consider how multiple axes of student identities may affect student experiences, and thus, course outcomes. However, SAI is limited in its intersectional approach in two ways. First, it collapses down various, diverse student identities within one index. For example, SAI = 2 contains six vastly different student identities and experiences, which undoubtedly do not share the same challenges and experiences in higher education. Second, SAI assumes all advantages act additively, rather than considering some cases where they interact in a non-additive way.
 
 ```{r default missing demographics to 0, message=FALSE, warning=FALSE}
 #for SAI calculations, any NA demographic variables will need to be conservatively coded as 0 (defaulted to the majoritarian group)
@@ -968,7 +1034,7 @@ dat <-
 
 ### How do course grades and grade anomalies compare across levels of SAI?
 
-The below plots show raw grades and grade anomaly partitioned by the number of systemic advantages students have access to. Points represent means, errorbars 95% confidence intervals around the mean. The dashed line represents the overall course average, across all students and terms. The size of the point corresponds to the sample size across all terms of the course. 
+The below plots show raw grades and grade anomaly partitioned by the number of systemic advantages students have access to. Points represent means, errorbars 95% confidence intervals around the mean. The dashed line represents the overall course average, across all students and terms. The size of the point corresponds to the sample size across all terms of the course.
 
 ```{r raw grades by SAI, message=FALSE, warning=FALSE}
 
@@ -1020,7 +1086,8 @@ dat %>%
   coord_flip()
 
 ```
-In some STEM courses, there are significant gender gaps between men and women. (You may have already observed that in the above grade or grade anomaly distributions). To explore how gender may interact with other advantages, we can show SAI for men and women separately. In the below two panel plot, we can see the trends for GPAO and course grade across SAI levels for men (circles) and women (triangles). Points show means and errorbars 95% confidence intervals. If the 95% confidence intervals overlap between the genders, the two groups do not significantly differ. 
+
+In some STEM courses, there are significant gender gaps between men and women. (You may have already observed that in the above grade or grade anomaly distributions). To explore how gender may interact with other advantages, we can show SAI for men and women separately. In the below two panel plot, we can see the trends for GPAO and course grade across SAI levels for men (circles) and women (triangles). Points show means and errorbars 95% confidence intervals. If the 95% confidence intervals overlap between the genders, the two groups do not significantly differ.
 
 ```{r sai by gender, warning=FALSE, message=FALSE}
 #2 panel plot of raw grades by SAI by gender and grade anomaly by SAI by gender
@@ -1081,7 +1148,7 @@ dat %>%
     mutate(advantage = as.factor(advantage)) 
 ```
 
-Given the limitations above, we might want to examine specific intersections of advantages, rather than just a numeric index. The below plot further investigates intersections of student identities by showing course outcomes for specific advantage combinations. These specific combinations are collapsed in the SAI index, but here, are disaggregated by the specific identity a student holds. 
+Given the limitations above, we might want to examine specific intersections of advantages, rather than just a numeric index. The below plot further investigates intersections of student identities by showing course outcomes for specific advantage combinations. These specific combinations are collapsed in the SAI index, but here, are disaggregated by the specific identity a student holds.
 
 The two plots below show actual course grades and grade anomalies. In both plots, points show means and 95% confidence intervals as errorbars. Dashed lines repersent the overall course average. Color corresponds to that groups' SAI. The specific identities the student holds are indicated on the y axis; FG = First Generation, LI = Low Income family background, W = Woman, and PEER = Person from a background historically excluded based on ethnicity/race. The "All" group corresponds to students will access to all listed advantages (i.e., a non-PEER, non-Low-Income, continuing-generation man).
 
@@ -1106,6 +1173,7 @@ dat %>%
     theme(plot.title = element_text(hjust = 0.5)) + 
   coord_flip()
 ```
+
 ```{r grade anomaly by advantage combo, warning = FALSE, message=FALSE}
 #"Marco" plot: show means and 95% CI for all advantage combinations
 
@@ -1133,17 +1201,24 @@ dat %>%
   coord_flip()
 ```
 
+:::: {.questionbox data-latex=""}
+::: {.center data-latex=""}
 **Guiding questions:**
-
+:::
 -   Are different levels of SAI significantly different from each other in terms of course outcomes (i.e., do 95% confidence intervals overlap)? Is there a linear relationship between SAI and grade, or is the relationship more mixed? Is there a point where students fall "below" average grades or grade anomalies? How can we better serve those students in this course?
 
 -   If we see differences across levels of SAI, what elements of the course structure might lead to some of these differences with student systemic advantages?
 
-- Do you observe any nuanced relationships between specific advantage combinations that were masked by the overall SAI index?
+-   Do you observe any nuanced relationships between specific advantage combinations that were masked by the overall SAI index?
+::::
+
+## Feedback
+
+Please provide any feedback you may have on this demo report to the SELC team here: [May Institute Feedback Form](https://docs.google.com/forms/d/e/1FAIpQLSdIPV9uwb1q6xSXrF0hH3zyYSko8Nh_gGAv106D6S_PNmLBOw/viewform?usp=sf_link).
 
 ### Acknowledgements
 
-This report is heavily inspired by the Foundational Course Initiative reports from the University of Michigan, created by Dr. Heather Rypkema and refined by the Assessment Toolkit team. The R code in this report was initially drafted by Victoria Farrar (UC Davis) with feedback from Nita Tarchinski (Michigan), Matthew Steinwachs (UC Davis), Jenna Thomas (UC Davis), Tim MckKay (Michigan), Heather Rypkema (Michigan) and Marco Molinaro (University of Maryland).
+This report is heavily inspired by the Foundational Course Initiative reports from the University of Michigan, created by Dr. Heather Rypkema and refined by the Assessment Toolkit team. The R code in this report was initially drafted by Victoria Farrar (UC Davis) with feedback from Nita Tarchinski (Michigan), Matthew Steinwachs (UC Davis), Jenna Thomas (UC Davis), Tim McKay (Michigan), Heather Rypkema (Michigan), Marco Molinaro (University of Maryland) and Stefano Fiorini (Indiana University).
 
 ```{r R coding resources, include = FALSE}
 #R coding resources used
