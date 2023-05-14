@@ -1,0 +1,1266 @@
+---
+title: "SEISMIC Equity Learning Communities Report: [YOUR COURSE HERE]"
+subtitle: "Course Equity Report (Level 1)"
+output:
+  rmdformats::readthedown
+date: "`r Sys.Date()`"
+---
+
+```{r setup, include=FALSE}
+#setup 
+
+#hide code, warnings, and messages by default
+knitr::opts_chunk$set(echo = FALSE, warnings = FALSE, messages = FALSE)
+
+#use pacman to install and load all packages required
+if (!require("pacman")) install.packages("pacman") #install pacman if not already installed
+pacman::p_load(tidyverse, 
+               rmdformats, #output format: readthedown
+               kableExtra, #pretty html tables
+               gghalves, #half-half geoms
+               ggdist, #density plots for distributions
+               viridis, #colorblind-friendly palettes
+               knitr,
+               pander) # for text processing
+
+#create shared plot settings
+theme_seismic <- 
+  theme_classic(base_size = 14) + 
+  theme(axis.text = element_text(color = "black"), 
+        strip.text = element_text(color = "black"), 
+        panel.border = element_rect(color = "black", fill = NA, size = 1), 
+        strip.background = element_rect(color = "black", size = 1)) + 
+    theme(plot.caption = element_text(size = 10, hjust = 0.5)) 
+
+#create SEISMIC color palettes
+#note: SEISMIC colors are NOT colorblind friendly. 
+seismic_colors <- c("#eb7e36","#4671c6","#70ac49","#a6a6a6","#ffbe07", "#429dda","#B35050","#7ed233")
+```
+
+```{css css textbox formatting, echo = FALSE}
+.questionbox {
+  padding: 1em;
+  background:#DFDFDF;
+  color: black;
+  border: 2px solid maroon;
+  font-size: 18 px
+}
+
+.center {
+  text-align: center;
+}
+```
+
+```{r load data, echo = FALSE}
+#load data 
+#change this file name to the source of your properly formatted data file 
+dat <- read.csv(file = "~/Downloads/your_path_here.csv")
+
+```
+
+```{r select course of interest}
+#if the dataset has more than one course in it, define the course of interest here
+#what you enter must match the course name in the dataset
+course_of_interest <- "YOUR COURSE HERE"
+```
+
+```{r define majors of interest, include = FALSE}
+#define the majors you are specifically interested in plotting and exploring in your dataset
+#entries must match the names in the dataset verbatim
+majors_of_interest <- c("Biological Sciences", "Chemistry")
+```
+
+# Introduction
+
+This report is the first in a series created for the SEISMIC Equity Learning Communities (SELC) project. The goal of this report, as part of the SELC project, is to allow faculty and department leaders to view institutional data from their courses of interest to evaluate whether students experience equitable outcomes in those courses. This first "Level 1" report will give an overview of the demographic composition of these courses across a range of student identities, show how course grades map onto these demographics and how these patterns have changed over time, and will also compare course grades to students' other coursework through the concept of grade anomaly. This data is meant to facilitate discussions about how to improve equitable outcomes and elevate pedagogical techniques that might support historically marginalized students.
+
+We want to emphasize that the student identities explored here are not exhaustive. There are many identities that may influence students' experiences, and thus outcomes, in the classroom, and only some of these identities are collected in registrar-available or quantitative data. Quantitative data is readily-available and allows us to quickly show patterns across student groups or over time. However, aspects of quantitative analysis - such as the binary categorizations, or analyzing statistics aggregated over whole groups - can obscure many diverse and intersectional aspects of an individual student's experiences. As you read through the report, remember that each data point represents an individual who deserves the opportunity to succeed in these courses.
+
+
+::: {.center data-latex=""}
+**The course of interest is `r course_of_interest`.**
+
+**The course data presented in this report ranges from `r min(dat$crs_year)` to `r max(dat$crs_year)`.**
+:::
+
+
+# Who is in this course?
+
+Before evaluating student course outcomes, it is important to understand: who takes this course? What demographic and academic groups do students in this course hold?
+
+The plot below shows the percent of students across all terms of the course of interest that hold the following identities: declared a STEM major, transferred from another 2- or 4- year institution, are international students or are permament residents, come from a low socioeconomic family background, are the first in their family to go to college or pursue a Bachelor's degree (first-generation, or FirstGen), are women, or come from a background historically excluded from science based on ethnicity and/or race (PEER; Asai, 2020).
+
+Note that these identities are not mutually exclusive; a single student can belong to any or all of these groups.
+
+```{r percent by identity, message=FALSE, warning=FALSE}
+#bar plot with percent of all students in the class by demographics
+
+#underlying table
+
+demog_percent <-
+dat %>% 
+  #select course of interest only
+  filter(crs_name == course_of_interest) %>%
+  #add n for all students in course
+  add_tally(name = "n_course") %>%
+  #pivot to a long format dataframe
+  pivot_longer(cols = c(ethniccode_cat, female, firstgen, lowincomeflag, international, transfer, stem_major), 
+               names_to = "demo_var",
+               values_to = "value") %>% 
+  group_by(demo_var, value) %>% 
+  #count sample size by each group, then divide by course total
+  summarise(n_total = n(),
+            n_course = mean(n_course)) %>% 
+  #convert to percent
+  mutate(perc = n_total/n_course *100) %>% #percent for each level
+  #select only students that belong to marginalized backgrounds
+  filter(value == 1)
+
+#plot ####
+
+demog_percent %>%
+  #rename labels to be more interpretable
+  mutate(demo_var = factor(demo_var, 
+                           levels = c("ethniccode_cat","female","firstgen","lowincomeflag","international","transfer", "stem_major"),
+                           labels = c("PEER", "Woman", "FirstGen", "LowIncome", "International", "Transfer", "STEM Major"))) %>%
+ggplot(aes(x = demo_var, y = perc, fill = demo_var)) + 
+  #add barplot for percent
+  geom_col(color = "black") + 
+  #add labels for actual percent values
+  geom_text(aes(label = round(perc,0)), hjust = -1) + 
+  #add separating line between academic and demographic values
+  geom_vline(xintercept = 5.5) + 
+  #annotate the sections
+  annotate(geom = "text", x = c(6,5), y = 75, label = c("Academic", "Demographic") ) +
+  labs(x = "Student identity", y = "Percent of class (%)") + 
+  scale_fill_manual(values = seismic_colors) + 
+  #set y axis to 100
+  ylim(0,100)+
+  theme_seismic +
+  #hide redundant color legend
+  theme(legend.position = "none") + 
+  coord_flip()
+```
+
+Persons historically excluded based on ethnicity or race (PEER; [Asai 2020](https://www.cell.com/cell/pdf/S0092-8674(20)30337-8.pdf)) is a category that includes Black/African-American, Indigenous/Native American, and Hispanic/Latino/a/x students. The definition of PEER closely aligns with the definition of "underrepresented minorities" used by the National Science Foundation ([NSF 2023](https://ncses.nsf.gov/pubs/nsf23315/report/glossary#:~:text=Underrepresented%20minorities%3A%20Races%20or%20ethnicities,American%20Indians%20or%20Alaska%20Natives.)).
+
+However, the different racial and ethnic groups included in the PEER label may have different experiences in the STEM courses. These diverse experiences may be masked by the overall PEER/non-PEER categorization; certain ethnicities may experience more or less equitable outcomes. For this reason, it is also important to disaggregate our data by student ethnicity.
+
+The following plot shows the percent of students in the course of interest (across all terms), broken down by specific racial/ethnicity.
+
+```{r percent by ethnicity, message=F, warning=F}
+#Create a list of labels of ethnicities to be more interpretable for x axis labels
+ethnicity_labels <- c("white"= "White", "black_afram" = "Black/African-American", "hispanic_latinx" = "Hispanic/Latinx/Chicanx", "indigenous_am_indian" = "Indigenous/American Indian", "asian" = "Asian", 
+                      "pacific_islander" = "Pacific Islander/Native Hawaiian") 
+
+#percent of class, disaggregated by specific ethnicities: 
+dat %>% 
+  #select course of interest only
+  filter(crs_name == course_of_interest) %>%
+  #add n for all students in course
+  add_tally(name = "n_course") %>%
+  #pivot to a long format dataframe
+  pivot_longer(cols = c(white, black_afram, hispanic_latinx, indigenous_am_indian, asian, pacific_islander),
+               names_to = "ethnicity",
+               values_to = "value") %>% 
+  group_by(ethnicity, value) %>% 
+  #count sample size by each group, then divide by course total
+  summarise(n_total = n(),
+            n_course = mean(n_course)) %>% 
+  #convert to percent
+  mutate(perc = n_total/n_course *100) %>% #percent for each level
+  #select only students that belong to marginalized backgrounds
+  filter(value == 1) %>%
+  #PLOT #
+  ungroup() %>%
+  mutate(ethnicity = forcats::fct_reorder(ethnicity, desc(perc))) %>% 
+ggplot(aes(x = ethnicity, y = perc, fill = ethnicity)) + 
+  #add barplot for percent
+  geom_col(color = "black") + 
+  #add labels for actual percent values
+  geom_text(aes(label = round(perc,0)), hjust = -1) + 
+  labs(x = "Student ethnicity", y = "Percent of class (%)") + 
+  #ylim
+  ylim(0,100)+
+  scale_x_discrete(labels = ethnicity_labels) + 
+  #use seismic color pallette
+  scale_fill_manual(values = seismic_colors) + 
+  theme_seismic +
+  #hide redundant color legend
+  theme(legend.position = "none") +
+  coord_flip()
+
+```
+
+:::: {.questionbox data-latex=""}
+::: {.center data-latex=""}
+**Guiding questions:**
+:::
+-   Do any of the percentages of students in the course surprise you? In what way?
+-   What groups are *not* included in these figures?
+-   Given the demographic breakdown of your course, are there any groups you would be specifically interested in examining course outcomes for?
+-   Do you think it could be useful to show the demographic breakdown to your students? How might you present this data to your students?
+::::
+
+## How have these demographics changed over time?
+
+While overall percentages are informative, we can also examine trends in representation of these different student groups across course terms.
+
+The below plot shows the percent of students in *each term* of the course of interest across the range of terms in the dataset. Student identities are shown in different colored lines over time. Individual terms (winter, spring, summer or fall) are labeled on the x-axis.
+
+```{r percent by identity - over time, message=FALSE, warning=FALSE}
+#different identities with the percent over time
+  #could be facet grid or not
+
+dat %>% 
+  #select course of interest only
+  filter(crs_name == course_of_interest) %>%
+  #add n for all students in course section
+  add_count(crs_section, name = "n_section") %>%
+  #pivot to a long format dataframe
+  pivot_longer(cols = c(ethniccode_cat, female, firstgen, lowincomeflag, international, transfer, stem_major), 
+               names_to = "demo_var",
+               values_to = "value") %>% 
+  #group by course section
+  group_by(crs_year, crs_semq, demo_var, value) %>% 
+  #count sample size by each group, then divide by course total
+  summarise(n_total = n(),
+            n_course = mean(n_section)) %>% 
+  #convert to percent
+  mutate(perc = n_total/n_course *100) %>% #percent for each level
+  #select only students that belong to marginalized backgrounds
+  filter(value == 1) %>%
+  #create a semq text label for more clear x axis labels 
+  mutate(semq_text = recode(as.character(crs_semq), "1" = "W", "2" = "Sp", "3" = "SuI", "4" = "SuII", "5" = "F")) %>%
+  #create a crs_section variable to maintain x axis chronological ordering
+  mutate(crs_section = paste0(crs_year, crs_semq)) %>%
+  #create course label that orders readable labels create above chronologically
+  mutate(crs_label = forcats::fct_reorder(as.factor(paste0(semq_text, crs_year)), as.integer(crs_section))) %>%
+  #rename demographic labels to be more interpretable
+  mutate(demo_var = factor(demo_var, 
+                           levels = c("ethniccode_cat","female","firstgen","lowincomeflag","international","transfer", "stem_major"),
+                           labels = c("PEER", "Woman", "FirstGen", "LowIncome", "International", "Transfer", "STEM Major"))) %>%
+  #remove missing demographic variables before plotting
+  drop_na(demo_var) %>%
+  #PLOT 
+ggplot(aes(x = crs_label, y = perc, color = demo_var)) + 
+  geom_point(aes(shape = semq_text), size = 2) + #shape corresponds to term
+  geom_line(aes(group = demo_var)) + 
+  labs(x = "Course Term", y = "Percent of class (%)",
+       color = "Student identity", shape = NULL) + 
+  #optional: separate plots for each demographic variable
+  #facet_wrap(~demo_var) + 
+  #use seismic color palette
+  scale_color_manual(values = seismic_colors) + 
+  scale_shape_discrete(labels = c("F" = "Fall", "Sp" = "Spring", "W" = "Winter", "SuI" = "Summer I", "SuII" = "Summer II")) +
+  theme_seismic + 
+  theme(axis.text.x = element_text(angle = 90))
+
+```
+
+:::: {.questionbox data-latex=""}
+::: {.center data-latex=""}
+**Guiding questions:**
+:::
+-   What groups, if any, are growing in the classroom in recent years?
+-   Are there any yearly patterns or differences between summer terms and main terms?
+-   Are there any change to the classroom course content or structure that could better meet the needs or specific challenges of these groups?
+::::
+
+## What majors do students in this course hold?
+
+In addition to demographic factors, student majors also provide information about students' course background, interest, and potentially familiarity with the material in our courses.
+
+The below plot shows all students across all terms, broken down by major of study. Each bar shows the percent of students in each major. The color of the bar indicates whether the major is a STEM major, or a non-STEM major. (The overall percent of STEM majors in the course is shown in the bar plot above with the other student identities.)
+
+```{r percent by all majors, message = FALSE, warning=FALSE}
+# plot percent of all majors in the course 
+# note: depending on number of majors in your dataset, this could get expansive
+
+dat %>% 
+  #select course of interest only
+  filter(crs_name == course_of_interest) %>%
+  #add n for all students in course
+  add_tally(name = "n_course") %>%
+  group_by(major, stem_major) %>% 
+  #count sample size by each group, then divide by course total
+  summarise(n_total = n(),
+            n_course = mean(n_course)) %>% 
+  #convert to percent
+  mutate(perc = n_total/n_course *100) %>% #percent for each level
+  ggplot(aes(x = major, y = perc, fill = as.factor(stem_major))) +
+  #add barplot for percent
+  geom_col(color = "black") + 
+  #add labels for actual percent values
+  geom_text(aes(label = round(perc,0)), hjust = 1.2) + 
+  labs(x = "Major", y = "Percent of class (%)", fill = NULL) + 
+  scale_fill_manual(values = seismic_colors, 
+                    labels = c("non-STEM", "STEM")) + 
+  theme_seismic +
+  theme(legend.position = "top") + 
+  coord_flip()
+```
+
+Additionally, we may only be interested in a few majors, such as the major of the department of the course. If specified, the plot below shows the percent of majors of interest in this course, compared to all other majors.
+
+::: {.center data-latex=""}
+**The major(s) of interest for this report are `r ifelse(length(majors_of_interest)>=2,pander::p(majors_of_interest, wrap = ''),cat(paste(majors_of_interest, sep = ", ")))`.**
+:::
+
+
+
+```{r percent by majors of interest, message=FALSE, warning=FALSE}
+#plot of the percent of only majors of interest (defined in Chunk 4)
+
+dat %>% 
+  #select course of interest only
+  filter(crs_name == course_of_interest) %>%
+  #add n for all students in course
+  add_tally(name = "n_course") %>%
+  #create variable that indicates major of interest
+  mutate(moi = ifelse(major %in% majors_of_interest, major, "Other")) %>%
+  group_by(moi) %>% 
+  #count sample size by each group, then divide by course total
+  summarise(n_total = n(),
+            n_course = mean(n_course)) %>% 
+  #convert to percent
+  mutate(perc = n_total/n_course *100) %>% #percent for each level
+ #create a dummy column for x axis, which will be hidden
+  mutate(dummy = "dummy") %>%
+  ggplot(aes(fill=moi, y=perc, x=dummy)) + 
+  #plot bars in single bar
+  geom_col(color = "black") + 
+  #add labels with percents
+  geom_text(aes(label = paste0(moi,"-",round(perc,0),"%")),
+            position = position_stack(vjust = 0.5)) +
+  labs(x = NULL, y = "Percent(%)") + 
+  scale_fill_manual(values = seismic_colors, guide = "none") + 
+  theme_void() + 
+  #hide x axis ticks
+  theme(axis.text.x = element_blank(),
+        axis.ticks.x = element_blank()) 
+```
+
+# Grades in this course
+
+Student final grades are the main course outcome available from registrar data. In this section, we examine the distribution of grades in this courses, and explore grade patterns across groups.
+
+## What is the grade distribution in this course?
+
+The below plot shows the overall grade distribution for this course across all terms. Note that this plot excludes students who did not take the course for a lettergrade (pass/non pass) or withdrew. 
+
+```{r overall grade distribution, warning = FALSE, message=FALSE}
+
+dat %>%
+  filter(crs_name == course_of_interest) %>%
+ ggplot(aes(x = fct_reorder(lettergrade, numgrade), y = after_stat(count)/sum(after_stat(count)))) +  
+        geom_bar(color = "black", fill =  seismic_colors[2]) + 
+        scale_y_continuous(labels = scales::percent) + 
+  labs(x = "Course Grade", y = "Percent") + 
+  theme_seismic
+```
+
+:::: {.questionbox data-latex=""}
+::: {.center data-latex=""}
+**Guiding questions:**
+:::
+-   Does this grade distribution match what you would expect to see for this course? What about what you would *like* to see?
+
+-   If the distribution does not match what you would like to see, how would you alter your assessments or pedagogical structures to better achieve that distribution?
+
+-   Does this course have a mandatory distribution requirement? If so, is this historical distribution consistent with it?
+
+-   If you do have a required distribution, are your assessments adequately gauging learning outcomes, so that the final grades mirror the degree of student learning?
+
+-   How well do grades represent student success in this course? What other measures of student outcomes could you use?
+::::
+
+## How do course outcomes compare for different student groups?
+
+The overall grade distribution gives us a sense for grade patterns in this course. The overall grade distribution gives us a sense for grade patterns in this course. However, from an equity perspective, we want to examine and compare the distributions for different student identities.
+
+The below plot shows the full distribution of the grades for multiple student identities, both academic (STEM major, transfer students) and demographic (PEER, women, low income, first-generation, international). 
+
+* The distribution is shown as a density plot with the majority (25th - 75th percentiles) shaded in a darker color. This region represents the "box" portion of a box plot. 
+
+* The mean and the 95% confidence interval around the mean is shown as a point and errorbar below each distribution. 
+    + If 95% confidence intervals do not overlap between two groups, the means are statistically significantly different. 
+
+* The medians is shown as a small vertical line on each distribution. 
+
+* The overall mean grade across all students (across all terms in the dataset) is shown as a dashed vertical line. 
+
+```{r raw grade distributions and means by identity, message=FALSE, warning=FALSE}
+#plots grade distributions, along with means/SEM, for demographic identities
+
+#calculate overall mean grade for course (will be plotted as an average line)
+mean_grade_coi <- mean(dat$numgrade[dat$crs_name == course_of_interest], na.rm = T)
+
+#plot
+dat %>%
+  filter(crs_name == course_of_interest) %>%
+  #pivot to a long format dataframe
+  pivot_longer(cols = c(ethniccode_cat, female, firstgen, lowincomeflag, international, transfer, stem_major), 
+               names_to = "demo_var",
+               values_to = "value") %>% 
+  #select all students who do belong to the group of interest
+  filter(value == 1 ) %>%
+  #rename labels to be more interpretable
+ mutate(demo_var = factor(demo_var, 
+                           levels = c("ethniccode_cat","female","firstgen","lowincomeflag","international","transfer", "stem_major"),
+                           labels = c("PEER", "Woman", "FirstGen", "LowIncome", "International", "Transfer", "STEM Major"))) %>%
+  #PLOT
+  ggplot(aes(x = demo_var, y = numgrade, fill = demo_var)) + 
+  #add density half-plot with the 1st and 3rd quartiles demarcated
+  ggdist::stat_slab(side = "right", scale = 0.4, show.legend = F,
+                    position = position_dodge(width = 0.8),
+                    aes(fill_ramp = after_stat(level)),.width = c(.50, .95,1)) + 
+  #add mean +/- 95% CI points and errorbars
+  stat_summary(fun.data = "mean_cl_normal", show.legend = T, 
+               size = 0.3, position = position_dodge2(width = 0.8)) +
+  #add median as vertical line
+  stat_summary(fun.y = "median", geom = "point", shape = 108,
+               size = 5, position = position_dodgejust(justification = 0))  +
+  #add line for overall average
+  geom_hline(yintercept = mean_grade_coi, linetype = "dashed") + 
+  #use seismic colors
+  scale_fill_manual(values = seismic_colors)+
+  theme_seismic + 
+  theme(legend.position = "none") + 
+  guides(fill_ramp = "none") + 
+  labs(x = NULL, y = "Course grade",
+       caption = "Points = means, vertical lines = medians \n Dashed line = overall mean grade (across all students)",
+       ) + 
+  coord_flip()
+```
+
+While viewing the full distribution of grades allows us to view the full range, sometimes comparing average grades, especially between majority and historically-excluded / minoritized groups can be informative when evaluating equity in course outcomes.
+
+The below plot shows the overall average grades for students, disaggregated by whether they hold a certain identity or not.The x-axis range has been zoomed in so we can better evaluate differences between groups. 
+
+In this plot: 
+
+* Means and 95% confidence intervals are shown as points and errorbars. 
+
+* Student identities are represented by shape; triangles represent students in the historically excluded/minoritized group and circles are students in the majoirty/ historically supported/accepted group. 
+
+* The overall average grade for all students in all terms of the course is shown as a dashed line. 
+
+Note that it is more useful to compare between students who do and do not hold each identity than across groups, as the student identities are not mutually exclusive (a single student may belong to any and all of these identities).
+
+```{r mean raw grade by identity, message=FALSE, warning=FALSE}
+#mean grades (+/-SEM) for different identities
+
+dat %>%
+  filter(crs_name == course_of_interest) %>%
+  #create a true "PEER" variable that compares PEER to white/Asian combined
+  mutate(peer = ifelse(ethniccode_cat == 1, 1, 0)) %>%
+  #pivot to a long format dataframe
+  pivot_longer(cols = c(peer, female, firstgen, lowincomeflag, international, transfer, stem_major), 
+               names_to = "demo_var",
+               values_to = "value") %>% 
+  #rename labels to be more interpretable
+ mutate(demo_var = factor(demo_var, 
+                           levels = c("peer","female","firstgen","lowincomeflag","international","transfer", "stem_major"),
+                           labels = c("PEER", "Woman", "FirstGen", "LowIncome", "International", "Transfer", "STEM Major"))) %>%
+  add_count(demo_var, value, name = "n") %>%
+  #PLOT
+  ggplot(aes(x = demo_var, y = numgrade, color = demo_var, shape = as.factor(value))) + 
+  #points for mean
+  stat_summary(geom = "point", fun = "mean", size = 3) + 
+  #add 95% CI errorbars
+  stat_summary(geom = "errorbar", fun.data = "mean_cl_normal", width = 0.1) + 
+  #plot average line for mean grade
+  geom_hline(yintercept = mean_grade_coi, linetype = "dashed") +
+  #more interpretable labels for shape 
+  scale_shape_discrete(labels = c("0" = "no", "1" = "yes"), name = "Student holds identity?") + 
+  #use seismic colors; turn off color legend
+  scale_color_manual(guide = "none", values = seismic_colors) + 
+  #labels
+  labs(x = "Student identity", y = "Average grade", color = "Student identity",
+       caption = "Mean ± 95% CI shown \n Dashed line is overall average grade") + 
+  #make points in shape legend larger
+  guides(shape = guide_legend(override.aes = list(size = 3))) +
+  theme_seismic + 
+  coord_flip()
+```
+
+As discussed previously, the "PEER" category can mask the nuanced different experiences of students of specific ethnic or racial groups. To explore the differences in course grades, mean course grades by ethnicities are disaggregted below.
+
+In this plot:
+* Means and 95% confidence intervals are shown as points and errorbars. 
+
+* The overall average grade for all students in all terms of the course is shown as a dashed line. 
+
+```{r mean raw grade by ethnicity, message=FALSE, warning=FALSE}
+# raw grade (mean and SEM) by specific ethnicities
+
+dat %>%
+  filter(crs_name == course_of_interest) %>%
+  #pivot to a long format dataframe
+  pivot_longer(cols = c(white, black_afram, hispanic_latinx, indigenous_am_indian, asian, pacific_islander),
+               names_to = "ethnicity",
+               values_to = "value") %>% 
+  #select all students who do belong to the group of interest
+  filter(value == 1 ) %>%
+  mutate(ethnicity = fct_reorder(ethnicity, numgrade, .fun = "mean")) %>%
+  add_count(ethnicity, name = "n") %>%
+  #PLOT
+  ggplot(aes(x = ethnicity, y = numgrade, color = ethnicity)) + 
+  #points for mean
+  stat_summary(geom = "point", fun = "mean") + 
+  #add 95% CI errorbars
+  stat_summary(geom = "errorbar", fun.data = "mean_cl_normal", width = 0.1) + 
+  #plot average line for mean grade
+  geom_hline(yintercept = mean_grade_coi, linetype = "dashed") +
+  #relabel x axis labels to be more interpretable
+  scale_x_discrete(labels = ethnicity_labels) + 
+  #use seismic colors; hide redundant color legend
+  scale_color_manual(values = seismic_colors, guide = "none") +
+  #labels
+  labs(x = "Student ethnicity", y = "Average grade",
+       caption = "Mean ± 95% CI shown \n Dashed line is overall average grade") + 
+  coord_flip()+
+  theme_seismic +
+  coord_flip()
+```
+
+:::: {.questionbox data-latex=""}
+::: {.center data-latex=""}
+**Guiding questions:**
+:::
+-   Is this course supporting students differently? Why might this course support some students better than others?
+
+-   For what students is this course working well for?
+
+-   What additional information about this course or these students would you want to collect to answer these questions?
+::::
+
+## How have grades across student groups changed over time?
+
+We can also evaluate how grading and grade distributions have changed over time in this course.
+
+Below, we can see general trends in grade distribution over time, where the distribution of grades is shown as a density plot. The color of the line represents the term.
+
+```{r grade distribution over time (stacked bar), warning = FALSE, message=FALSE}
+#stacked bar plot with grades by term 
+
+dat %>%
+  filter(crs_name == course_of_interest) %>%
+  #remove plus/minus from lettergrade, if present
+  mutate(lettergrade = str_replace_all(lettergrade, regex("\\W+"), "")) %>%
+  #create a semq text label for more clear x axis labels 
+  mutate(semq_text = recode(as.character(crs_semq), "1" = "W", "2" = "Sp", "3" = "SuI", "4" = "SuII", "5" = "F")) %>%
+  #create a crs_section variable to maintain x axis chronological ordering
+  mutate(crs_section = paste0(crs_year, crs_semq)) %>%
+  #create course label that orders readable labels create above chronologically
+  mutate(crs_label = forcats::fct_reorder(as.factor(paste0(semq_text, crs_year)), as.integer(crs_section))) %>%
+  add_count(crs_label, lettergrade, name = "n_grade") %>%
+  ggplot(aes(x = crs_label, y = n_grade, fill = lettergrade)) +
+  geom_col(position = "fill") +
+  scale_fill_viridis(discrete = T) + 
+  scale_y_continuous(labels = scales::percent) + 
+  labs(x = "Course Term", y = "Percent", fill = "Lettergrade") + 
+  theme_seismic + 
+  theme(axis.text.x = element_text(angle = 90)) 
+```
+
+```{r grade distribution density over time, eval=FALSE, message=FALSE, warning=FALSE, include=FALSE}
+#overall grade distribution as a density plot over time (color = terms)
+#note: this code no longer run
+
+dat %>%
+  filter(crs_name == course_of_interest) %>%
+    #create a semq text label for more clear x axis labels 
+  mutate(semq_text = recode(as.character(crs_semq), "1" = "W", "2" = "Sp", "3" = "SuI", "4" = "SuII", "5" = "F")) %>%
+  #create a crs_section variable to maintain x axis chronological ordering
+  mutate(crs_section = paste0(crs_year, crs_semq)) %>%
+  #create course label that orders readable labels create above chronologically
+  mutate(crs_label = forcats::fct_reorder(as.factor(paste0(semq_text, crs_year)), as.integer(crs_section))) %>%
+ ggplot(aes(x = numgrade)) + 
+  geom_density(aes(color = crs_label), alpha = 0.3) +
+  labs(x = "Course Grade (numeric scale)", y = "Density", color = "Term") + 
+  theme_seismic
+
+```
+
+The below plot shows the trends over time for each student identity.
+
+* Each axis of identity is a separate plot. 
+
+* Means and 95% confidence intervals are shown as points and vertical errorbars. 
+
+* The majoritarian group (i.e., students who do not hold the indicated identity) is shown in gray circles across all plots. Students who do hold the identity are shown in colored triangles. 
+
+*The overall course average, across all students and all terms, is shown with a dashed line.
+
+
+```{r mean grades by identity - over time (facets), message= FALSE, warning=FALSE,fig.height= 8, fig.width = 8}
+
+dat %>%
+  #filter course of interest
+  filter(crs_name == course_of_interest) %>%
+  #create a true "PEER" variable that compares PEER to white/Asian combined
+  mutate(peer = ifelse(ethniccode_cat == 1, 1, 0)) %>%
+  #create a semq text label for more clear x axis labels 
+  mutate(semq_text = recode(as.character(crs_semq), "1" = "W", "2" = "Sp", "3" = "SuI", "4" = "SuII", "5" = "F")) %>%
+  #create a crs_section variable to maintain x axis chronological ordering
+  mutate(crs_section = paste0(crs_year, crs_semq)) %>%
+  #create course label that orders readable labels create above chronologically
+  mutate(crs_label = forcats::fct_reorder(as.factor(paste0(semq_text, crs_year)), as.integer(crs_section))) %>%
+  #pivot to a long format dataframe
+  pivot_longer(cols = c(peer, female, firstgen, lowincomeflag, international, transfer, stem_major), 
+               names_to = "demo_var",
+               values_to = "value")  %>%
+  #calculate sample size for each group
+  add_count(demo_var, value, name = "n") %>%
+  #create a color code grouping based on demographic variable, with color for minoritized groups only
+  mutate(color_code = ifelse(value == 0, "majority", demo_var)) %>%
+  #rename labels to be more interpretable
+  mutate(demo_var = factor(demo_var, 
+                           levels = c("peer","female","firstgen","lowincomeflag","international","transfer", "stem_major"),
+                           labels = c("PEER", "Woman", "FirstGen", "LowIncome", "International", "Transfer", "STEM Major"))) %>%
+
+  #remove missing demographic variables before plotting
+  drop_na(demo_var) %>%
+  #PLOT 
+  ggplot(aes(x = crs_label, y = numgrade, color = color_code, shape = as.factor(value))) + 
+  #mean +/- 95% CI errorbars
+  stat_summary(fun.data = "mean_cl_normal") + 
+  #lines that connect each group over time
+  stat_summary(geom = "line", fun.data = "mean_cl_normal", aes(group = interaction(demo_var, value))) + 
+  labs(x = "Course Term", y = "Course grade",
+       color = "Student identity", shape = NULL) + 
+  #add average line for mean grade
+  geom_hline(yintercept = mean_grade_coi, linetype = "dashed") +
+  #optional: separate plots for each demographic variable (note: plot very messy w/o this)
+  facet_wrap(~demo_var) + 
+  #use seismic color palette
+  scale_color_manual(values = c("majority" = "gray",
+                                "peer" = "#eb7e36", "female" = "#4671c6", "firstgen" = "#70ac49", "lowincomeflag" = "black", "international" = "#ffbe07", "transfer" = "#429dda", "stem_major" = "#B35050")) + 
+  #make shape legend more interpretable
+  scale_shape_discrete(name = "Student holds identity?", labels = c("0" = "no", "1" = "yes")) + 
+  theme_seismic + 
+  theme(axis.text.x = element_text(angle = 90)) + 
+  # reposition legend to bottom
+  theme(legend.position =  "bottom") + 
+  #hide redundant color label
+  guides(color = "none")
+
+```
+
+:::: {.questionbox data-latex=""}
+::: {.center data-latex=""}
+**Guiding questions:**
+:::
+-   Have the overall trends in course grades been stable over time, or have they changed in recent terms?
+
+-   If there are any overall equity gaps associated with specific student identities, have they narrowed in recent years, or widened? Are there any pedagogical or structural changes that may relate to any changes seen over time?
+::::
+
+```{r mean grades by identity - over time, eval=FALSE, message=FALSE, include=FALSE, waring=FALSE}
+#this chunk currently turned off - makes a rather ugly plot
+
+dat %>%
+  #filter course of interest
+  filter(crs_name == course_of_interest) %>%
+  #create a true "PEER" variable that compares PEER to white/Asian combined
+  mutate(peer = ifelse(ethniccode_cat == 1, 1, 0)) %>%
+  #pivot to a long format dataframe
+  pivot_longer(cols = c(peer, female, firstgen, lowincomeflag, international, transfer, stem_major), 
+               names_to = "demo_var",
+               values_to = "value") %>% 
+  #rename labels to be more interpretable
+ mutate(demo_var = factor(demo_var, 
+                           levels = c("peer","female","firstgen","lowincomeflag","international","transfer", "stem_major"),
+                           labels = c("PEER", "Woman", "FirstGen", "LowIncome", "International", "Transfer", "STEM Major"))) %>%
+  #select minoritized groups only 
+  filter(value == 1) %>%
+  #calculate sample size for each group
+  add_count(crs_year, crs_semq, demo_var, name = "n_sectn") %>%
+  #create a semq text label for more clear x axis labels 
+  mutate(semq_text = recode(as.character(crs_semq), "1" = "W", "2" = "Sp", "3" = "SuI", "4" = "SuII", "5" = "F")) %>%
+  #create a crs_section variable to maintain x axis chronological ordering
+  mutate(crs_section = paste0(crs_year, crs_semq)) %>%
+  #create course label that orders readable labels create above chronologically
+  mutate(crs_label = forcats::fct_reorder(as.factor(paste0(semq_text, crs_year)), as.integer(crs_section))) %>%
+  #remove missing demographic variables before plotting
+  drop_na(demo_var) %>%
+  #PLOT 
+ggplot(aes(x = crs_label, y = numgrade, color = demo_var)) + 
+  stat_summary(fun.data = "mean_cl_normal") + 
+  stat_summary(geom = "line", fun.data = "mean_cl_normal", aes(group = demo_var)) + 
+  labs(x = "Course Term", y = "Course grade",
+       color = "Student identity", shape = NULL) + 
+  #optional: separate plots for each demographic variable
+  #facet_wrap(~demo_var) + 
+  #use seismic color palette
+  scale_color_manual(values = seismic_colors) + 
+  scale_size_continuous(trans = "log10", range = c(1, 2)) + 
+  theme_seismic + 
+  theme(axis.text.x = element_text(angle = 90))
+
+#issue: aes(size = n_section) does not seem to be working in stat_summary
+```
+
+# Comparing course grades to grades in other courses
+
+## How does overall prior performance at the university (i.e., GPAO, prior GPA) compare to student outcomes in my course?
+
+One way we can compare outcomes in our course to students' prior performance at our institution is by calculating **grade anomaly**. Grade anomaly subtracts a measure of student's general or prior academic performance, such as prior GPA, from their course grade.
+
+SEISMIC projects often use grade point average omitting the course of interest (**GPAO**), because this metric has been found to be the best metric of prior academic preparation in previous studies (compared to high school GPA or standardized test scores, [Koester et al.,2016](https://doi.org/10.48550/arXiv.1608.07565)). GPAO can also be especially useful for transfer students, who may not have a prior GPA at our institution if they just transferred.
+
+Grade anomalies can be:
+
+-   **Grade penalties** - where students receive *lower* grades in the course relative to their other coursework, or,
+
+-   **Grade bonuses** - where students receive *higher* grades relative to other courses.
+
+Whether a course confers a grade bonus or a grade penalty depends on what other courses students have taken, or take in the term of interest. In many ways, the grade anomaly depends on where the course is situated in the curricular context (i.e., is this course taken along wiht many other large introductory STEM courses, or are the other courses taken to this point general education or electives?).
+
+Importantly, grade bonuses or penalties are not necessarily "good" or "bad", and it often depends on the goals of the course and the assessment structure. For example, courses that aim to evaluate students' level of mastery of specific skills or concepts as prerequisites for future coursework (a goal of many introductory STEM courses) tend to confer grade penalties than other courses.
+
+First, we can explore what the distribution of course grades are versus GPAO. The plot below shows the sample size of students for different combinations of GPAO versus course grade. The line shows the one-to-one line, so areas below the line represent grade penalties (GPAO \> grade), areas above grade bonuses (GPAO \< grade). Lighter colors represent more students that fall in that quadrant.
+
+```{r course grade vs gpao heatmap, message= FALSE, warning = FALSE}
+#heatmap a la Heather Rypkema's report 
+#issue: should the breaks be manually specified so there is a 1:1 on x and y axes?
+
+#bin data for heatmap tiles
+heatmap <- 
+dat %>%
+  filter(crs_name == course_of_interest) %>%
+  drop_na(gpao) %>%
+  #create gpao bin
+  mutate(gpaobin=.1*floor(10*gpao)) %>%
+  count(gpaobin,numgrade) %>%
+  complete(., gpaobin, numgrade, fill = list(n = 0))
+
+yticks<-c(0,1,2,3,4)
+glab<-c("F","D","C","B","A")
+
+#plot heatmap
+  ggplot(heatmap, aes(x = gpaobin, y = numgrade, fill = n)) +
+  geom_tile() + 
+  geom_abline(yintercept = 0, slope = 1, linewidth = 1) + 
+  scale_fill_viridis() + 
+  scale_y_continuous(breaks=yticks,labels=glab)+
+  scale_x_continuous(breaks=yticks,labels=glab)+
+  labs(x = "GPAO", y = "Course Grade", fill = "N") + 
+  theme_seismic
+  
+opts_chunk$set(fig.height = 5)
+
+```
+
+As with actual grades, we can also examine grade anomaly across student demographics. The following plot shows the distribution of grade anomalies for each listed student demographic. The darker portion of the distribution represents the students between the 25th and 75th percentile. The mean is a circle, with errorbars showing the 95% confidence interval around the mean. Vertical lines on each plot represent the median. The dashed line across the whole plot represents the mean grade anomaly across the entire coures (all terms and all students).
+
+```{r grade anomaly distributions by identity, message= FALSE, warning=FALSE}
+
+#calculate overall mean grade for course (will be plotted as an average line)
+aga_coi <- mean(dat$numgrade[dat$crs_name == course_of_interest], na.rm = T) - 
+           mean(dat$gpao[dat$crs_name == course_of_interest], na.rm = T)
+
+#plot
+dat %>%
+  filter(crs_name == course_of_interest) %>%
+  #pivot to a long format dataframe
+  pivot_longer(cols = c(ethniccode_cat, female, firstgen, lowincomeflag, international, transfer, stem_major), 
+               names_to = "demo_var",
+               values_to = "value") %>% 
+  #select all students who do belong to the group of interest
+  filter(value == 1 ) %>%
+  #rename labels to be more interpretable
+ mutate(demo_var = factor(demo_var, 
+                           levels = c("ethniccode_cat","female","firstgen","lowincomeflag","international","transfer", "stem_major"),
+                           labels = c("PEER", "Woman", "FirstGen", "LowIncome", "International", "Transfer", "STEM Major"))) %>%
+  #PLOT
+  ggplot(aes(x = demo_var, y = numgrade-gpao, fill = demo_var)) + 
+  #add density half-plot with the 1st and 3rd quartiles demarcated
+  ggdist::stat_slab(side = "right", scale = 0.4, show.legend = F,
+                    position = position_dodge(width = 0.8),
+                    aes(fill_ramp = after_stat(level)),.width = c(.50, .95,1)) + 
+  stat_dots(side = "left",scale = 0.8, show.legend = T,
+            position = position_dodge(width = .8),aes(color = demo_var)) + 
+  #add mean +/- 95% CI points and errorbars
+  stat_summary(fun.data = "mean_cl_normal", show.legend = T, 
+               size = 0.3, position = position_dodge2(width = 0.8)) +
+  #add median as vertical line
+  stat_summary(fun.y = "median", geom = "point", shape = 108,
+               size = 5, position = position_dodgejust(justification = 0))  +
+  #add line for overall average
+  geom_hline(yintercept = aga_coi, linetype = "dashed") + 
+  #add line for zero
+  geom_hline(yintercept = 0) + 
+  #use seismic colors
+  scale_fill_manual(values = seismic_colors)+
+  scale_color_manual(values = seismic_colors)+
+  theme_seismic + 
+  theme(legend.position = "none") + 
+  guides(fill_ramp = "none") + 
+  labs(x = NULL, y = "Grade anomaly\n(course grade - GPAO)",
+       caption = "Dashed line is overall mean grade anomaly",
+       ) + 
+  coord_flip()
+```
+
+The below plot focuses on the mean grade anomaly for each of the student demographics, comparing the majority group (circles) to the historically excluded / marginalized group (triangles). Points show means, flanked by the 95% confidence interval for each group. 
+
+```{r grade anomaly by identity, message=FALSE, warning=FALSE}
+#different identities with average grade anomaly across identities 
+dat %>%
+  filter(crs_name == course_of_interest) %>%
+  #create a true "PEER" variable that compares PEER to white/Asian combined
+  mutate(peer = ifelse(ethniccode_cat == 1, 1, 0)) %>%
+  #pivot to a long format dataframe
+  pivot_longer(cols = c(peer, female, firstgen, lowincomeflag, international, transfer, stem_major), 
+               names_to = "demo_var",
+               values_to = "value") %>% 
+  #rename labels to be more interpretable
+ mutate(demo_var = factor(demo_var, 
+                           levels = c("peer","female","firstgen","lowincomeflag","international","transfer", "stem_major"),
+                           labels = c("PEER", "Woman", "FirstGen", "LowIncome", "International", "Transfer", "STEM Major"))) %>%
+  add_count(demo_var, value, name = "n") %>%
+  #PLOT
+  ggplot(aes(x = demo_var, y = numgrade-gpao, color = demo_var, shape = as.factor(value))) + 
+  #points for mean
+  stat_summary(geom = "point", fun = "mean", size = 3) + 
+  #add 95% CI errorbars
+  stat_summary(geom = "errorbar", fun.data = "mean_cl_normal", width = 0.1) + 
+  #plot average line for mean grade
+  geom_hline(yintercept = aga_coi, linetype = "dashed") +
+  #plot line and annotations for penalty vs bonus
+  geom_hline(yintercept = 0) +  
+  #more interpretable labels for shape 
+  scale_shape_discrete(labels = c("0" = "no", "1" = "yes"), name = "Student holds identity?") + 
+  #use seismic colors; turn off color legend
+  scale_color_manual(guide = "none", values = seismic_colors) + 
+  #add a text label 
+  annotate(geom = "text", x = 2, y = c(0.01,-0.05), label = c("grade bonus", "grade penalty"), 
+           color = c("blue", "red"),vjust = -0.01, size = 4, angle = 270) +
+  #labels
+  labs(x = "Student identity", y = "Grade anomaly", color = "Student identity", 
+       caption = "Mean ± 95% CI shown \n Dashed line is overall average grade") + 
+  #make points in shape legend larger
+  guides(shape = guide_legend(override.aes = list(size = 3))) +
+  theme_seismic + 
+  coord_flip()
+```
+
+Similarly, we can also further disaggregate the PEER group into specific student races/ethnicities. The below plot shows grade anomalies by student ethnicity. Points represent mean grade anomaly, error bars the 95% confidence interval. 
+
+```{r grade anomaly by ethnicity, message=FALSE, warning=FALSE}
+# plot grade anomaly by specific ethnicity
+
+dat %>%
+  filter(crs_name == course_of_interest) %>%
+  #pivot to a long format dataframe
+  pivot_longer(cols = c(white, black_afram, hispanic_latinx, indigenous_am_indian, asian, pacific_islander),
+               names_to = "ethnicity",
+               values_to = "value") %>% 
+  #select all students who do belong to the group of interest
+  filter(value == 1 ) %>%
+  mutate(ethnicity = fct_reorder(ethnicity, numgrade-gpao, .fun = "mean")) %>%
+  add_count(ethnicity, name = "n") %>%
+  #PLOT
+  ggplot(aes(x = ethnicity, y = numgrade-gpao, color = ethnicity)) + 
+  #points for mean
+  stat_summary(geom = "point", fun = "mean", size = 3) + 
+  #add 95% CI errorbars
+  stat_summary(geom = "errorbar", fun.data = "mean_cl_normal", width = 0.1) + 
+  #plot average line for mean grade
+  geom_hline(yintercept = aga_coi, linetype = "dashed") +
+  geom_hline(yintercept = 0) + #plot the 0 line
+  #relabel x axis labels to be more interpretable
+  scale_x_discrete(labels = ethnicity_labels) + 
+  scale_size_continuous(trans = "log10", breaks = c(10,100,1000))+ #point size for readability
+    #add a text label 
+  annotate(geom = "text", x = 2, y = c(0.01,-0.05), label = c("grade bonus", "grade penalty"), 
+           color = c("blue", "red"),vjust = -0.01, size = 4, angle = 270) +
+  #labels
+  labs(x = "Student identity", y = "Grade anomaly", 
+       caption = "Mean ± 95% CI shown \n Dashed line is overall average grade anomaly") + 
+  theme_seismic +
+  guides(color = "none") + 
+  coord_flip()
+```
+
+:::: {.questionbox data-latex=""}
+::: {.center data-latex=""}
+**Guiding questions:**
+:::
+-   Does examining grade anomaly give further information on equitable outcomes than course grades alone?
+-   Are students receiving a grade bonus or a grade penalty on average in this course? (see dashed line for overall course average)
+-   Are there any marginalized demographic groups that are receiving more of a grade penalty or more of a grade bonus? Reflecting on the course structure and its place in the curriculum context, can you think of any reasons that might be?
+::::
+
+## How does grade anomaly change over time?
+
+We can also observe these trends over time. The below plot shows the trends in average GPAO and course grade over the terms listed in the dataset. The vertical distance between these points shows the size of the grade anomaly, on average, for that term. If the course grade point is above the GPAO, there is a grade bonus, if below, a grade penalty.
+
+```{r overall grade anomaly - over time, message=FALSE, warning=FALSE}
+#overall grade anomaly over time
+
+dat %>%
+  #filter course of interest
+  filter(crs_name == course_of_interest) %>%
+  #create a semq text label for more clear x axis labels 
+  mutate(semq_text = recode(as.character(crs_semq), "1" = "W", "2" = "Sp", "3" = "SuI", "4" = "SuII", "5" = "F")) %>%
+  #create a crs_section variable to maintain x axis chronological ordering
+  mutate(crs_section = paste0(crs_year, crs_semq)) %>%
+  #create course label that orders readable labels create above chronologically
+  mutate(crs_label = forcats::fct_reorder(as.factor(paste0(semq_text, crs_year)), as.integer(crs_section))) %>%
+  #pivot longer with all numeric metrics in one column for plotting
+  pivot_longer(cols = c(numgrade,gpao),
+               names_to = "metric",
+               values_to = "value") %>%
+  #plot
+  ggplot(aes(x = crs_label, y = value, color = metric)) + 
+  #mean +/- 95% CI errorbars
+  stat_summary(fun.data = "mean_cl_normal") + 
+  #lines that connect each group over time
+  stat_summary(geom = "line", fun.data = "mean_cl_normal", aes(group = metric)) + 
+  labs(x = "Course term", y = NULL, color = NULL,
+       caption = "Mean ± 95% CI shown") + 
+  scale_color_manual(values = c("#4671c6","#eb7e36"),
+                     labels = c("gpao" = "GPAO", "numgrade" = "Course Grade")) + 
+  theme_seismic + 
+  theme(axis.text.x = element_text(angle = 90)) + 
+  # reposition legend to bottom
+  theme(legend.position =  "top")
+```
+
+Then, we can show trends in grade anomaly for each student demographic over time. Points represent mean grade anomaly for all students of that identity in that term, and errorbars are the 95% confidence interval. The majoritarian group (i.e., students who do not hold the indicated identity) is shown in gray across all plots. The overall course average grade anomaly, across all students and all terms, is shown with a dashed line.
+
+```{r grade anomaly by identity - over time (facets), message=FALSE, warning=FALSE,fig.height= 8, fig.width = 8}
+#plot grade anomaly over time (facet plot)
+dat %>%
+  #filter course of interest
+  filter(crs_name == course_of_interest) %>%
+  #create a true "PEER" variable that compares PEER to white/Asian combined
+  mutate(peer = ifelse(ethniccode_cat == 1, 1, 0)) %>%
+  #create a semq text label for more clear x axis labels 
+  mutate(semq_text = recode(as.character(crs_semq), "1" = "W", "2" = "Sp", "3" = "SuI", "4" = "SuII", "5" = "F")) %>%
+  #create a crs_section variable to maintain x axis chronological ordering
+  mutate(crs_section = paste0(crs_year, crs_semq)) %>%
+  #create course label that orders readable labels create above chronologically
+  mutate(crs_label = forcats::fct_reorder(as.factor(paste0(semq_text, crs_year)), as.integer(crs_section))) %>%
+  #pivot to a long format dataframe
+  pivot_longer(cols = c(peer, female, firstgen, lowincomeflag, international, transfer, stem_major), 
+               names_to = "demo_var",
+               values_to = "value")  %>%
+  #calculate sample size for each group
+  add_count(demo_var, value, name = "n") %>%
+  #create a color code grouping based on demographic variable, with color for minoritized groups only
+  mutate(color_code = ifelse(value == 0, "majority", demo_var)) %>%
+  #rename labels to be more interpretable
+  mutate(demo_var = factor(demo_var, 
+                           levels = c("peer","female","firstgen","lowincomeflag","international","transfer", "stem_major"),
+                           labels = c("PEER", "Woman", "FirstGen", "LowIncome", "International", "Transfer", "STEM Major"))) %>%
+
+  #remove missing demographic variables before plotting
+  drop_na(demo_var) %>%
+  #PLOT 
+  ggplot(aes(x = crs_label, y = numgrade-gpao, color = color_code, shape = as.factor(value))) + 
+  #mean +/- 95% CI errorbars
+  stat_summary(fun.data = "mean_cl_normal") + 
+  #lines that connect each group over time
+  stat_summary(geom = "line", fun.data = "mean_cl_normal", aes(group = interaction(demo_var, value))) + 
+  labs(x = "Course Term", y = "Grade anomaly",
+       color = "Student identity", shape = NULL) + 
+  #add average line for mean grade
+  geom_hline(yintercept = aga_coi, linetype = "dashed") +
+  #optional: separate plots for each demographic variable (note: plot very messy w/o this)
+  facet_wrap(~demo_var) + 
+  #use seismic color palette
+  scale_color_manual(values = c("majority" = "gray",
+                                "peer" = "#eb7e36", "female" = "#4671c6", "firstgen" = "#70ac49", "lowincomeflag" = "black", "international" = "#ffbe07", "transfer" = "#429dda", "stem_major" = "#B35050")) + 
+  #make shape legend more interpretable
+  scale_shape_discrete(name = "Student holds identity?", labels = c("0" = "no", "1" = "yes")) + 
+  theme_seismic + 
+  theme(axis.text.x = element_text(angle = 90)) + 
+  # reposition legend to bottom
+  theme(legend.position =  "bottom") + 
+  #hide redundant color label
+  guides(color = "none")
+
+```
+
+:::: {.questionbox data-latex=""}
+::: {.center data-latex=""}
+**Guiding questions:**
+:::
+-   Is the grade anomaly for this course consistent over time? (Is there always a grade bonus or penalty, or does it depend on term or year?)
+-   If grade anomaly fluctuates, what aspects of the course structure or student population might relate to these differences? What data would you want to access to answer this question?
+::::
+
+# Examing the impact of students' systemic advantages
+
+## How do course outcomes differ across the spectrum of systemic advantages students may have access to in higher education?
+
+How can we view the cumulative effect of systemic advantages students may have access to (conferred by demographic identities) overall in the context of a course?
+
+### SAI
+
+SAI, or the **Systemic Advantage Index** is one approach. This metric takes into account multiple axes of student identities, including:
+
+-   race/ethnicity
+
+-   gender
+
+-   socioeconomic status
+
+-   parental education (i.e., first-generation college-going status)
+
+SAI adds together all of the advantages a student may have across these four demographic axes and assigns an index. The table below shows SAI for multiple combinations of identities. For instance, a Latino, first-generation, low income man (column second from left) would be considered to have SAI = 1, while a white, continuing-generation woman from a high income family would be considered to have SAI = 3 (column second from right).
+
+![](SAI_assignment.tif)
+
+The SAI approximates an intersectional approach, where we can consider how multiple axes of student identities may affect student experiences, and thus, course outcomes. However, SAI is limited in its intersectional approach in two ways. First, it collapses down various, diverse student identities within one index. For example, SAI = 2 contains six vastly different student identities and experiences, which undoubtedly do not share the same challenges and experiences in higher education. Second, SAI assumes all advantages act additively, rather than considering some cases where they interact in a non-additive way.
+
+```{r default missing demographics to 0, message=FALSE, warning=FALSE}
+#for SAI calculations, any NA demographic variables will need to be conservatively coded as 0 (defaulted to the majoritarian group)
+#this allows those students to still be included in SAI calculations
+
+#Convert Demographics to 0 (conservative, instead of excluding)
+dat <-
+  dat %>%
+  mutate(across(.cols = c(ethniccode_cat, firstgen, female, lowincomeflag), as.character)) %>%
+  tidyr::replace_na(list(ethniccode_cat = "0", firstgen = "0", female = "0", lowincomeflag = "0"))
+```
+
+```{r SAI calculation, message=FALSE, warning=FALSE}
+#this code goes through all possible combinations of the 4 advantage axes and assigns an SAI based on that students' values
+#as ethniccode_cat == 1 is the "BIPOC" label, all other categories are considered advantaged 
+dat <-
+  dat %>% mutate(sai = case_when(
+    female == "0" & ethniccode_cat != "1" & firstgen == "0" & lowincomeflag == "0"  ~ "4",
+    female == "1" & ethniccode_cat != "1" & firstgen == "0" & lowincomeflag == "0"  ~ "3",
+    female == "0" & ethniccode_cat == "1" & firstgen == "0" & lowincomeflag == "0"  ~ "3", 
+    female == "0" & ethniccode_cat != "1" & firstgen == "0" & lowincomeflag == "1"  ~ "3", 
+    female == "0" & ethniccode_cat != "1" & firstgen == "1" & lowincomeflag == "0"  ~ "3", 
+    female == "0" & ethniccode_cat == "1" & firstgen == "1" & lowincomeflag == "0"  ~ "2", 
+    female == "0" & ethniccode_cat == "1" & firstgen == "0" & lowincomeflag == "1"  ~ "2", 
+    female == "1" & ethniccode_cat == "1" & firstgen == "0" & lowincomeflag == "0"  ~ "2", 
+    female == "0" & ethniccode_cat != "1" & firstgen == "1" & lowincomeflag == "1"  ~ "2", 
+    female == "1" & ethniccode_cat != "1" & firstgen == "1" & lowincomeflag == "0"  ~ "2", 
+    female == "1" & ethniccode_cat != "1" & firstgen == "0" & lowincomeflag == "1"  ~ "2", 
+    female == "1" & ethniccode_cat != "1" & firstgen == "1" & lowincomeflag == "1"  ~ "1", 
+    female == "1" & ethniccode_cat == "1" & firstgen == "1" & lowincomeflag == "0"  ~ "1",
+    female == "1" & ethniccode_cat == "1" & firstgen == "0" & lowincomeflag == "1"  ~ "1", 
+    female == "0" & ethniccode_cat == "1" & firstgen == "1" & lowincomeflag == "1"  ~ "1",
+    female == "1" & ethniccode_cat == "1" & firstgen == "1" & lowincomeflag == "1"  ~ "0",
+    TRUE ~ "NA"))
+```
+
+### How do course grades and grade anomalies compare across levels of SAI?
+
+The below plots show raw grades and grade anomaly partitioned by the number of systemic advantages students have access to. Points represent means, errorbars 95% confidence intervals around the mean. The dashed line represents the overall course average, across all students and terms. The size of the point corresponds to the sample size across all terms of the course.
+
+```{r raw grades by SAI, message=FALSE, warning=FALSE}
+
+#sai colors
+sai_colors <- c("0" = "#B35050", "1" = "#eb7e36", "2" = "#ffbe07", "3" = "#70ac49", "4" = "#4671c6")
+
+#raw grades by SAI
+dat %>%
+  mutate(sai = as.numeric(sai)) %>%
+  add_count(sai, name = "n") %>% #add sample size per SAI
+  filter(crs_name == course_of_interest) %>%
+  ggplot(aes(x = sai, y = numgrade, color = as.factor(sai)))+ 
+      stat_summary(aes(size = n), geom = "point", fun = "mean", 
+                 position = position_dodge(0.2)) + 
+    stat_summary(geom = "errorbar", fun.data = "mean_cl_normal", 
+                 width = 0.1, position = position_dodge(0.2)) +
+   geom_hline(yintercept = mean_grade_coi, linetype = "dashed") +
+  #use custom SAI colors
+  scale_color_manual(values = sai_colors, guide = "none") +
+  labs(x = "SAI", y = "Course grade", color = "SAI",
+       caption = "Mean ± 95% CI shown \n Dashed line is overall average grade") + 
+  theme_seismic + 
+  coord_flip()
+```
+
+```{r grade anomaly by SAI, message=FALSE, warning=FALSE}
+#grade anomaly by SAI
+
+dat %>%
+  mutate(sai = as.numeric(sai)) %>%
+  add_count(sai, name = "n") %>% #add sample size per SAI
+  filter(crs_name == course_of_interest) %>%
+  ggplot(aes(x = sai, y = numgrade-gpao, color = as.factor(sai)))+ 
+      stat_summary(aes(size = n), geom = "point", fun = "mean", 
+                 position = position_dodge(0.2)) + 
+    stat_summary(geom = "errorbar", fun.data = "mean_cl_normal", 
+                 width = 0.1, position = position_dodge(0.2)) +
+   geom_hline(yintercept = aga_coi, linetype = "dashed") + 
+    #plot line and annotations for penalty vs bonus
+  geom_hline(yintercept = 0) +  
+    #use custom SAI colors
+  scale_color_manual(values = sai_colors, guide = "none") +
+  #add a text label 
+  annotate(geom = "text", x = 2, y = c(0.01,-0.05), label = c("grade bonus", "grade penalty"), 
+           color = c("blue", "red"),vjust = -0.01, size = 4, angle = 270) + 
+  labs(x = "SAI", y = "Grade anomaly \n(course grade - GPAO)", color = "SAI",
+       caption = "Mean ± 95% CI shown \n Dashed line is overall average grade anomaly") + 
+  theme_seismic + 
+  coord_flip()
+
+```
+
+In some STEM courses, there are significant gender gaps between men and women. (You may have already observed that in the above grade or grade anomaly distributions). To explore how gender may interact with other advantages, we can show SAI for men and women separately. In the below two panel plot, we can see the trends for GPAO and course grade across SAI levels for men (circles) and women (triangles). Points show means and errorbars 95% confidence intervals. If the 95% confidence intervals overlap between the genders, the two groups do not significantly differ.
+
+```{r sai by gender, warning=FALSE, message=FALSE}
+#2 panel plot of raw grades by SAI by gender and grade anomaly by SAI by gender
+
+dat %>%
+  mutate(sai = as.numeric(sai)) %>%
+  #filter course of interest only 
+  filter(crs_name == course_of_interest) %>%
+  #edit sai to remove advantage conferred by gender
+  mutate(sai = ifelse(female == 0, sai-1, sai)) %>%
+  #pivot longer with all numeric metrics in one column for plotting
+  pivot_longer(cols = c(numgrade,gpao),
+               names_to = "metric",
+               values_to = "value") %>%
+  #rename the labels for the
+  mutate(metric = factor(metric, labels = c("GPAO", "Course Grade"))) %>%
+  ggplot(aes(x = sai, y = value, 
+             color = as.factor(sai), shape = as.factor(female))) + 
+  stat_summary(geom = "point", fun.data = mean_se, size = 3) + 
+  stat_summary(geom = "errorbar", fun.data = mean_cl_normal, size = 1, width = 0) +
+  scale_color_manual(values = sai_colors, guide = "none") +
+  scale_shape_discrete(labels = c("M","W")) + 
+  labs(x = "SAI (excluding Gender)", y = "Value", shape = "Gender") + 
+  facet_wrap(~metric) + 
+  theme_seismic
+```
+
+```{r calculate advantages, warning = FALSE, message=FALSE}
+#more granular than SAI - show specific advantage combinations
+#"Marco plot" 
+
+#create advantage labels for each group 
+advantage_labels <- c("All", "W", "PEER", "LI","FG", "PEER + FG", "PEER + LI", "PEER + W", "FG + LI", "FG + W", "LI + W", "FG + LI + W", "PEER + FG + W", "PEER + LI+W", "PEER + FG + LI", "PEER + FG + LI + W")
+
+#create variables that outline the number of advantages a student has at the levels of Gender, PEER, FirstGen, and LowIncome
+dat<-
+dat %>%
+  mutate(peer = ifelse(ethniccode_cat == 1, 1, 0)) %>%
+  mutate(advantage = case_when(
+    female == "0" & peer == "0" & firstgen == "0" & lowincomeflag == "0"  ~ "0",
+    female == "1" & peer == "0" & firstgen == "0" & lowincomeflag == "0"  ~ "1A",
+    female == "0" & peer == "1" & firstgen == "0" & lowincomeflag == "0"  ~ "1B", 
+    female == "0" & peer == "0" & firstgen == "0" & lowincomeflag == "1"  ~ "1C", 
+    female == "0" & peer == "0" & firstgen == "1" & lowincomeflag == "0"  ~ "1D", 
+    female == "0" & peer == "1" & firstgen == "1" & lowincomeflag == "0"  ~ "2A", 
+    female == "0" & peer == "1" & firstgen == "0" & lowincomeflag == "1"  ~ "2B", 
+    female == "1" & peer == "1" & firstgen == "0" & lowincomeflag == "0"  ~ "2C", 
+    female == "0" & peer == "0" & firstgen == "1" & lowincomeflag == "1"  ~ "2D", 
+    female == "1" & peer == "0" & firstgen == "1" & lowincomeflag == "0"  ~ "2E", 
+    female == "1" & peer == "0" & firstgen == "0" & lowincomeflag == "1"  ~ "2F", 
+    female == "1" & peer == "0" & firstgen == "1" & lowincomeflag == "1"  ~ "3A", 
+    female == "1" & peer == "1" & firstgen == "1" & lowincomeflag == "0"  ~ "3B",
+    female == "1" & peer == "1" & firstgen == "0" & lowincomeflag == "1"  ~ "3C", 
+    female == "0" & peer == "1" & firstgen == "1" & lowincomeflag == "1"  ~ "3D",
+    female == "1" & peer == "1" & firstgen == "1" & lowincomeflag == "1"  ~ "4",
+    TRUE ~ "NA")) %>%
+    mutate(advantage_no = 4 - as.numeric(str_extract(advantage, "(\\d)+"))) %>% #selects numbers from a string 
+    mutate(advantage = as.factor(advantage)) 
+```
+
+Given the limitations above, we might want to examine specific intersections of advantages, rather than just a numeric index. The below plot further investigates intersections of student identities by showing course outcomes for specific advantage combinations. These specific combinations are collapsed in the SAI index, but here, are disaggregated by the specific identity a student holds.
+
+The two plots below show actual course grades and grade anomalies. In both plots, 
+
+* Points show means and 95% confidence intervals are points and errorbars. 
+
+* Dashed lines repersent the overall course average. 
+
+* Color corresponds to that groups' SAI. 
+
+* The y axis specifies the identities students hold; 
+    + FG = First Generation
+    + LI = Low Income family background
+    + W = Woman
+    + PEER = Person from a background historically excluded based on ethnicity/race. 
+    + The "All" group corresponds to students will access to all listed advantages (i.e., a non-PEER, non-Low-Income, continuing-generation man).
+
+```{r grade by advantage combo, warning = FALSE, message=FALSE}
+#"Marco" plot: show means and 95% CI for all advantage combinations
+
+dat %>%
+  #filter course of interest
+  filter(crs_name == course_of_interest) %>%
+  ggplot(aes(x = advantage, y = numgrade, color = as.factor(advantage_no) )) +
+  #plot means and 95% confidence intervals
+    stat_summary(fun.data = "mean_cl_normal") + 
+  #add line for course average
+    geom_hline(yintercept = mean_grade_coi, linetype = "dashed") + 
+  #axis labels
+    labs(x = NULL, y = "Course grade", title = "Grades by specific advantages" ) + 
+    scale_x_discrete(labels = advantage_labels) + 
+  #use custom SAI colors
+    scale_color_manual(name = "SAI", values = sai_colors) + 
+    theme_seismic +
+  #center title 
+    theme(plot.title = element_text(hjust = 0.5)) + 
+  coord_flip()
+```
+
+```{r grade anomaly by advantage combo, warning = FALSE, message=FALSE}
+#"Marco" plot: show means and 95% CI for all advantage combinations
+
+dat %>%
+  #filter course of interest
+  filter(crs_name == course_of_interest) %>%
+  ggplot(aes(x = advantage, y = numgrade-gpao, color = as.factor(advantage_no) )) +
+  #plot means and 95% confidence intervals
+    stat_summary(fun.data = "mean_cl_normal") + 
+  #add line for course average
+    geom_hline(yintercept = aga_coi, linetype = "dashed") + 
+  #add 0 line
+    geom_hline(yintercept = 0) +
+  #axis labels
+    labs(x = NULL, y = "Course grade - GPAO", title = "Grade anomaly by specific advantages" ) + 
+    scale_x_discrete(labels = advantage_labels) + 
+  #use custom SAI colors
+    scale_color_manual(name = "SAI", values = sai_colors) + 
+    #add a text label 
+  annotate(geom = "text", x = 4, y = c(0.01,-0.05), label = c("grade bonus", "grade penalty"), 
+           color = c("blue", "red"),vjust = -0.01, size = 4, angle = 270) +
+    theme_seismic +
+  #center title 
+    theme(plot.title = element_text(hjust = 0.5)) + 
+  coord_flip()
+```
+
+:::: {.questionbox data-latex=""}
+::: {.center data-latex=""}
+**Guiding questions:**
+:::
+-   Are different levels of SAI significantly different from each other in terms of course outcomes (i.e., do 95% confidence intervals overlap)? Is there a linear relationship between SAI and grade, or is the relationship more mixed? Is there a point where students fall "below" average grades or grade anomalies? How can we better serve those students in this course?
+
+-   If we see differences across levels of SAI, what elements of the course structure might lead to some of these differences with student systemic advantages?
+
+-   Do you observe any nuanced relationships between specific advantage combinations that were masked by the overall SAI index?
+
+- Can you think of any other systemic advantages not included in this index that likely influence student's outcomes in a course? What would be the challenges to adding those identities or advantages to this index?
+::::
+
+# Feedback
+
+Please provide any feedback you may have on this demo report to the SELC team here: [May Institute Feedback Form](https://docs.google.com/forms/d/e/1FAIpQLSdIPV9uwb1q6xSXrF0hH3zyYSko8Nh_gGAv106D6S_PNmLBOw/viewform?usp=sf_link).
+
+### Acknowledgements
+
+This report is heavily inspired by the Foundational Course Initiative reports from the University of Michigan, created by Dr. Heather Rypkema and refined by the Assessment Toolkit team. The R code in this report was initially drafted by Victoria Farrar (UC Davis) with feedback from Nita Tarchinski (Michigan), Matthew Steinwachs (UC Davis), Jenna Thomas (UC Davis), Tim McKay (Michigan), Heather Rypkema (Michigan), Marco Molinaro (University of Maryland) and Stefano Fiorini (Indiana University).
+
+```{r R coding resources, include = FALSE}
+#R coding resources used
+
+#"fadeplot" variations on raincloud plots
+#https://dallasnova.rbind.io/post/efficient-data-visualization-with-faded-raincloud-plots-delete-boxplot/
+
+```
