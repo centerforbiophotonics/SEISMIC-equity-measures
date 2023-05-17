@@ -29,8 +29,8 @@ First, load your data in the chunk below, changing the file directory to where y
 
 ```{r load your data}
 #load your data
-#change the `file = [directory]` to the directory where your file is located
-dat <- read.csv("~/Downloads/synthetic_data_SEISMIC-format_BIO300_2023-04-27.csv")
+#change the `file = your/directory/here` to the directory where your file is located
+dat <- read.csv(file = "your/directory/here")
 ```
 
 ### Check all required variables are present
@@ -38,6 +38,8 @@ dat <- read.csv("~/Downloads/synthetic_data_SEISMIC-format_BIO300_2023-04-27.csv
 Next, we will check that all the required variables are in your dataset and named properly. Extra variables in your data are ok, but all the expected variables are required by the code, otherwise the code will NOT run.
 
 If any of the variables output from the following chunk say "FALSE", the variable needs to be added or renamed before running the code.
+
+**Note: You will want to go back to your code used to generate / process this dataset and make these edits there, so that any changes your dataset can easily be re-run outside of this "Check Your Data" document.**
 
 ```{r check required variables}
 #required variable list from Data Dictionary in Data Preparation Guide
@@ -99,8 +101,9 @@ If any of the variables returned FALSE, you can enter that variable in the code 
 🟠✍️ Edit the code below [if needed]:
 
 ```{r view value range}
-#if binary coding returns FALSE in above chunk, replace "variable" in the code below with the name of the variable you would like to examine
-dat %>% count(variable)
+#if binary coding returns FALSE in above chunk, 
+#replace "ethniccode_cat" in the code below with the name of the variable you would like to examine
+dat %>% count(ethniccode_cat)
 
 ```
 
