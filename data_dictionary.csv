@@ -1,6 +1,6 @@
 ﻿variable,type,description 
 st_id,character,"unique identifier for each student (does not have to be actually linkable to students, can be random)"
-female,numeric,student sex or gender (self-reported or registrar available)
+female,binary,student sex or gender (self-reported or registrar available)
 ,,0: male
 ,,1: female
 ,,"“NA”: other, third category"
@@ -10,41 +10,41 @@ ethniccode_cat,numeric,student race/ethnicity categories. Student self-identifie
 ,,2: Asian/Asian-American only OR Asian/Asian-American and White.
 ,,3: Other
 ,,NA: Missing or not available
-firstgen,numeric,Parental education/ First-Generation college going status.
+firstgen,binary,Parental education/ First-Generation college going status.
 ,,0: one or more parent/guardian(s) has earned a Bachelor’s degree or higher
 ,,1: no parent/guardian has earned a Bachelor’s degree or higher
-lowincomeflag,numeric,Low-Income status.
+lowincomeflag,binary,Low-Income status.
 ,,0: Student or family income not flagged as low-income.
 ,,"1: Student is flagged as low-income based on family household income and household size using 185% of the U.S. poverty line. Use Pell eligible if available; if not: $26,500*1.85 = $46,435 (185% of U.S. poverty line for household size of 4; $26,500, U.S. Census Bureau 2021)."
-transfer,numeric,"Transfer status from another institution (two-year, such as junior/community colleges, or four-year)"
+transfer,binary,"Transfer status from another institution (two-year, such as junior/community colleges, or four-year)"
 ,,0: student not flagged as transfer; student entered institution as a first-year / freshman; prior institution was high-school
 ,,1: student flagged as transfer; students’ prior institution was another higher education institution (two-year or four-year)
-international,numeric,International / Non-resident alien status.
+international,binary,International / Non-resident alien status.
 ,,0: U.S. Citizen / permanent resident
 ,,1: Non-resident alien / international student.
-white,numeric (binary),Student self-reported ethnicity includes white.
+white,binary,Student self-reported ethnicity includes white.
 ,,0: no (student self-reported ethnicity is not white or does not include white).
 ,,1: yes
-black_afram,numeric (binary),Student self-reported ethnicity includes Black/African-American.
+black_afram,binary,Student self-reported ethnicity includes Black/African-American.
 ,,0: no
 ,,1: yes
-hispanic_latinx,numeric (binary),Student self-reported ethnicity includes Hispanic or Latino/a/x or Chicano/a/x.
+hispanic_latinx,binary,Student self-reported ethnicity includes Hispanic or Latino/a/x or Chicano/a/x.
 ,,0: no
 ,,1: yes
-indigenous_am_indian,numeric (binary),"Student self-reported ethnicity includes Indigenous, American Indian, Native American or Native Alaskan."
+indigenous_am_indian,binary,"Student self-reported ethnicity includes Indigenous, American Indian, Native American or Native Alaskan."
 ,,0: no
 ,,1: yes
-asian,numeric (binary),Student self-reported ethnicity includes Asian/Asian-American.
+asian,binary,Student self-reported ethnicity includes Asian/Asian-American.
 ,,0: no
 ,,1: yes
-pacific_islander,numeric (binary),Student self-reported ethnicity includes Pacific Islander/Native Hawaiian.
+pacific_islander,binary,Student self-reported ethnicity includes Pacific Islander/Native Hawaiian.
 ,,0: no
 ,,1: yes
 major,character,Student enrolled major of study (can use whatever institutional formatting/naming convention from your institution here) 
-stem_major,numeric (binary),"Student major (""major"") is in Science, Technology, Engineering and Math. SEISMIC defines Biology, Chemistry, Physics, Engineering, Mathematics, Statistics, Computer Science, and Economics as STEM. See https://www.seismicproject.org/about/overview/ "
+stem_major,binary,"Student major (""major"") is in Science, Technology, Engineering and Math. SEISMIC defines Biology, Chemistry, Physics, Engineering, Mathematics, Statistics, Computer Science, and Economics as STEM. See https://www.seismicproject.org/about/overview/ "
 ,,0: not enrolled in a STEM major
 ,,"1: enrolled in a Biology, Chemistry, Physics, Engineering, Mathematics, Statistics, Computer Science, and/or Economics major"
-crs_retake,numeric (binary),Is the student re-taking the course?
+crs_retake,binary,Is the student re-taking the course?
 ,,0: no - this is the first enrollment of this student in this course.
 ,,1: yes - this is the 2nd (or greater) enrollment of the student in this course.
 crs_name,character,Name of the course of interest. Recommend course catalog numbers (e.g. BIO100) instead of full names (“Fundamentals of Biology”)
@@ -57,7 +57,8 @@ crs_semq,numeric,Semester or quarter the course was offered. Use the following n
 ,,"3: Summer session, or Summer session 1/I"
 ,,4: Summer session 2/II
 ,,5: Fall semester or Fall quarter (UCs)
+lettergrade,character,student letter grade in the course (e.g. A/A+/A-/B/C/D/F/W/P/NP)
 numgrade,numeric,Student’s final course grade in the course listed in crs_name and term in crs_term
 ,,Please convert to a numeric grade using your institution’s grading conventions. (Example scale from UC Davis here)
-,,Note: Typically ranges from 0-4.0
+,,"Note: Typically ranges from 0-4.0, with P, NP, W converted to ""NA"""
 gpao,numeric,"Grade point average omitting the course of interest (GPAO). Student’s cumulative grade point average at the end of the term listed in crs_term, minus the grade in the course of interest (crs_name)."

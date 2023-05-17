@@ -23,18 +23,18 @@ Before running the code, ensure your data is formatted in the described SEISMIC 
 
 Course-level variables and student-level variables should be included in the same data table. Course-level variables should be present as separate columns. For instance, if students took multiple courses at an institution, there should be one row per student:course combination. Students that retook courses should thus have multiple rows for a single student:course combination that differ by term and grade. Student-level demographic data should be consistent across each student's rows. Note that this formatting differs from that of some other SEISMIC projects, where there are separate tables for course- and student-level variables.
 
-Below is an example from the synthetic dataset. The first 3 columns, `crs_name`, `crs_section` and `n_section` are course level variables. The next columns are student-level variables, with demographic factors and then grade data as well.
+Below is an example from the synthetic dataset. The first 4 columns, `crs_name`, `crs_term`,`crs_year`, `crs_semq` are course level variables. The next columns are student-level variables, with demographic factors and then grade data at the end.
 
 **Note: The exact order in your dataset will not matter for running the code - only that all of the variables are present and named as described below.**
 
 ```{r load synthetic data, echo=FALSE, paged.print=TRUE}
-synthdat <- read.csv(file = "~/Downloads/synthetic_data_SEISMIC-format_BIO300_2023-04-29.csv")
+synthdat <- read.csv(file = "~/Downloads/synthetic_data_SEISMIC-format_BIO300_2023-05-08.csv")
 
 synthdat %>%
   mutate(crs_retake = 0) %>%
   select(crs_name, crs_term = crs_section, crs_year, crs_semq, st_id, female, firstgen,ethniccode_cat,white, black_afram, hispanic_latinx, indigenous_am_indian, asian, pacific_islander,
          international,transfer,lowincomeflag, stem_major, major,
-         crs_retake, numgrade, gpao) %>%
+         crs_retake, lettergrade,numgrade, gpao) %>%
   head() %>%
   print_html()
 ```
@@ -78,7 +78,7 @@ If you do choose to use R to prepare your data, here are some helpful functions 
 
 -   `dplyr::recode` - use to rename or recode levels of a variable. This is helpful if you need to change the notation of levels of an existing variable to match the Data Dictionary.
 
-    -   ex: Creating the ethniccode_cat variable based on an existing variable named ethnicity, that has ethnicities spelled out in full names. `dat$ethniccode_cat = recode(dat$ethnicity = "African-American/Black" = 1, "American Indian/Alaska Native" = 1, "Chinese-American/Chinese" = 2)`
+    -   ex: Creating the ethniccode_cat variable based on an existing variable named ethnicity, that has ethnicities spelled out in full names. `dat$ethniccode_cat = recode(dat$ethnicity, "African-American/Black" = 1, "American Indian/Alaska Native" = 1, "Chinese-American/Chinese" = 2)`
 
 -   `dplyr::select` - use to select the variables you want to keep in your dataset. This is helpful when you are creating new variables to match the data description from existing ones, and do not want to keep the existing ones in your new, processed dataset.
 
@@ -91,6 +91,8 @@ If you do choose to use R to prepare your data, here are some helpful functions 
     -   ex: Replace "3" in ethniccode_cat with *NA* in only ethniccode_cat variable. `replace_with_na(dataa = dat, replace = list(ethniccode_cat = 3))`
 
 Did you know: you can type `?[function name]` into the console and get the run examples for any function for your R packages? ex: `?replace_with_na` when `naniar` is loaded will show you examples like the above.
+
+Remember also that R is case-sensitive, while other languages, like SQL, are not. If you are exporting data from SQL,one helpful function to change all column names to lowercase in R would be: `colnames(dat) <- tolower(colnames(dat))` where `dat` is the name of your dataframe.
 
 **Once prepared, data should be stored as a .csv file.**
 
