@@ -225,7 +225,7 @@ dat %>%
   group_by(crs_year, crs_semq, demo_var, value) %>% 
   #count sample size by each group, then divide by course total
   summarise(n_total = n(),
-            n_course = mean(n_section)) %>% 
+            n_course = mean(n_term)) %>% 
   #convert to percent
   mutate(perc = n_total/n_course *100) %>% #percent for each level
   #select only students that belong to marginalized backgrounds
