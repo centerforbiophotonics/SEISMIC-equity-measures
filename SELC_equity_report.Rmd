@@ -15,6 +15,7 @@ knitr::opts_chunk$set(echo = FALSE, warnings = FALSE, messages = FALSE)
 #use pacman to install and load all packages required
 if (!require("pacman")) install.packages("pacman") #install pacman if not already installed
 pacman::p_load(tidyverse, 
+               Hmisc,
                rmdformats, #output format: readthedown
                kableExtra, #pretty html tables
                gghalves, #half-half geoms
@@ -342,6 +343,24 @@ dat %>%
 ```
 
 # Grades in this course
+```{r create course of interest dataset (no NA grades)}
+dat_coi <-
+  dat %>%
+  #include only the course of interest
+  filter(crs_name == course_of_interest) %>%
+  #exclude all observations without numeric grades for quantiative analyses
+  drop_na(numgrade) %>%
+  #create a true "PEER" variable that compares PEER to white/Asian combined
+  mutate(peer = ifelse(ethniccode_cat == 1, 1, 0)) %>%
+  #for Over Time / longitudinal analyses:
+  #create a semq text label for more clear x axis labels 
+  mutate(semq_text = recode(as.character(crs_semq), "1" = "W", "2" = "Sp", "3" = "SuI", "4" = "SuII", "5" = "F")) %>%
+  #create a crs_section variable to maintain x axis chronological ordering
+  mutate(crs_section = paste0(crs_year, crs_semq)) %>%
+  #create course label that orders readable labels create above chronologically
+  mutate(crs_label = forcats::fct_reorder(as.factor(paste0(semq_text, crs_year)), as.integer(crs_section)))
+```
+
 
 Student final grades are the main course outcome available from registrar data. In this section, we examine the distribution of grades in this courses, and explore grade patterns across groups.
 
@@ -351,8 +370,7 @@ The below plot shows the overall grade distribution for this course across all t
 
 ```{r overall grade distribution, warning = FALSE, message=FALSE}
 
-dat %>%
-  filter(crs_name == course_of_interest) %>%
+dat_coi %>%
  ggplot(aes(x = fct_reorder(lettergrade, numgrade), y = after_stat(count)/sum(after_stat(count)))) +  
         geom_bar(color = "black", fill =  seismic_colors[2]) + 
         scale_y_continuous(labels = scales::percent) + 
@@ -394,11 +412,10 @@ The below plot shows the full distribution of the grades for multiple student id
 #plots grade distributions, along with means/SEM, for demographic identities
 
 #calculate overall mean grade for course (will be plotted as an average line)
-mean_grade_coi <- mean(dat$numgrade[dat$crs_name == course_of_interest], na.rm = T)
+mean_grade_coi <- mean(dat_coi$numgrade, na.rm = T)
 
 #plot
-dat %>%
-  filter(crs_name == course_of_interest) %>%
+dat_coi %>%
   #pivot to a long format dataframe
   pivot_longer(cols = c(ethniccode_cat, female, firstgen, lowincomeflag, international, transfer, stem_major), 
                names_to = "demo_var",
@@ -451,8 +468,7 @@ Note that it is more useful to compare between students who do and do not hold e
 ```{r mean raw grade by identity, message=FALSE, warning=FALSE}
 #mean grades (+/-SEM) for different identities
 
-dat %>%
-  filter(crs_name == course_of_interest) %>%
+dat_coi %>%
   #create a true "PEER" variable that compares PEER to white/Asian combined
   mutate(peer = ifelse(ethniccode_cat == 1, 1, 0)) %>%
   #pivot to a long format dataframe
@@ -495,8 +511,7 @@ In this plot:
 ```{r mean raw grade by ethnicity, message=FALSE, warning=FALSE}
 # raw grade (mean and SEM) by specific ethnicities
 
-dat %>%
-  filter(crs_name == course_of_interest) %>%
+dat_coi %>%
   #pivot to a long format dataframe
   pivot_longer(cols = c(white, black_afram, hispanic_latinx, indigenous_am_indian, asian, pacific_islander),
                names_to = "ethnicity",
@@ -545,16 +560,9 @@ Below, we can see general trends in grade distribution over time, where the dist
 ```{r grade distribution over time (stacked bar), warning = FALSE, message=FALSE}
 #stacked bar plot with grades by term 
 
-dat %>%
-  filter(crs_name == course_of_interest) %>%
+dat_coi %>%
   #remove plus/minus from lettergrade, if present
   mutate(lettergrade = str_replace_all(lettergrade, regex("\\W+"), "")) %>%
-  #create a semq text label for more clear x axis labels 
-  mutate(semq_text = recode(as.character(crs_semq), "1" = "W", "2" = "Sp", "3" = "SuI", "4" = "SuII", "5" = "F")) %>%
-  #create a crs_section variable to maintain x axis chronological ordering
-  mutate(crs_section = paste0(crs_year, crs_semq)) %>%
-  #create course label that orders readable labels create above chronologically
-  mutate(crs_label = forcats::fct_reorder(as.factor(paste0(semq_text, crs_year)), as.integer(crs_section))) %>%
   add_count(crs_label, lettergrade, name = "n_grade") %>%
   ggplot(aes(x = crs_label, y = n_grade, fill = lettergrade)) +
   geom_col(position = "fill") +
@@ -565,24 +573,6 @@ dat %>%
   theme(axis.text.x = element_text(angle = 90)) 
 ```
 
-```{r grade distribution density over time, eval=FALSE, message=FALSE, warning=FALSE, include=FALSE}
-#overall grade distribution as a density plot over time (color = terms)
-#note: this code no longer run
-
-dat %>%
-  filter(crs_name == course_of_interest) %>%
-    #create a semq text label for more clear x axis labels 
-  mutate(semq_text = recode(as.character(crs_semq), "1" = "W", "2" = "Sp", "3" = "SuI", "4" = "SuII", "5" = "F")) %>%
-  #create a crs_section variable to maintain x axis chronological ordering
-  mutate(crs_section = paste0(crs_year, crs_semq)) %>%
-  #create course label that orders readable labels create above chronologically
-  mutate(crs_label = forcats::fct_reorder(as.factor(paste0(semq_text, crs_year)), as.integer(crs_section))) %>%
- ggplot(aes(x = numgrade)) + 
-  geom_density(aes(color = crs_label), alpha = 0.3) +
-  labs(x = "Course Grade (numeric scale)", y = "Density", color = "Term") + 
-  theme_seismic
-
-```
 
 The below plot shows the trends over time for each student identity.
 
@@ -597,17 +587,7 @@ The below plot shows the trends over time for each student identity.
 
 ```{r mean grades by identity - over time (facets), message= FALSE, warning=FALSE,fig.height= 8, fig.width = 8}
 
-dat %>%
-  #filter course of interest
-  filter(crs_name == course_of_interest) %>%
-  #create a true "PEER" variable that compares PEER to white/Asian combined
-  mutate(peer = ifelse(ethniccode_cat == 1, 1, 0)) %>%
-  #create a semq text label for more clear x axis labels 
-  mutate(semq_text = recode(as.character(crs_semq), "1" = "W", "2" = "Sp", "3" = "SuI", "4" = "SuII", "5" = "F")) %>%
-  #create a crs_section variable to maintain x axis chronological ordering
-  mutate(crs_section = paste0(crs_year, crs_semq)) %>%
-  #create course label that orders readable labels create above chronologically
-  mutate(crs_label = forcats::fct_reorder(as.factor(paste0(semq_text, crs_year)), as.integer(crs_section))) %>%
+dat_coi %>%
   #pivot to a long format dataframe
   pivot_longer(cols = c(peer, female, firstgen, lowincomeflag, international, transfer, stem_major), 
                names_to = "demo_var",
@@ -658,51 +638,6 @@ dat %>%
 -   If there are any overall equity gaps associated with specific student identities, have they narrowed in recent years, or widened? Are there any pedagogical or structural changes that may relate to any changes seen over time?
 ::::
 
-```{r mean grades by identity - over time, eval=FALSE, message=FALSE, include=FALSE, waring=FALSE}
-#this chunk currently turned off - makes a rather ugly plot
-
-dat %>%
-  #filter course of interest
-  filter(crs_name == course_of_interest) %>%
-  #create a true "PEER" variable that compares PEER to white/Asian combined
-  mutate(peer = ifelse(ethniccode_cat == 1, 1, 0)) %>%
-  #pivot to a long format dataframe
-  pivot_longer(cols = c(peer, female, firstgen, lowincomeflag, international, transfer, stem_major), 
-               names_to = "demo_var",
-               values_to = "value") %>% 
-  #rename labels to be more interpretable
- mutate(demo_var = factor(demo_var, 
-                           levels = c("peer","female","firstgen","lowincomeflag","international","transfer", "stem_major"),
-                           labels = c("PEER", "Woman", "FirstGen", "LowIncome", "International", "Transfer", "STEM Major"))) %>%
-  #select minoritized groups only 
-  filter(value == 1) %>%
-  #calculate sample size for each group
-  add_count(crs_year, crs_semq, demo_var, name = "n_sectn") %>%
-  #create a semq text label for more clear x axis labels 
-  mutate(semq_text = recode(as.character(crs_semq), "1" = "W", "2" = "Sp", "3" = "SuI", "4" = "SuII", "5" = "F")) %>%
-  #create a crs_section variable to maintain x axis chronological ordering
-  mutate(crs_section = paste0(crs_year, crs_semq)) %>%
-  #create course label that orders readable labels create above chronologically
-  mutate(crs_label = forcats::fct_reorder(as.factor(paste0(semq_text, crs_year)), as.integer(crs_section))) %>%
-  #remove missing demographic variables before plotting
-  drop_na(demo_var) %>%
-  #PLOT 
-ggplot(aes(x = crs_label, y = numgrade, color = demo_var)) + 
-  stat_summary(fun.data = "mean_cl_normal") + 
-  stat_summary(geom = "line", fun.data = "mean_cl_normal", aes(group = demo_var)) + 
-  labs(x = "Course Term", y = "Course grade",
-       color = "Student identity", shape = NULL) + 
-  #optional: separate plots for each demographic variable
-  #facet_wrap(~demo_var) + 
-  #use seismic color palette
-  scale_color_manual(values = seismic_colors) + 
-  scale_size_continuous(trans = "log10", range = c(1, 2)) + 
-  theme_seismic + 
-  theme(axis.text.x = element_text(angle = 90))
-
-#issue: aes(size = n_section) does not seem to be working in stat_summary
-```
-
 # Comparing course grades to grades in other courses
 
 ## How does overall prior performance at the university (i.e., GPAO, prior GPA) compare to student outcomes in my course?
@@ -729,8 +664,7 @@ First, we can explore what the distribution of course grades are versus GPAO. Th
 
 #bin data for heatmap tiles
 heatmap <- 
-dat %>%
-  filter(crs_name == course_of_interest) %>%
+dat_coi %>%
   drop_na(gpao) %>%
   #create gpao bin
   mutate(gpaobin=.1*floor(10*gpao)) %>%
@@ -759,12 +693,12 @@ As with actual grades, we can also examine grade anomaly across student demograp
 ```{r grade anomaly distributions by identity, message= FALSE, warning=FALSE}
 
 #calculate overall mean grade for course (will be plotted as an average line)
-aga_coi <- mean(dat$numgrade[dat$crs_name == course_of_interest], na.rm = T) - 
-           mean(dat$gpao[dat$crs_name == course_of_interest], na.rm = T)
+aga_coi <- mean(dat_coi$numgrade, na.rm = T) - mean(dat_coi$gpao, na.rm = T)
 
 #plot
-dat %>%
-  filter(crs_name == course_of_interest) %>%
+dat_coi %>%
+  #exclude NA GPAO
+  drop_na(gpao) %>%
   #pivot to a long format dataframe
   pivot_longer(cols = c(ethniccode_cat, female, firstgen, lowincomeflag, international, transfer, stem_major), 
                names_to = "demo_var",
@@ -809,10 +743,9 @@ The below plot focuses on the mean grade anomaly for each of the student demogra
 
 ```{r grade anomaly by identity, message=FALSE, warning=FALSE}
 #different identities with average grade anomaly across identities 
-dat %>%
-  filter(crs_name == course_of_interest) %>%
-  #create a true "PEER" variable that compares PEER to white/Asian combined
-  mutate(peer = ifelse(ethniccode_cat == 1, 1, 0)) %>%
+dat_coi %>%
+  #exclude NA GPAO
+  drop_na(gpao) %>%
   #pivot to a long format dataframe
   pivot_longer(cols = c(peer, female, firstgen, lowincomeflag, international, transfer, stem_major), 
                names_to = "demo_var",
@@ -853,8 +786,9 @@ Similarly, we can also further disaggregate the PEER group into specific student
 ```{r grade anomaly by ethnicity, message=FALSE, warning=FALSE}
 # plot grade anomaly by specific ethnicity
 
-dat %>%
-  filter(crs_name == course_of_interest) %>%
+dat_coi %>%
+  #exclude NA GPAO
+  drop_na(gpao) %>%
   #pivot to a long format dataframe
   pivot_longer(cols = c(white, black_afram, hispanic_latinx, indigenous_am_indian, asian, pacific_islander),
                names_to = "ethnicity",
@@ -902,15 +836,9 @@ We can also observe these trends over time. The below plot shows the trends in a
 ```{r overall grade anomaly - over time, message=FALSE, warning=FALSE}
 #overall grade anomaly over time
 
-dat %>%
-  #filter course of interest
-  filter(crs_name == course_of_interest) %>%
-  #create a semq text label for more clear x axis labels 
-  mutate(semq_text = recode(as.character(crs_semq), "1" = "W", "2" = "Sp", "3" = "SuI", "4" = "SuII", "5" = "F")) %>%
-  #create a crs_section variable to maintain x axis chronological ordering
-  mutate(crs_section = paste0(crs_year, crs_semq)) %>%
-  #create course label that orders readable labels create above chronologically
-  mutate(crs_label = forcats::fct_reorder(as.factor(paste0(semq_text, crs_year)), as.integer(crs_section))) %>%
+dat_coi %>%
+  #exclude NA GPAO
+  drop_na(gpao) %>%
   #pivot longer with all numeric metrics in one column for plotting
   pivot_longer(cols = c(numgrade,gpao),
                names_to = "metric",
@@ -935,17 +863,10 @@ Then, we can show trends in grade anomaly for each student demographic over time
 
 ```{r grade anomaly by identity - over time (facets), message=FALSE, warning=FALSE,fig.height= 8, fig.width = 8}
 #plot grade anomaly over time (facet plot)
-dat %>%
-  #filter course of interest
-  filter(crs_name == course_of_interest) %>%
-  #create a true "PEER" variable that compares PEER to white/Asian combined
-  mutate(peer = ifelse(ethniccode_cat == 1, 1, 0)) %>%
-  #create a semq text label for more clear x axis labels 
-  mutate(semq_text = recode(as.character(crs_semq), "1" = "W", "2" = "Sp", "3" = "SuI", "4" = "SuII", "5" = "F")) %>%
-  #create a crs_section variable to maintain x axis chronological ordering
-  mutate(crs_section = paste0(crs_year, crs_semq)) %>%
-  #create course label that orders readable labels create above chronologically
-  mutate(crs_label = forcats::fct_reorder(as.factor(paste0(semq_text, crs_year)), as.integer(crs_section))) %>%
+
+dat_coi %>%
+  #exclude NA GPAO
+  drop_na(gpao) %>%
   #pivot to a long format dataframe
   pivot_longer(cols = c(peer, female, firstgen, lowincomeflag, international, transfer, stem_major), 
                names_to = "demo_var",
@@ -1024,8 +945,8 @@ The SAI approximates an intersectional approach, where we can consider how multi
 #this allows those students to still be included in SAI calculations
 
 #Convert Demographics to 0 (conservative, instead of excluding)
-dat <-
-  dat %>%
+dat_coi <-
+  dat_coi %>%
   mutate(across(.cols = c(ethniccode_cat, firstgen, female, lowincomeflag), as.character)) %>%
   tidyr::replace_na(list(ethniccode_cat = "0", firstgen = "0", female = "0", lowincomeflag = "0"))
 ```
@@ -1033,8 +954,8 @@ dat <-
 ```{r SAI calculation, message=FALSE, warning=FALSE}
 #this code goes through all possible combinations of the 4 advantage axes and assigns an SAI based on that students' values
 #as ethniccode_cat == 1 is the "BIPOC" label, all other categories are considered advantaged 
-dat <-
-  dat %>% mutate(sai = case_when(
+dat_coi <-
+  dat_coi %>% mutate(sai = case_when(
     female == "0" & ethniccode_cat != "1" & firstgen == "0" & lowincomeflag == "0"  ~ "4",
     female == "1" & ethniccode_cat != "1" & firstgen == "0" & lowincomeflag == "0"  ~ "3",
     female == "0" & ethniccode_cat == "1" & firstgen == "0" & lowincomeflag == "0"  ~ "3", 
@@ -1064,10 +985,9 @@ The below plots show raw grades and grade anomaly partitioned by the number of s
 sai_colors <- c("0" = "#B35050", "1" = "#eb7e36", "2" = "#ffbe07", "3" = "#70ac49", "4" = "#4671c6")
 
 #raw grades by SAI
-dat %>%
+dat_coi %>%
   mutate(sai = as.numeric(sai)) %>%
   add_count(sai, name = "n") %>% #add sample size per SAI
-  filter(crs_name == course_of_interest) %>%
   ggplot(aes(x = sai, y = numgrade, color = as.factor(sai)))+ 
       stat_summary(aes(size = n), geom = "point", fun = "mean", 
                  position = position_dodge(0.2)) + 
@@ -1085,7 +1005,9 @@ dat %>%
 ```{r grade anomaly by SAI, message=FALSE, warning=FALSE}
 #grade anomaly by SAI
 
-dat %>%
+dat_coi %>%
+  #exclude missing GPAO
+  drop_na(gpao) %>%
   mutate(sai = as.numeric(sai)) %>%
   add_count(sai, name = "n") %>% #add sample size per SAI
   filter(crs_name == course_of_interest) %>%
@@ -1114,10 +1036,10 @@ In some STEM courses, there are significant gender gaps between men and women. (
 ```{r sai by gender, warning=FALSE, message=FALSE}
 #2 panel plot of raw grades by SAI by gender and grade anomaly by SAI by gender
 
-dat %>%
+dat_coi %>%
+  #exclude missing GPAO
+  drop_na(gpao) %>%
   mutate(sai = as.numeric(sai)) %>%
-  #filter course of interest only 
-  filter(crs_name == course_of_interest) %>%
   #edit sai to remove advantage conferred by gender
   mutate(sai = ifelse(female == 0, sai-1, sai)) %>%
   #pivot longer with all numeric metrics in one column for plotting
@@ -1145,8 +1067,8 @@ dat %>%
 advantage_labels <- c("All", "W", "PEER", "LI","FG", "PEER + FG", "PEER + LI", "PEER + W", "FG + LI", "FG + W", "LI + W", "FG + LI + W", "PEER + FG + W", "PEER + LI+W", "PEER + FG + LI", "PEER + FG + LI + W")
 
 #create variables that outline the number of advantages a student has at the levels of Gender, PEER, FirstGen, and LowIncome
-dat<-
-dat %>%
+dat_coi<-
+dat_coi %>%
   mutate(peer = ifelse(ethniccode_cat == 1, 1, 0)) %>%
   mutate(advantage = case_when(
     female == "0" & peer == "0" & firstgen == "0" & lowincomeflag == "0"  ~ "0",
@@ -1190,9 +1112,7 @@ The two plots below show actual course grades and grade anomalies. In both plots
 ```{r grade by advantage combo, warning = FALSE, message=FALSE}
 #"Marco" plot: show means and 95% CI for all advantage combinations
 
-dat %>%
-  #filter course of interest
-  filter(crs_name == course_of_interest) %>%
+dat_coi %>%
   ggplot(aes(x = advantage, y = numgrade, color = as.factor(advantage_no) )) +
   #plot means and 95% confidence intervals
     stat_summary(fun.data = "mean_cl_normal") + 
@@ -1212,9 +1132,9 @@ dat %>%
 ```{r grade anomaly by advantage combo, warning = FALSE, message=FALSE}
 #"Marco" plot: show means and 95% CI for all advantage combinations
 
-dat %>%
-  #filter course of interest
-  filter(crs_name == course_of_interest) %>%
+dat_coi %>%
+  #exclude missing GPAO
+  drop_na(gpao) %>%
   ggplot(aes(x = advantage, y = numgrade-gpao, color = as.factor(advantage_no) )) +
   #plot means and 95% confidence intervals
     stat_summary(fun.data = "mean_cl_normal") + 
