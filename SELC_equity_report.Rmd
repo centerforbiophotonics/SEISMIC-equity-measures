@@ -71,6 +71,21 @@ course_of_interest <- "YOUR COURSE HERE"
 majors_of_interest <- c("Biological Sciences", "Chemistry")
 ```
 
+```{r set cutoffs for sample size, include = FALSE}
+#what is the sample size cutoff for small groups you do not want to include in the analyses?
+
+#general demographic cutoff
+#this cutoff will be used for general demographic groups, such as all students of an ethnicity
+#e.g. if there are less than N Indigenous/Native American students, for example, they will not be plotted
+cutoff_general <- 50
+
+#by section cutoff
+#this cutoff will be used when demographic groups are sorted by individual course offerings
+#e.g. if there are less than N PEER students in a particular course offering/term, they will not be plotted 
+cuttoff_sections <- 50
+```
+
+
 # Introduction
 
 This report is the first in a series created for the SEISMIC Equity Learning Communities (SELC) project. The goal of this report, as part of the SELC project, is to allow faculty and department leaders to view institutional data from their courses of interest to evaluate whether students experience equitable outcomes in those courses. This first "Level 1" report will give an overview of the demographic composition of these courses across a range of student identities, show how course grades map onto these demographics and how these patterns have changed over time, and will also compare course grades to students' other coursework through the concept of grade anomaly. This data is meant to facilitate discussions about how to improve equitable outcomes and elevate pedagogical techniques that might support historically marginalized students.
@@ -361,7 +376,6 @@ dat_coi <-
   mutate(crs_label = forcats::fct_reorder(as.factor(paste0(semq_text, crs_year)), as.integer(crs_section)))
 ```
 
-
 Student final grades are the main course outcome available from registrar data. In this section, we examine the distribution of grades in this courses, and explore grade patterns across groups.
 
 ## What is the grade distribution in this course?
@@ -420,6 +434,10 @@ dat_coi %>%
   pivot_longer(cols = c(ethniccode_cat, female, firstgen, lowincomeflag, international, transfer, stem_major), 
                names_to = "demo_var",
                values_to = "value") %>% 
+  #add count for each demographic group
+  add_count(demo_var, value, name = "n_group") %>%
+  #exclude groups with N less than user-defined cutoff 
+  filter(n_group >= cutoff_general) %>%
   #select all students who do belong to the group of interest
   filter(value == 1 ) %>%
   #rename labels to be more interpretable
@@ -516,6 +534,10 @@ dat_coi %>%
   pivot_longer(cols = c(white, black_afram, hispanic_latinx, indigenous_am_indian, asian, pacific_islander),
                names_to = "ethnicity",
                values_to = "value") %>% 
+  #add count for each ethnicity
+  add_count(ethnicity, value, name = "n_group") %>%
+  #exclude groups with N less than user-defined cutoff 
+  filter(n_group >= cutoff_general) %>%
   #select all students who do belong to the group of interest
   filter(value == 1 ) %>%
   mutate(ethnicity = fct_reorder(ethnicity, numgrade, .fun = "mean")) %>%
@@ -592,15 +614,16 @@ dat_coi %>%
   pivot_longer(cols = c(peer, female, firstgen, lowincomeflag, international, transfer, stem_major), 
                names_to = "demo_var",
                values_to = "value")  %>%
-  #calculate sample size for each group
-  add_count(demo_var, value, name = "n") %>%
+  #add a sample size for each course section, demographic variable and value 
+  add_count(crs_section, demo_var, value, name = "n_sect_group") %>%
+  #remove students in groups that do not meet the section / group sample size cutoff (set by user in chunk)
+  filter(n_sect_group >= cutoff_sections) %>%
   #create a color code grouping based on demographic variable, with color for minoritized groups only
   mutate(color_code = ifelse(value == 0, "majority", demo_var)) %>%
   #rename labels to be more interpretable
   mutate(demo_var = factor(demo_var, 
                            levels = c("peer","female","firstgen","lowincomeflag","international","transfer", "stem_major"),
                            labels = c("PEER", "Woman", "FirstGen", "LowIncome", "International", "Transfer", "STEM Major"))) %>%
-
   #remove missing demographic variables before plotting
   drop_na(demo_var) %>%
   #PLOT 
@@ -750,6 +773,10 @@ dat_coi %>%
   pivot_longer(cols = c(peer, female, firstgen, lowincomeflag, international, transfer, stem_major), 
                names_to = "demo_var",
                values_to = "value") %>% 
+  #add count for each demographic group
+  add_count(demo_var, value, name = "n_group") %>%
+  #exclude groups with N less than user-defined cutoff 
+  filter(n_group >= cutoff_general) %>%
   #rename labels to be more interpretable
  mutate(demo_var = factor(demo_var, 
                            levels = c("peer","female","firstgen","lowincomeflag","international","transfer", "stem_major"),
@@ -793,6 +820,10 @@ dat_coi %>%
   pivot_longer(cols = c(white, black_afram, hispanic_latinx, indigenous_am_indian, asian, pacific_islander),
                names_to = "ethnicity",
                values_to = "value") %>% 
+  #add count for each demographic group
+  add_count(ethnicity, value, name = "n_group") %>%
+  #exclude groups with N less than user-defined cutoff 
+  filter(n_group >= cutoff_general) %>%
   #select all students who do belong to the group of interest
   filter(value == 1 ) %>%
   mutate(ethnicity = fct_reorder(ethnicity, numgrade-gpao, .fun = "mean")) %>%
@@ -871,8 +902,10 @@ dat_coi %>%
   pivot_longer(cols = c(peer, female, firstgen, lowincomeflag, international, transfer, stem_major), 
                names_to = "demo_var",
                values_to = "value")  %>%
-  #calculate sample size for each group
-  add_count(demo_var, value, name = "n") %>%
+  #add a sample size for each course section, demographic variable and value 
+  add_count(crs_section, demo_var, value, name = "n_sect_group") %>%
+  #remove students in groups that do not meet the section / group sample size cutoff (set by user in chunk)
+  filter(n_sect_group >= cutoff_sections) %>%
   #create a color code grouping based on demographic variable, with color for minoritized groups only
   mutate(color_code = ifelse(value == 0, "majority", demo_var)) %>%
   #rename labels to be more interpretable
