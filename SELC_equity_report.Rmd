@@ -14,15 +14,15 @@ knitr::opts_chunk$set(echo = FALSE, warnings = FALSE, messages = FALSE)
 
 #use pacman to install and load all packages required
 if (!require("pacman")) install.packages("pacman") #install pacman if not already installed
-pacman::p_load(tidyverse, 
-               Hmisc,
-               rmdformats, #output format: readthedown
-               kableExtra, #pretty html tables
-               gghalves, #half-half geoms
-               ggdist, #density plots for distributions
-               viridis, #colorblind-friendly palettes
-               knitr,
-               pander) # for text processing
+pacman::p_load(tidyverse, #code tested on v.2.0.0
+               Hmisc, #code tested using v.4.7-1
+               rmdformats, #output format: readthedown (v.1.0.4)
+               kableExtra, #pretty html tables (v.1.3.4)
+               gghalves, #half-half geoms (v.0.1.4)
+               ggdist, #density plots for distributions (v.3.2.1)
+               viridis, #colorblind-friendly palettes (v.0.6.2)
+               knitr, #(v.1.40)
+               pander) # for text processing (v.0.6.5)
 
 #create shared plot settings
 theme_seismic <- 
@@ -77,12 +77,12 @@ majors_of_interest <- c("Biological Sciences", "Chemistry")
 #general demographic cutoff
 #this cutoff will be used for general demographic groups, such as all students of an ethnicity
 #e.g. if there are less than N Indigenous/Native American students, for example, they will not be plotted
-cutoff_general <- 50
+cutoff_general <- 10
 
 #by section cutoff
 #this cutoff will be used when demographic groups are sorted by individual course offerings
 #e.g. if there are less than N PEER students in a particular course offering/term, they will not be plotted 
-cuttoff_sections <- 50
+cutoff_sections <- 10
 ```
 
 
@@ -606,6 +606,7 @@ The below plot shows the trends over time for each student identity.
 
 *The overall course average, across all students and all terms, is shown with a dashed line.
 
+* *Note: If the sample size for a group in a particular term is less than `r cutoff_section`, then that group will not be included in the plot.*
 
 ```{r mean grades by identity - over time (facets), message= FALSE, warning=FALSE,fig.height= 8, fig.width = 8}
 
@@ -1208,7 +1209,7 @@ Please provide any feedback you may have on this demo report to the SELC team he
 
 ### Acknowledgements
 
-This report is heavily inspired by the Foundational Course Initiative reports from the University of Michigan, created by Dr. Heather Rypkema and refined by the Assessment Toolkit team. The R code in this report was initially drafted by Victoria Farrar (UC Davis) with feedback from Nita Tarchinski (Michigan), Matthew Steinwachs (UC Davis), Jenna Thomas (UC Davis), Tim McKay (Michigan), Heather Rypkema (Michigan), Marco Molinaro (University of Maryland) and Stefano Fiorini (Indiana University).
+This report is heavily inspired by the Foundational Course Initiative reports from the University of Michigan, created by Dr. Heather Rypkema and refined by the Assessment Toolkit team. The R code in this report was initially created by Victoria Farrar (UC Davis) with feedback from Nita Tarchinski (Michigan), Matthew Steinwachs (UC Davis), Jenna Thomas (UC Davis), Tim McKay (Michigan), Heather Rypkema (Michigan), Marco Molinaro (University of Maryland) and Stefano Fiorini (Indiana University).
 
 ```{r R coding resources, include = FALSE}
 #R coding resources used
