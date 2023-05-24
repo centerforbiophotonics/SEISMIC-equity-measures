@@ -14,6 +14,11 @@ knitr::opts_chunk$set(echo = FALSE, warnings = FALSE, messages = FALSE)
 
 #use pacman to install and load all packages required
 if (!require("pacman")) install.packages("pacman") #install pacman if not already installed
+
+#note to users: pacman installs the latest package version. 
+#comments below indicate package version the code was initially tested on. 
+#to install a specific version using pacman, use command `p_installversion()` 
+
 pacman::p_load(tidyverse, #code tested on v.2.0.0
                Hmisc, #code tested using v.4.7-1
                rmdformats, #output format: readthedown (v.1.0.4)
@@ -375,6 +380,27 @@ dat_coi <-
   #create course label that orders readable labels create above chronologically
   mutate(crs_label = forcats::fct_reorder(as.factor(paste0(semq_text, crs_year)), as.integer(crs_section)))
 ```
+
+```{r get info on excluded data, include = FALSE}
+#if users are intersted, this table yields information on data excluded due to having missing numgrades or GPAO
+
+#create table: 
+  dat %>%
+  #include only the course of interest
+  filter(crs_name == course_of_interest) %>%
+  #show only those with NA numgrade or NA GPAO 
+  filter(is.na(numgrade) | is.na(gpao)) %>%
+  mutate(missing_Grade = ifelse(is.na(numgrade),"Y","N"),
+         missing_GPAO = ifelse(is.na(gpao), "Y","N")) %>%
+  group_by(missing_Grade, missing_GPAO) %>%
+  summarise(N = n(), 
+            N_Women = sum(female == 1),
+            N_PEER = sum(ethniccode_cat == 1), 
+            N_FirstGen = sum(firstgen == 1),
+            N_Transfer = sum(transfer == 1), 
+            N_LowIncome = sum(lowincomeflag == 1))
+```
+
 
 Student final grades are the main course outcome available from registrar data. In this section, we examine the distribution of grades in this courses, and explore grade patterns across groups.
 
