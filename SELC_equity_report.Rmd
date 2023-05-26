@@ -291,11 +291,10 @@ ggplot(aes(x = crs_label, y = perc, color = demo_var)) +
 
 In addition to demographic factors, student majors also provide information about students' course background, interest, and potentially familiarity with the material in our courses.
 
-The below plot shows all students across all terms, broken down by major of study. Each bar shows the percent of students in each major. The color of the bar indicates whether the major is a STEM major, or a non-STEM major. (The overall percent of STEM majors in the course is shown in the bar plot above with the other student identities.)
+The below plot shows all students across all terms, broken down by major of study, for the top 10 most populous majors. Each bar shows the percent of students in each major. The color of the bar indicates whether the major is a STEM major, or a non-STEM major. (The overall percent of STEM majors in the course is shown in the bar plot above with the other student identities.)
 
-```{r percent by all majors, message = FALSE, warning=FALSE}
-# plot percent of all majors in the course 
-# note: depending on number of majors in your dataset, this could get expansive
+```{r percent by top 10 majors, message = FALSE, warning=FALSE}
+# plot percent of top 10 majors in the course by # of students
 
 dat %>% 
   #select course of interest only
@@ -306,6 +305,9 @@ dat %>%
   #count sample size by each group, then divide by course total
   summarise(n_total = n(),
             n_course = mean(n_course)) %>% 
+  #select only the top 10 most populous majors
+  ungroup() %>% #ungroup required for slice to work 
+  slice_max(n_total, n = 10, with_ties = FALSE) %>%
   #convert to percent
   mutate(perc = n_total/n_course *100) %>% #percent for each level
   ggplot(aes(x = major, y = perc, fill = as.factor(stem_major))) +
