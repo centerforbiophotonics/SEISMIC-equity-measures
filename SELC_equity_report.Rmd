@@ -418,6 +418,32 @@ dat_coi %>%
   theme_seismic
 ```
 
+However, some students may enroll in the class but then end up withdrawing from the course. The below plot shows who. is *NOT* succeeding in this course, by showing the percent of all students across all terms that received a D, F, or withdraw from the course with a "W" ("DFWs"). 
+
+```{r overall DFW}
+#plot the overall DFW rate for the course
+dat %>%
+  #remove plus/minus from lettergrade, if present
+  mutate(lettergrade = str_replace_all(lettergrade, regex("\\W+"), "")) %>%
+  mutate(dfw = ifelse(lettergrade %in% c("D","F","W"), lettergrade, "A-C")) %>%
+  #add n for all students in course
+  add_tally(name = "n_course") %>%
+  group_by(dfw) %>% 
+  #count sample size by each group, then divide by course total
+  summarise(n_total = n(),
+            n_course = mean(n_course)) %>% 
+  #convert to percent
+  mutate(perc = n_total/n_course *100) %>% #percent for each level
+  ggplot(aes(x = dfw, y=perc, fill = dfw)) + 
+  geom_col(color = "black") + 
+  #add labels to each bar with the rounded percent for each group
+  geom_text(aes(label = scales::percent(round(perc/100,2))), vjust = -0.5) + 
+  #define colors, with gray for all others than DFW 
+  scale_fill_manual(values = c("A-C"="lightgray","D" = seismic_colors[1], "F" = seismic_colors[2], "W" = seismic_colors[3]), guide = "none") + 
+  labs(x = "Course Grade", y = "Percent(%)") + 
+  theme_seismic
+```
+
 :::: {.questionbox data-latex=""}
 ::: {.center data-latex=""}
 **Guiding questions:**
@@ -431,6 +457,8 @@ dat_coi %>%
 -   If you do have a required distribution, are your assessments adequately gauging learning outcomes, so that the final grades mirror the degree of student learning?
 
 -   How well do grades represent student success in this course? What other measures of student outcomes could you use?
+
+-   Are the DFW rates what you would expect for a course at this level?
 ::::
 
 ## How do course outcomes compare for different student groups?
@@ -587,6 +615,41 @@ dat_coi %>%
   theme_seismic +
   coord_flip()
 ```
+
+We can also examine the DFW rate across specific student demographics. The below plot shows, for each demographic variable in the dataset, the percent of all students in that group that recieved a D,F, or W (or an A-C grade). 
+In this plot, the colors represent the Ds (orange), Fs (blue), and Ws (green) respectively, with all other students indicated in gray. The labels on each plot represent the actual percent of students that fell into each DFW category across the seven demographic and academic variables. 
+
+```{r percent DFW by identity}
+dat %>%
+  #remove plus/minus from lettergrade, if present
+  mutate(lettergrade = str_replace_all(lettergrade, regex("\\W+"), "")) %>%
+  mutate(dfw = ifelse(lettergrade %in% c("D","F","W"), lettergrade, "A-C")) %>%
+  pivot_longer(cols = c(female, transfer, international, ethniccode_cat, lowincomeflag, firstgen, stem_major), 
+               names_to = "demo_var", 
+               values_to = "value") %>%
+  #rename labels to be more interpretable
+  mutate(demo_var = factor(demo_var, 
+                           levels = c("ethniccode_cat","female","firstgen","lowincomeflag","international","transfer", "stem_major"),
+                           labels = c("PEER", "Woman", "FirstGen", "LowIncome", "International", "Transfer", "STEM Major"))) %>%
+  count(demo_var, value, dfw) %>%
+  group_by(demo_var, value) %>%
+  mutate(n_value = sum(n), 
+         perc = n/n_value*100) %>%
+  filter(value == 1) %>%
+  ggplot(aes(x = demo_var, y = perc, fill = dfw)) + 
+  geom_col(color = "black") + 
+  geom_text(aes(label = round(perc, 0)), position = position_stack(vjust = 0.5)) +
+  #define colors, with gray for all others than DFW 
+  scale_fill_manual(values = c("A-C"="lightgray","D" = seismic_colors[1], "F" = seismic_colors[2], "W" = seismic_colors[3])) + 
+  labs(y = "Percent(%)", x = NULL, fill = NULL) + 
+  theme_minimal(base_size = 14) + 
+  theme(axis.text = element_text(color = "black")) + 
+  theme(panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank()) +
+  theme(legend.position = "bottom") +
+  coord_flip()
+```
+
 
 :::: {.questionbox data-latex=""}
 ::: {.center data-latex=""}
