@@ -90,20 +90,17 @@ cutoff_general <- 10
 cutoff_sections <- 10
 ```
 
-
 # Introduction
 
-This report is the first in a series created for the SEISMIC Equity Learning Communities (SELC) project. The goal of this report, as part of the SELC project, is to allow faculty and department leaders to view institutional data from their courses of interest to evaluate whether students experience equitable outcomes in those courses. This first "Level 1" report will give an overview of the demographic composition of these courses across a range of student identities, show how course grades map onto these demographics and how these patterns have changed over time, and will also compare course grades to students' other coursework through the concept of grade anomaly. This data is meant to facilitate discussions about how to improve equitable outcomes and elevate pedagogical techniques that might support historically marginalized students.
+This report is the first in a series created for the [SEISMIC Equity Learning Communities (SELC) project](https://www.seismicproject.org/seismic-central/the_selc_grant/). The goal of this report, as part of the SELC project, is to allow faculty and department leaders to view institutional data from their courses of interest to evaluate whether students experience equitable outcomes in those courses. This first "Level 1" report will give an overview of the demographic composition of these courses across a range of student identities, show how course grades map onto these demographics and how these patterns have changed over time, and will also compare course grades to students' other coursework through the concept of grade anomaly. This data is meant to facilitate discussions about how to improve equitable outcomes and elevate pedagogical techniques that might support historically marginalized students.
 
 We want to emphasize that the student identities explored here are not exhaustive. There are many identities that may influence students' experiences, and thus outcomes, in the classroom, and only some of these identities are collected in registrar-available or quantitative data. Quantitative data is readily-available and allows us to quickly show patterns across student groups or over time. However, aspects of quantitative analysis - such as the binary categorizations, or analyzing statistics aggregated over whole groups - can obscure many diverse and intersectional aspects of an individual student's experiences. As you read through the report, remember that each data point represents an individual who deserves the opportunity to succeed in these courses.
-
 
 ::: {.center data-latex=""}
 **The course of interest is `r course_of_interest`.**
 
 **The course data presented in this report ranges from `r min(dat$crs_year)` to `r max(dat$crs_year)`.**
 :::
-
 
 # Who is in this course?
 
@@ -165,9 +162,9 @@ ggplot(aes(x = demo_var, y = perc, fill = demo_var)) +
 
 Persons historically excluded based on ethnicity or race (PEER; [Asai 2020](https://www.cell.com/cell/pdf/S0092-8674(20)30337-8.pdf)) is a category that includes Black/African-American, Indigenous/Native American, and Hispanic/Latino/a/x students. The definition of PEER closely aligns with the definition of "underrepresented minorities" used by the National Science Foundation ([NSF 2023](https://ncses.nsf.gov/pubs/nsf23315/report/glossary#:~:text=Underrepresented%20minorities%3A%20Races%20or%20ethnicities,American%20Indians%20or%20Alaska%20Natives.)).
 
-However, the different racial and ethnic groups included in the PEER label may have different experiences in the STEM courses. These diverse experiences may be masked by the overall PEER/non-PEER categorization; certain ethnicities may experience more or less equitable outcomes. For this reason, it is also important to disaggregate our data by student ethnicity.
+However, the different racial and ethnic groups included in the PEER label may have different experiences in the STEM courses. These diverse experiences may be masked by the overall PEER/non-PEER categorization; certain ethnicities may experience more or less equitable outcomes. For this reason, it is also important to disaggregate our data by student race/ethnicity. Here, we consider "Asian/Asian American" as a single category; however, there is much discussion on how Asian/Asian American is not a heterogeneous group in terms of student outcomes (e.g., [Edlagan & Vaghul, 2016](https://equitablegrowth.org/how-data-disaggregation-matters-for-asian-americans-and-pacific-islanders/),[Fang,2022](https://prismreports.org/2022/05/02/disaggregation-data-justice-asian-americans/)). Importantly, none of these groups are ethnically or culturally homogeneous, and these results should be considered only a first, next step beyond the PEER/non-PEER classification.
 
-The following plot shows the percent of students in the course of interest (across all terms), broken down by specific racial/ethnicity.
+The following plot shows the percent of students in the course of interest (across all terms), broken down by specific race/ethnicity.
 
 ```{r percent by ethnicity, message=F, warning=F}
 #Create a list of labels of ethnicities to be more interpretable for x axis labels
@@ -213,15 +210,16 @@ ggplot(aes(x = ethnicity, y = perc, fill = ethnicity)) +
 
 ```
 
-:::: {.questionbox data-latex=""}
+::: {.questionbox data-latex=""}
 ::: {.center data-latex=""}
 **Guiding questions:**
 :::
+
 -   Do any of the percentages of students in the course surprise you? In what way?
 -   What groups are *not* included in these figures?
 -   Given the demographic breakdown of your course, are there any groups you would be specifically interested in examining course outcomes for?
 -   Do you think it could be useful to show the demographic breakdown to your students? How might you present this data to your students?
-::::
+:::
 
 ## How have these demographics changed over time?
 
@@ -279,14 +277,15 @@ ggplot(aes(x = crs_label, y = perc, color = demo_var)) +
 
 ```
 
-:::: {.questionbox data-latex=""}
+::: {.questionbox data-latex=""}
 ::: {.center data-latex=""}
 **Guiding questions:**
 :::
+
 -   What groups, if any, are growing in the classroom in recent years?
 -   Are there any yearly patterns or differences between summer terms and main terms?
 -   Are there any change to the classroom course content or structure that could better meet the needs or specific challenges of these groups?
-::::
+:::
 
 ## What majors do students in this course hold?
 
@@ -328,8 +327,6 @@ Additionally, we may only be interested in a few majors, such as the major of th
 **The major(s) of interest for this report are `r ifelse(length(majors_of_interest)>=2,pander::p(majors_of_interest, wrap = ''),cat(paste(majors_of_interest, sep = ", ")))`.**
 :::
 
-
-
 ```{r percent by majors of interest, message=FALSE, warning=FALSE}
 #plot of the percent of only majors of interest (defined in Chunk 4)
 
@@ -363,6 +360,7 @@ dat %>%
 ```
 
 # Grades in this course
+
 ```{r create course of interest dataset (no NA grades)}
 dat_coi <-
   dat %>%
@@ -401,12 +399,11 @@ dat_coi <-
             N_LowIncome = sum(lowincomeflag == 1))
 ```
 
-
 Student final grades are the main course outcome available from registrar data. In this section, we examine the distribution of grades in this courses, and explore grade patterns across groups.
 
 ## What is the grade distribution in this course?
 
-The below plot shows the overall grade distribution for this course across all terms. Note that this plot excludes students who did not take the course for a lettergrade (pass/non pass) or withdrew. 
+The below plot shows the overall grade distribution for this course across all terms. Note that this plot excludes students who did not take the course for a lettergrade (pass/non pass) or withdrew.
 
 ```{r overall grade distribution, warning = FALSE, message=FALSE}
 
@@ -418,7 +415,7 @@ dat_coi %>%
   theme_seismic
 ```
 
-However, some students may enroll in the class but then end up withdrawing from the course. The below plot shows who. is *NOT* succeeding in this course, by showing the percent of all students across all terms that received a D, F, or withdraw from the course with a "W" ("DFWs"). 
+However, some students may enroll in the class but then end up withdrawing from the course. The below plot shows who. is *NOT* succeeding in this course, by showing the percent of all students across all terms that received a D, F, or withdraw from the course with a "W" ("DFWs").
 
 ```{r overall DFW}
 #plot the overall DFW rate for the course
@@ -444,37 +441,39 @@ dat %>%
   theme_seismic
 ```
 
-:::: {.questionbox data-latex=""}
+::: {.questionbox data-latex=""}
 ::: {.center data-latex=""}
 **Guiding questions:**
 :::
+
 -   Does this grade distribution match what you would expect to see for this course? What about what you would *like* to see?
 
 -   If the distribution does not match what you would like to see, how would you alter your assessments or pedagogical structures to better achieve that distribution?
 
--   Does this course have a mandatory distribution requirement? If so, is this historical distribution consistent with it?
+-   Does this course have a mandatory distribution of grades (for example, a bell-curve or normal-distribtuion curve)? If so, is this historical distribution consistent with it?
 
 -   If you do have a required distribution, are your assessments adequately gauging learning outcomes, so that the final grades mirror the degree of student learning?
 
 -   How well do grades represent student success in this course? What other measures of student outcomes could you use?
 
 -   Are the DFW rates what you would expect for a course at this level?
-::::
+:::
 
 ## How do course outcomes compare for different student groups?
 
 The overall grade distribution gives us a sense for grade patterns in this course. The overall grade distribution gives us a sense for grade patterns in this course. However, from an equity perspective, we want to examine and compare the distributions for different student identities.
 
-The below plot shows the full distribution of the grades for multiple student identities, both academic (STEM major, transfer students) and demographic (PEER, women, low income, first-generation, international). 
+The below plot shows the full distribution of the grades for multiple student identities, both academic (STEM major, transfer students) and demographic (PEER, women, low income, first-generation, international).
 
-* The distribution is shown as a density plot with the majority (25th - 75th percentiles) shaded in a darker color. This region represents the "box" portion of a box plot. 
+-   The distribution is shown as a density plot with the majority (25th - 75th percentiles) shaded in a darker color. This region represents the "box" portion of a box plot.
 
-* The mean and the 95% confidence interval around the mean is shown as a point and errorbar below each distribution. 
-    + If 95% confidence intervals do not overlap between two groups, the means are statistically significantly different. 
+-   The mean and the 95% confidence interval around the mean is shown as a point and errorbar below each distribution.
 
-* The medians is shown as a small vertical line on each distribution. 
+    -   If 95% confidence intervals do not overlap between two groups, the means are statistically significantly different.
 
-* The overall mean grade across all students (across all terms in the dataset) is shown as a dashed vertical line. 
+-   The medians is shown as a small vertical line on each distribution.
+
+-   The overall mean grade across all students (across all terms in the dataset) is shown as a dashed vertical line.
 
 ```{r raw grade distributions and means by identity, message=FALSE, warning=FALSE}
 #plots grade distributions, along with means/SEM, for demographic identities
@@ -525,15 +524,15 @@ dat_coi %>%
 
 While viewing the full distribution of grades allows us to view the full range, sometimes comparing average grades, especially between majority and historically-excluded / minoritized groups can be informative when evaluating equity in course outcomes.
 
-The below plot shows the overall average grades for students, disaggregated by whether they hold a certain identity or not.The x-axis range has been zoomed in so we can better evaluate differences between groups. 
+The below plot shows the overall average grades for students, disaggregated by whether they hold a certain identity or not.The x-axis range has been zoomed in so we can better evaluate differences between groups.
 
-In this plot: 
+In this plot:
 
-* Means and 95% confidence intervals are shown as points and errorbars. 
+-   Means and 95% confidence intervals are shown as points and errorbars.
 
-* Student identities are represented by shape; triangles represent students in the historically excluded/minoritized group and circles are students in the majoirty/ historically supported/accepted group. 
+-   Student identities are represented by shape; triangles represent students in the historically excluded/minoritized group and circles are students in the majoirty/ historically supported/accepted group.
 
-* The overall average grade for all students in all terms of the course is shown as a dashed line. 
+-   The overall average grade for all students in all terms of the course is shown as a dashed line.
 
 Note that it is more useful to compare between students who do and do not hold each identity than across groups, as the student identities are not mutually exclusive (a single student may belong to any and all of these identities).
 
@@ -575,10 +574,9 @@ dat_coi %>%
 
 As discussed previously, the "PEER" category can mask the nuanced different experiences of students of specific ethnic or racial groups. To explore the differences in course grades, mean course grades by ethnicities are disaggregted below.
 
-In this plot:
-* Means and 95% confidence intervals are shown as points and errorbars. 
+In this plot: \* Means and 95% confidence intervals are shown as points and errorbars.
 
-* The overall average grade for all students in all terms of the course is shown as a dashed line. 
+-   The overall average grade for all students in all terms of the course is shown as a dashed line.
 
 ```{r mean raw grade by ethnicity, message=FALSE, warning=FALSE}
 # raw grade (mean and SEM) by specific ethnicities
@@ -616,8 +614,7 @@ dat_coi %>%
   coord_flip()
 ```
 
-We can also examine the DFW rate across specific student demographics. The below plot shows, for each demographic variable in the dataset, the percent of all students in that group that recieved a D,F, or W (or an A-C grade). 
-In this plot, the colors represent the Ds (orange), Fs (blue), and Ws (green) respectively, with all other students indicated in gray. The labels on each plot represent the actual percent of students that fell into each DFW category across the seven demographic and academic variables. 
+We can also examine the DFW rate across specific student demographics. The below plot shows, for each demographic variable in the dataset, the percent of all students in that group that recieved a D,F, or W (or an A-C grade). In this plot, the colors represent the Ds (orange), Fs (blue), and Ws (green) respectively, with all other students indicated in gray. The labels on each plot represent the actual percent of students that fell into each DFW category across the seven demographic and academic variables.
 
 ```{r percent DFW by identity}
 dat %>%
@@ -650,17 +647,17 @@ dat %>%
   coord_flip()
 ```
 
-
-:::: {.questionbox data-latex=""}
+::: {.questionbox data-latex=""}
 ::: {.center data-latex=""}
 **Guiding questions:**
 :::
+
 -   Is this course supporting students differently? Why might this course support some students better than others?
 
 -   For what students is this course working well for?
 
 -   What additional information about this course or these students would you want to collect to answer these questions?
-::::
+:::
 
 ## How have grades across student groups changed over time?
 
@@ -684,18 +681,17 @@ dat_coi %>%
   theme(axis.text.x = element_text(angle = 90)) 
 ```
 
-
 The below plot shows the trends over time for each student identity.
 
-* Each axis of identity is a separate plot. 
+-   Each axis of identity is a separate plot.
 
-* Means and 95% confidence intervals are shown as points and vertical errorbars. 
+-   Means and 95% confidence intervals are shown as points and vertical errorbars.
 
-* The majoritarian group (i.e., students who do not hold the indicated identity) is shown in gray circles across all plots. Students who do hold the identity are shown in colored triangles. 
+-   The majoritarian group (i.e., students who do not hold the indicated identity) is shown in gray circles across all plots. Students who do hold the identity are shown in colored triangles.
 
-*The overall course average, across all students and all terms, is shown with a dashed line.
+\*The overall course average, across all students and all terms, is shown with a dashed line.
 
-* *Note: If the sample size for a group in a particular term is less than `r cutoff_section`, then that group will not be included in the plot.*
+-   *Note: If the sample size for a group in a particular term is less than `r cutoff_section`, then that group will not be included in the plot.*
 
 ```{r mean grades by identity - over time (facets), message= FALSE, warning=FALSE,fig.height= 8, fig.width = 8}
 
@@ -742,14 +738,15 @@ dat_coi %>%
 
 ```
 
-:::: {.questionbox data-latex=""}
+::: {.questionbox data-latex=""}
 ::: {.center data-latex=""}
 **Guiding questions:**
 :::
+
 -   Have the overall trends in course grades been stable over time, or have they changed in recent terms?
 
 -   If there are any overall equity gaps associated with specific student identities, have they narrowed in recent years, or widened? Are there any pedagogical or structural changes that may relate to any changes seen over time?
-::::
+:::
 
 # Comparing course grades to grades in other courses
 
@@ -852,7 +849,7 @@ dat_coi %>%
   coord_flip()
 ```
 
-The below plot focuses on the mean grade anomaly for each of the student demographics, comparing the majority group (circles) to the historically excluded / marginalized group (triangles). Points show means, flanked by the 95% confidence interval for each group. 
+The below plot focuses on the mean grade anomaly for each of the student demographics, comparing the majority group (circles) to the historically excluded / marginalized group (triangles). Points show means, flanked by the 95% confidence interval for each group.
 
 ```{r grade anomaly by identity, message=FALSE, warning=FALSE}
 #different identities with average grade anomaly across identities 
@@ -898,7 +895,7 @@ dat_coi %>%
   coord_flip()
 ```
 
-Similarly, we can also further disaggregate the PEER group into specific student races/ethnicities. The below plot shows grade anomalies by student ethnicity. Points represent mean grade anomaly, error bars the 95% confidence interval. 
+Similarly, we can also further disaggregate the PEER group into specific student races/ethnicities. The below plot shows grade anomalies by student ethnicity. Points represent mean grade anomaly, error bars the 95% confidence interval.
 
 ```{r grade anomaly by ethnicity, message=FALSE, warning=FALSE}
 # plot grade anomaly by specific ethnicity
@@ -941,14 +938,15 @@ dat_coi %>%
   coord_flip()
 ```
 
-:::: {.questionbox data-latex=""}
+::: {.questionbox data-latex=""}
 ::: {.center data-latex=""}
 **Guiding questions:**
 :::
+
 -   Does examining grade anomaly give further information on equitable outcomes than course grades alone?
 -   Are students receiving a grade bonus or a grade penalty on average in this course? (see dashed line for overall course average)
 -   Are there any marginalized demographic groups that are receiving more of a grade penalty or more of a grade bonus? Reflecting on the course structure and its place in the curriculum context, can you think of any reasons that might be?
-::::
+:::
 
 ## How does grade anomaly change over time?
 
@@ -1031,13 +1029,14 @@ dat_coi %>%
 
 ```
 
-:::: {.questionbox data-latex=""}
+::: {.questionbox data-latex=""}
 ::: {.center data-latex=""}
 **Guiding questions:**
 :::
+
 -   Is the grade anomaly for this course consistent over time? (Is there always a grade bonus or penalty, or does it depend on term or year?)
 -   If grade anomaly fluctuates, what aspects of the course structure or student population might relate to these differences? What data would you want to access to answer this question?
-::::
+:::
 
 # Examing the impact of students' systemic advantages
 
@@ -1217,20 +1216,21 @@ dat_coi %>%
 
 Given the limitations above, we might want to examine specific intersections of advantages, rather than just a numeric index. The below plot further investigates intersections of student identities by showing course outcomes for specific advantage combinations. These specific combinations are collapsed in the SAI index, but here, are disaggregated by the specific identity a student holds.
 
-The two plots below show actual course grades and grade anomalies. In both plots, 
+The two plots below show actual course grades and grade anomalies. In both plots,
 
-* Points show means and 95% confidence intervals are points and errorbars. 
+-   Points show means and 95% confidence intervals are points and errorbars.
 
-* Dashed lines repersent the overall course average. 
+-   Dashed lines repersent the overall course average.
 
-* Color corresponds to that groups' SAI. 
+-   Color corresponds to that groups' SAI.
 
-* The y axis specifies the identities students hold; 
-    + FG = First Generation
-    + LI = Low Income family background
-    + W = Woman
-    + PEER = Person from a background historically excluded based on ethnicity/race. 
-    + The "All" group corresponds to students will access to all listed advantages (i.e., a non-PEER, non-Low-Income, continuing-generation man).
+-   The y axis specifies the identities students hold;
+
+    -   FG = First Generation
+    -   LI = Low Income family background
+    -   W = Woman
+    -   PEER = Person from a background historically excluded based on ethnicity/race.
+    -   The "All" group corresponds to students will access to all listed advantages (i.e., a non-PEER, non-Low-Income, continuing-generation man).
 
 ```{r grade by advantage combo, warning = FALSE, message=FALSE}
 #"Marco" plot: show means and 95% CI for all advantage combinations
@@ -1279,26 +1279,29 @@ dat_coi %>%
   coord_flip()
 ```
 
-:::: {.questionbox data-latex=""}
+::: {.questionbox data-latex=""}
 ::: {.center data-latex=""}
 **Guiding questions:**
 :::
+
 -   Are different levels of SAI significantly different from each other in terms of course outcomes (i.e., do 95% confidence intervals overlap)? Is there a linear relationship between SAI and grade, or is the relationship more mixed? Is there a point where students fall "below" average grades or grade anomalies? How can we better serve those students in this course?
 
 -   If we see differences across levels of SAI, what elements of the course structure might lead to some of these differences with student systemic advantages?
 
 -   Do you observe any nuanced relationships between specific advantage combinations that were masked by the overall SAI index?
 
-- Can you think of any other systemic advantages not included in this index that likely influence student's outcomes in a course? What would be the challenges to adding those identities or advantages to this index?
-::::
+-   Can you think of any other systemic advantages not included in this index that likely influence student's outcomes in a course? What would be the challenges to adding those identities or advantages to this index?
+:::
 
 # Feedback
 
-Please provide any feedback you may have on this demo report to the SELC team here: [May Institute Feedback Form](https://docs.google.com/forms/d/e/1FAIpQLSdIPV9uwb1q6xSXrF0hH3zyYSko8Nh_gGAv106D6S_PNmLBOw/viewform?usp=sf_link).
+Please provide any feedback you may have on this report to your institutional SELC team here: [Feedback Form](YOUR LINK HERE).
 
 ### Acknowledgements
 
 This report is heavily inspired by the Foundational Course Initiative reports from the University of Michigan, created by Dr. Heather Rypkema and refined by the Assessment Toolkit team. The R code in this report was initially created by Victoria Farrar (UC Davis) with feedback from Nita Tarchinski (Michigan), Matthew Steinwachs (UC Davis), Jenna Thomas (UC Davis), Tim McKay (Michigan), Heather Rypkema (Michigan), Marco Molinaro (University of Maryland) and Stefano Fiorini (Indiana University).
+
+**The SELC project is funded by National Science Foundation award [DUE-2215398](https://www.nsf.gov/awardsearch/showAward?AWD_ID=2215398&HistoricalAwards=false) and the SEISMIC collaboration is funded by the Alfred P. Sloan foundation.**
 
 ```{r R coding resources, include = FALSE}
 #R coding resources used
