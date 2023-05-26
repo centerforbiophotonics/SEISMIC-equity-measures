@@ -2,7 +2,7 @@
 
 **Goal**: This code generates an initial equity measures report for an introductory STEM course for the SEISMIC SELC project. Currently, the documents in this repository will guide institutional researchers (IRs) and data analysts through the process of preparing institutional data to generate equity reports for local SELC grant teams.
 
-More information about the SELC grant can be found here: [The SELC Grant \| SEISMIC Collaboration](https://www.seismicproject.org/seismic-central/the_selc_grant/).
+More information about the SELC grant can be found here: [The SELC Grant | SEISMIC Collaboration](https://www.seismicproject.org/seismic-central/the_selc_grant/).
 
 **Project contacts:**
 
@@ -11,6 +11,10 @@ More information about the SELC grant can be found here: [The SELC Grant \| SEIS
 -   [Jenna Thomas](mailto:jmathomas@ucdavis.edu) (UC Davis)
 
 -   [Nita Tarchinski](mailto:nitaked@umich.edu) (U Michigan)
+
+-   [Victoria Farrar](mailto:vsfarrar@ucdavis.edu) (formerly UC Davis)
+
+**Funding:** The SELC project is funded by National Science Foundation award [DUE-2215398](https://www.nsf.gov/awardsearch/showAward?AWD_ID=2215398&HistoricalAwards=false) and the SEISMIC collaboration is funded by the Alfred P. Sloan foundation.
 
 \-\-\-\--
 
@@ -35,6 +39,8 @@ When using the code, SELC project institutional researchers should go through th
     -   [ ] Chunk 5 (Line 67): Select majors of interest - type the name of the majors you would want to focus on in your report *exactly* as it is entered in your dataset in `majors_of_interest`
 
     -   [ ] Chunk 6 (Line 74): Define sample size cutoffs for excluding groups - define the minimum sample size a specific demographic group (`cutoff_general`) or demographic group within an individual course offering (for plots that show over time; `cutoff_sections`) must meet to be included in plots.
+    
+    -   [ ] Text on Line 1300: If you have a feedback form for your stakeholders/report viewers, you can edit the text here to add a link to your institutional feedback form (if desired). Otherwise, you can delete the "Feedback" section from the text.
 
     -   [ ] Save the document locally and then press "Knit" to generate .html. The .html report can be shared with your stakeholders/users via a private Box or Google Drive folder. Instruct your users to open the .html using a web browser like Chrome or Safari for best results.
 
@@ -42,4 +48,6 @@ When using the code, SELC project institutional researchers should go through th
 
 ### Want to see an example?
 
-Preview the demo/example report from the SELC May Institute 2023: [SELC Level 1 R Markdown report](https://htmlpreview.github.io/?https://github.com/vsfarrar/SEISMIC-equity-measures/blob/main/archive/questions_version3_demo.html) (DEMO).
+Preview the demo/example report from the SELC May Institute 2023: [SELC Level 1 R Markdown report](https://htmlpreview.github.io/?https://github.com/vsfarrar/SEISMIC-equity-measures/blob/main/archive/questions_version3_demo.html) (DEMO). 
+
+If you wish to download this demo report and view it locally on your browser, you can do so at this link: [https://github.com/centerforbiophotonics/SEISMIC-equity-measures/blob/main/archive/questions_version3_demo.html](https://github.com/centerforbiophotonics/SEISMIC-equity-measures/blob/main/archive/questions_version3_demo.html)
