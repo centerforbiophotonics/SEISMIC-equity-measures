@@ -28,7 +28,7 @@ Below is an example from the synthetic dataset. The first 4 columns, `crs_name`,
 **Note: The exact order in your dataset will not matter for running the code - only that all of the variables are present and named as described below.**
 
 ```{r load synthetic data, echo=FALSE, paged.print=TRUE}
-synthdat <- read.csv(file = "~/Downloads/synthetic_data_SEISMIC-format_BIO300_2023-05-08.csv")
+synthdat <- read.csv(file = "https://github.com/vsfarrar/SEISMIC-equity-measures/blob/main/synthetic_data_SEISMIC-format_BIO300_2023-05-08.csv")
 
 synthdat %>%
   mutate(crs_retake = 0) %>%
@@ -39,7 +39,7 @@ synthdat %>%
   print_html()
 ```
 
-For an example dataset, see: [Example dataset](https://docs.google.com/spreadsheets/d/14yD7tf09ZbpKUBF2KIkqPzPLpyKW9BeQyEd5zlR7EUM/edit?usp=sharing) (Google Doc; *open access*)
+For an example dataset, see this [synthetic dataset](https://github.com/vsfarrar/SEISMIC-equity-measures/blob/main/synthetic_data_SEISMIC-format_BIO300_2023-05-08.csv) 
 
 ## Variables to Include
 
@@ -60,9 +60,6 @@ datadict %>% kbl() %>%  kable_styling(bootstrap_options = c("hover")) %>% row_sp
 If it is difficult to access data for one of the following demographic variables: 
 `female`, `international`, `firstgen`, `transfer`, or `lowincomeflag`, it is okay to enter NA for that entire column and exclude that specific demographic variable from your analysis. The code and plots created in the report should still run. Just be sure you have entered any missing variables as *NA* (and not as another variable, such as -99) and that the variable is still present in the dataframe as a column (even if full of *NA*).
 
-# Exclusion Criteria
-
-For the SELC grant project Level 1 analyses, these are the initial exclusion criteria (which filters / data to exclude from our dataset) :
 
 # Preparing Your Dataset
 
