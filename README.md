@@ -50,4 +50,4 @@ When using the code, SELC project institutional researchers should go through th
 
 Preview the demo/example report from the SELC May Institute 2023: [SELC Level 1 R Markdown report](https://htmlpreview.github.io/?https://github.com/vsfarrar/SEISMIC-equity-measures/blob/main/archive/questions_version3_demo.html) (DEMO). 
 
-If you wish to download this demo report and view it locally on your browser, you can do so at this link: [https://github.com/centerforbiophotonics/SEISMIC-equity-measures/blob/main/archive/questions_version3_demo.html](https://github.com/centerforbiophotonics/SEISMIC-equity-measures/blob/main/archive/questions_version3_demo.html)
+If you wish to download this demo report and view it locally on your browser, you can do so at this link: [https://github.com/centerforbiophotonics/SEISMIC-equity-measures/blob/main/archive/demo_equity_report_SELC-May-Institute-2023.html](https://github.com/centerforbiophotonics/SEISMIC-equity-measures/blob/main/archive/questions_version3_demo.html)
