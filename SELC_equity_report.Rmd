@@ -693,7 +693,7 @@ The below plot shows the trends over time for each student identity.
 
 \*The overall course average, across all students and all terms, is shown with a dashed line.
 
--   *Note: If the sample size for a group in a particular term is less than `r cutoff_section`, then that group will not be included in the plot.*
+-   *Note: If the sample size for a group in a particular term is less than `r cutoff_sections`, then that group will not be included in the plot.*
 
 ```{r mean grades by identity - over time (facets), message= FALSE, warning=FALSE,fig.height= 8, fig.width = 8}
 
