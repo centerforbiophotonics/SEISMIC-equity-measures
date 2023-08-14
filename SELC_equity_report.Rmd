@@ -331,9 +331,12 @@ dat %>%
 ```
 
 Additionally, we may only be interested in a few majors, such as the major of the department of the course. If specified, the plot below shows the percent of majors of interest in this course, compared to all other majors.
+
 ::: {.center data-latex=""}
-**The major(s) of interest for this report are `r ifelse(length(majors_of_interest)>=2,pander::p(majors_of_interest, wrap = ''),cat(paste(majors_of_interest, sep = ", ")))`.**
+**The major(s) of interest for this report are `r pander::p(majors_of_interest, wrap = '')`.**
 :::
+
+
 
 
 ```{r percent by majors of interest, message=FALSE, warning=FALSE}
