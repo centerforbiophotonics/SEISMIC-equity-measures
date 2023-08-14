@@ -433,6 +433,7 @@ However, some students may enroll in the class but then end up withdrawing from 
 #plot the overall DFW rate for the course
 dat %>%
   #remove plus/minus from lettergrade, if present
+  filter(crs_name == course_of_interest) %>%
   mutate(lettergrade = str_replace_all(lettergrade, regex("\\W+"), "")) %>%
   mutate(dfw = ifelse(lettergrade %in% c("D","F","W"), lettergrade, "A-C")) %>%
   #add n for all students in course
