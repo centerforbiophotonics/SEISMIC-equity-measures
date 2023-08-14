@@ -35,7 +35,8 @@ major_percent_calc = function(course, file_name) {
 #function to create the reports for each course
 render_report = function(course, file_name, majors) {
   rmarkdown::render("/Users/jthomas/Documents/Work Documents/GitHub/SEISMIC-equity-measures/SELC_equity_report.Rmd", 
-                     params = list(course = course, data = file_name, majors = majors), output_file = paste0("SELC_",course,"_equity_report.html"))
+                     params = list(course = course, data = file_name, majors = majors), output_file = paste0("SELC_",course,"_equity_report.html"),
+                    output_dir = "/Users/jthomas/Documents/Work Documents/SELC/New_github_files")
 }
 
 #creating the reports for each course
