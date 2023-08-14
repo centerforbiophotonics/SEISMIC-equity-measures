@@ -1,10 +1,16 @@
 ---
-title: "SEISMIC Equity Learning Communities Report: [YOUR COURSE HERE]"
+params:
+  course: 'CHE002C'
+  majors: ['Biological Sciences', 'Neurobio,Physiology & Behavior', 'Biochem & Molecular Biology']
+  data: '/Users/jthomas/Documents/Work Documents/SELC/Version 3 files - 6:8:23/SELC_che2c_data.csv'
+title: "SEISMIC Equity Learning Communities Report: `r params$course`"
 subtitle: "Course Equity Report (Level 1)"
 output:
   rmdformats::readthedown
-date: "`r Sys.Date()`"
+date: "!r Sys.date()`"
 ---
+
+
 
 ```{r setup, include=FALSE}
 #setup 
@@ -57,23 +63,24 @@ seismic_colors <- c("#eb7e36","#4671c6","#70ac49","#a6a6a6","#ffbe07", "#429dda"
 }
 ```
 
-```{r load data, echo = FALSE}
+```{r load data, echo = FALSE, include=FALSE}
 #load data 
 #change this file name to the source of your properly formatted data file 
-dat <- read.csv(file = "~/Downloads/your_path_here.csv")
+#cat(params$data)
+dat <- read.csv(file=params$data)
 
 ```
 
 ```{r select course of interest}
 #if the dataset has more than one course in it, define the course of interest here
 #what you enter must match the course name in the dataset
-course_of_interest <- "YOUR COURSE HERE"
+course_of_interest <- params$course
 ```
 
 ```{r define majors of interest, include = FALSE}
 #define the majors you are specifically interested in plotting and exploring in your dataset
 #entries must match the names in the dataset verbatim
-majors_of_interest <- c("Biological Sciences", "Chemistry")
+majors_of_interest <- params$majors
 ```
 
 ```{r set cutoffs for sample size, include = FALSE}
@@ -324,10 +331,10 @@ dat %>%
 ```
 
 Additionally, we may only be interested in a few majors, such as the major of the department of the course. If specified, the plot below shows the percent of majors of interest in this course, compared to all other majors.
-
 ::: {.center data-latex=""}
 **The major(s) of interest for this report are `r ifelse(length(majors_of_interest)>=2,pander::p(majors_of_interest, wrap = ''),cat(paste(majors_of_interest, sep = ", ")))`.**
 :::
+
 
 ```{r percent by majors of interest, message=FALSE, warning=FALSE}
 #plot of the percent of only majors of interest (defined in Chunk 4)
