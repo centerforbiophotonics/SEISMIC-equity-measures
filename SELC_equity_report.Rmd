@@ -775,9 +775,9 @@ Grade anomalies can be:
 
 -   **Grade bonuses** - where students receive *higher* grades relative to other courses.
 
-Whether a course confers a grade bonus or a grade penalty depends on what other courses students have taken, or take in the term of interest. In many ways, the grade anomaly depends on where the course is situated in the curricular context (i.e., is this course taken along wiht many other large introductory STEM courses, or are the other courses taken to this point general education or electives?).
+Whether a course confers a grade bonus or a grade penalty depends on what other courses students have taken, or take in the term of interest. In many ways, the grade anomaly depends on where the course is situated in the curricular context (i.e., is this course taken along with many other large introductory STEM courses, or are the other courses taken to this point general education or electives?).
 
-Importantly, grade bonuses or penalties are not necessarily "good" or "bad", and it often depends on the goals of the course and the assessment structure. For example, courses that aim to evaluate students' level of mastery of specific skills or concepts as prerequisites for future coursework (a goal of many introductory STEM courses) tend to confer grade penalties than other courses.
+Importantly, grade bonuses or penalties are not necessarily "good" or "bad", and it often depends on the goals of the course and the assessment structure. For example, courses that aim to evaluate students' level of mastery of specific skills or concepts as prerequisites for future coursework (a goal of many introductory STEM courses) tend to confer higher grade penalties than other courses.
 
 First, we can explore what the distribution of course grades are versus GPAO. The plot below shows the sample size of students for different combinations of GPAO versus course grade. The line shows the one-to-one line, so areas below the line represent grade penalties (GPAO \> grade), areas above grade bonuses (GPAO \< grade). Lighter colors represent more students that fall in that quadrant.
 
@@ -811,7 +811,7 @@ opts_chunk$set(fig.height = 5)
 
 ```
 
-As with actual grades, we can also examine grade anomaly across student demographics. The following plot shows the distribution of grade anomalies for each listed student demographic. The darker portion of the distribution represents the students between the 25th and 75th percentile. The mean is a circle, with errorbars showing the 95% confidence interval around the mean. Vertical lines on each plot represent the median. The dashed line across the whole plot represents the mean grade anomaly across the entire coures (all terms and all students).
+As with actual grades, we can also examine grade anomaly across student demographics. The following plot shows the distribution of grade anomalies for each listed student demographic. The darker portion of the distribution represents the students between the 25th and 75th percentile. The mean is a circle, with error bars showing the 95% confidence interval around the mean. Vertical lines on each plot represent the median. The dashed line across the whole plot represents the mean grade anomaly across the entire courses (all terms and all students). The solid line represents a grade anomaly of zero.
 
 ```{r grade anomaly distributions by identity, message= FALSE, warning=FALSE}
 
