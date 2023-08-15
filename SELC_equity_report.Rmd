@@ -10,8 +10,6 @@ output:
 date: "!r Sys.date()`"
 ---
 
-
-
 ```{r setup, include=FALSE}
 #setup 
 
@@ -335,9 +333,6 @@ Additionally, we may only be interested in a few majors, such as the major of th
 ::: {.center data-latex=""}
 **The major(s) of interest for this report are `r pander::p(majors_of_interest, wrap = '')`.**
 :::
-
-
-
 
 ```{r percent by majors of interest, message=FALSE, warning=FALSE}
 #plot of the percent of only majors of interest (defined in Chunk 4)
@@ -1308,7 +1303,7 @@ dat_coi %>%
 
 # Feedback
 
-Please provide any feedback you may have on this report to your institutional SELC team here: [Feedback Form](YOUR LINK HERE).
+Please provide any feedback you may have on this report to your institutional SELC team here: [Feedback Form](YOUR%20LINK%20HERE).
 
 ### Acknowledgements
 
