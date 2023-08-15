@@ -1066,7 +1066,7 @@ SAI, or the **Systemic Advantage Index** is one approach. This metric takes into
 
 SAI adds together all of the advantages a student may have across these four demographic axes and assigns an index. The table below shows SAI for multiple combinations of identities. For instance, a Latino, first-generation, low income man (column second from left) would be considered to have SAI = 1, while a white, continuing-generation woman from a high income family would be considered to have SAI = 3 (column second from right).
 
-![](https://github.com/vsfarrar/SEISMIC-equity-measures/blob/main/SAI_assignment.tif)
+![Plot title. ](SELC_equity_report_insertimage_3.png)![]()
 
 The SAI approximates an intersectional approach, where we can consider how multiple axes of student identities may affect student experiences, and thus, course outcomes. However, SAI is limited in its intersectional approach in two ways. First, it collapses down various, diverse student identities within one index. For example, SAI = 2 contains six vastly different student identities and experiences, which undoubtedly do not share the same challenges and experiences in higher education. Second, SAI assumes all advantages act additively, rather than considering some cases where they interact in a non-additive way.
 
