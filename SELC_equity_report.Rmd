@@ -464,7 +464,7 @@ dat %>%
 
 ## How do course outcomes compare for different student groups?
 
-The overall grade distribution gives us a sense for grade patterns in this course. The overall grade distribution gives us a sense for grade patterns in this course. However, from an equity perspective, we want to examine and compare the distributions for different student identities.
+The overall grade distribution gives us a sense for grade patterns in this course. However, from an equity perspective, we want to examine and compare the distributions for different student identities.
 
 The below plot shows the full distribution of the grades for multiple student identities, both academic (STEM major, transfer students) and demographic (PEER, women, low income, first-generation, international).
 
