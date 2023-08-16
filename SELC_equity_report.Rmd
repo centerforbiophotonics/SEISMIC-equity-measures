@@ -801,7 +801,7 @@ opts_chunk$set(fig.height = 5)
 
 ```
 
-As with actual grades, we can also examine grade anomaly across student demographics. The following plot shows the distribution of grade anomalies for each listed student demographic. The darker portion of the distribution represents the students between the 25th and 75th percentile. The mean is a circle, with error bars showing the 95% confidence interval around the mean. Vertical lines on each plot represent the median. The dashed line across the whole plot represents the mean grade anomaly across the entire courses (all terms and all students).
+As with actual grades, we can also examine grade anomaly across student demographics. The following plot shows the distribution of grade anomalies for each listed student demographic. The darker portion of the distribution represents the students between the 25th and 75th percentile. The mean is a circle, with error bars showing the 95% confidence interval around the mean. Vertical lines on each plot represent the median. The dashed line across the whole plot represents the mean grade anomaly across the entire courses (all terms and all students). The solid line represents a grade anomaly of zero.
 
 ```{r grade anomaly distributions by identity, message= FALSE, warning=FALSE}
 
