@@ -666,7 +666,7 @@ dat %>%
 
 We can also evaluate how grading and grade distributions have changed over time in this course.
 
-Below, we can see general trends in grade distribution over time, where the distribution of grades is shown as a density plot. The color of the line represents the term.
+Below, we can see general trends in grade distribution over time, where the distribution of grades is shown as a stacked bar plot.
 
 ```{r grade distribution over time (stacked bar), warning = FALSE, message=FALSE}
 #stacked bar plot with grades by term 
