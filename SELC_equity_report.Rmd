@@ -417,7 +417,7 @@ dat_coi %>%
   theme_seismic
 ```
 
-However, some students may enroll in the class but then end up withdrawing from the course. The below plot shows who. is *NOT* succeeding in this course, by showing the percent of all students across all terms that received a D, F, or withdraw from the course with a "W" ("DFWs").
+However, some students may enroll in the class but then end up withdrawing from the course. The below plot shows who is *NOT* succeeding in this course, by showing the percent of all students across all terms that received a D, F, or withdraw from the course with a "W" ("DFWs").
 
 ```{r overall DFW}
 #plot the overall DFW rate for the course
