@@ -765,7 +765,7 @@ Grade anomalies can be:
 
 -   **Grade bonuses** - where students receive *higher* grades relative to other courses.
 
-Whether a course confers a grade bonus or a grade penalty depends on what other courses students have taken, or take in the term of interest. In many ways, the grade anomaly depends on where the course is situated in the curricular context (i.e., is this course taken along wiht many other large introductory STEM courses, or are the other courses taken to this point general education or electives?).
+Whether a course confers a grade bonus or a grade penalty depends on what other courses students have taken, or take in the term of interest. In many ways, the grade anomaly depends on where the course is situated in the curricular context (i.e., is this course taken along with many other large introductory STEM courses, or are the other courses taken to this point general education or electives?).
 
 Importantly, grade bonuses or penalties are not necessarily "good" or "bad", and it often depends on the goals of the course and the assessment structure. For example, courses that aim to evaluate students' level of mastery of specific skills or concepts as prerequisites for future coursework (a goal of many introductory STEM courses) tend to confer grade penalties than other courses.
 
