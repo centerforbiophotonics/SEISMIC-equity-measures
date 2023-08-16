@@ -533,7 +533,7 @@ In this plot:
 
 -   Means and 95% confidence intervals are shown as points and errorbars.
 
--   Student identities are represented by shape; triangles represent students in the historically excluded/minoritized group and circles are students in the majoirty/ historically supported/accepted group.
+-   Student identities are represented by shape; triangles represent students in the historically excluded/minoritized group and circles are students in the majority/historically supported/accepted group.
 
 -   The overall average grade for all students in all terms of the course is shown as a dashed line.
 
