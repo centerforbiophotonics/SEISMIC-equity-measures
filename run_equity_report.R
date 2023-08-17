@@ -45,3 +45,10 @@ for (i in course_list) {
   render_report(i, file_name, major_percentages)
 }
 
+#test code
+#i<-"NUT010V"
+#major_percent_calc (i, file_name)
+#render_report(i, file_name, major_percentages)
+
+
+
