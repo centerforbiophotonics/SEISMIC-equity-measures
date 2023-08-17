@@ -7,7 +7,7 @@ title: "SEISMIC Equity Learning Communities Report: `r params$course`"
 subtitle: "Course Equity Report (Level 1)"
 output:
   rmdformats::readthedown
-date: "!r Sys.date()`"
+date: "`r Sys.Date()`"
 ---
 
 ```{r setup, include=FALSE}
