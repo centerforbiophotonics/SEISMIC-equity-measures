@@ -1,13 +1,4 @@
 
-#generate a list to easily add to sql code
-#crse_instructor_list <- read.csv("/Users/jthomas/Documents/Work Documents/SELC/List of courses and pidms.csv")
-#
-#for(i in 1:dim(crse_instructor_list)){
-#  print(paste0("(c.SUBJ||c.CRSE = '",crse_instructor_list$Course[i],"' AND c.INSTRUCTOR_PIDM = ",crse_instructor_list$PIDM[i],")"))
-#}
-
-
-
 #the location of the data file for the equity reports - must be updated each time
 file_name <- "/Users/jthomas/Documents/Work Documents/SELC/Version 3 files - 6:8:23/SELC_combo_data_file.csv"
 
