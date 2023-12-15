@@ -73,15 +73,20 @@ dat <- read.csv(file=params$data)
 ```
 
 ```{r select course of interest}
-#if the dataset has more than one course in it, define the course of interest here
-#what you enter must match the course name in the dataset
+#defines the course of interest using parameters
+#course name must match the dataset exactly
 course_of_interest <- params$course
 ```
 
 ```{r define majors of interest, include = FALSE}
-#define the majors you are specifically interested in plotting and exploring in your dataset
-#entries must match the names in the dataset verbatim
+#define the majors you are specifically interested in plotting and exploring using parameter information
 majors_of_interest <- params$majors
+```
+
+```{r define minimum and maximum terms}
+#defines minimum and maximum terms for the course using parameter information
+min_term <- params$min_term
+max_term <- params$max_term
 ```
 
 ```{r set cutoffs for sample size, include = FALSE}
@@ -107,7 +112,7 @@ We want to emphasize that the student identities explored here are not exhaustiv
 ::: {.center data-latex=""}
 **The course of interest is `r course_of_interest`.**
 
-**The course data presented in this report ranges from `r min(dat$crs_year)` to `r max(dat$crs_year)`.**
+**The course data presented in this report ranges from `r min_term` to `r max_term`.**
 :::
 
 # Who is in this course?
