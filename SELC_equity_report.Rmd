@@ -3,7 +3,9 @@ params:
   course: 'CHE002C'
   majors: ['Biological Sciences', 'Neurobio,Physiology & Behavior', 'Biochem & Molecular Biology']
   data: '/Users/jthomas/Documents/Work Documents/SELC/Version 3 files - 6:8:23/SELC_che2c_data.csv'
-title: "SEISMIC Equity Learning Communities Report: `r params$course`"
+  min_term: 'Fall 2018'
+  max_term: 'Spring 2023'
+title: "SEISMIC Equity Learning Communities Report: `r params$course` - `r params$min_term`-`r params$max_term`"
 subtitle: "Course Equity Report (Level 1)"
 output:
   rmdformats::readthedown
