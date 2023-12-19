@@ -1,6 +1,7 @@
 
 #the location of the data file for the equity reports - must be updated each time
-file_name <- "/Users/jthomas/Work Documents/SELC/12:01:23 all sections files/all_sections_combined_data.csv"
+file_name <- "/Users/jthomas/Work Documents/SELC/practice files/practice_data_n_instructors.csv" 
+#file must include number of instructors/course
 
 #the rest of the script is automatic and may be run without any changes
 
