@@ -103,6 +103,10 @@ cutoff_general <- 10
 cutoff_sections <- 10
 ```
 
+```{r course frequencies}
+crs_dat <- dat %>% filter(crs_name == course_of_interest)
+```
+
 # Introduction
 
 This report is the first in a series created for the [SEISMIC Equity Learning Communities (SELC) project](https://www.seismicproject.org/seismic-central/the_selc_grant/). The goal of this report, as part of the SELC project, is to allow faculty and department leaders to view institutional data from their courses of interest to evaluate whether students experience equitable outcomes in those courses. This first "Level 1" report will give an overview of the demographic composition of these courses across a range of student identities, show how course grades map onto these demographics and how these patterns have changed over time, and will also compare course grades to students' other coursework through the concept of grade anomaly. This data is meant to facilitate discussions about how to improve equitable outcomes and elevate pedagogical techniques that might support historically marginalized students.
@@ -112,14 +116,15 @@ We want to emphasize that the student identities explored here are not exhaustiv
 ::: {.center data-latex=""}
 **The course of interest is `r course_of_interest`.**
 
-**The course data presented in this report ranges from `r min_term` to `r max_term`.**
+**The course data presented in this report ranges from `r min_term` to `r max_term` and includes `r length(crs_dat$st_id)` students, `r n_distinct(c(crs_dat$crs_term, crs_dat$crs_section))` section(s), and `r crs_dat$crs_instructors[1]` unique instructor(s).**
+
 :::
 
 # Who is in this course?
 
 Before evaluating student course outcomes, it is important to understand: who takes this course? What demographic and academic groups do students in this course hold?
 
-The plot below shows the percent of students across all terms of the course of interest that hold the following identities: declared a STEM major, transferred from another 2- or 4- year institution, are international students or are permament residents, come from a low socioeconomic family background, are the first in their family to go to college or pursue a Bachelor's degree (first-generation, or FirstGen), are women, or come from a background historically excluded from science based on ethnicity and/or race (PEER; Asai, 2020).
+The plot below shows the percent of students across all terms of the course of interest that hold the following identities: declared a STEM major, transferred from another 2- or 4- year institution, are international students or are permanent residents, come from a low socioeconomic family background, are the first in their family to go to college or pursue a Bachelor's degree (first-generation, or FirstGen), are women, or come from a background historically excluded from science based on ethnicity and/or race (PEER; Asai, 2020).
 
 Note that these identities are not mutually exclusive; a single student can belong to any or all of these groups.
 
