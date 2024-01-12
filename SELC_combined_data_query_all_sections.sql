@@ -98,24 +98,4 @@ OR (c.SUBJ||c.CRSE = 'LIN001')
 )
 ;
 
-
-SELECT c.subj, c.crse, COUNT (DISTINCT ci.pidm) AS n_instructors
-    FROM course_instructors ci
-    LEFT JOIN courses c ON c.term=ci.term AND c.crn=ci.crn
-WHERE c.TERM >= 201810
-    AND c.TERM < 202310
-    AND REG_STATUS_CODE IN ('RE', 'W3', 'W4', 'W5', 'W6', 'W7', 'W8', 'W9', 'WA', 
-                            'D3', 'D4', 'D5', 'D6', 'D7', 'D8', 'D9', 'DA', 
-                            'P3', 'P4', 'P5', 'P6', 'P7', 'P8', 'P9', 'PA', 
-                            'N3', 'N4', 'N5', 'N6', 'N7', 'N8', 'N9', 'NA', '3P', 'DP')
---update the below part of the file using list generated from rmarkdown
-AND ((c.SUBJ||c.CRSE = 'BIT171')
-OR (c.SUBJ||c.CRSE = 'CHE002C')
-OR (c.SUBJ||c.CRSE = 'NUT010')
-OR (c.SUBJ||c.CRSE = 'NUT010V')
-OR (c.SUBJ||c.CRSE = 'MAT016A')
-OR (c.SUBJ||c.CRSE = 'MAT021A')
-OR (c.SUBJ||c.CRSE = 'LIN001')
-)
-GROUP BY c.subj, c.crse
 ;
