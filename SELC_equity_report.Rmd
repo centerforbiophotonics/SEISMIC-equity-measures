@@ -322,8 +322,9 @@ dat %>%
   #add labels for actual percent values
   geom_text(aes(label = round(perc,0)), hjust = 1.2) + 
   labs(x = "Major", y = "Percent of class (%)", fill = NULL) + 
-  scale_fill_manual(values = seismic_colors, 
-                    labels = c("non-STEM", "STEM")) + 
+  scale_fill_manual(values = c("0"="#eb7e36",
+                               "1"="#4671c6"), 
+                    labels = c("0"="non-STEM", "1"="STEM")) + 
   theme_seismic +
   theme(legend.position = "top") + 
   coord_flip()
