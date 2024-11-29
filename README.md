@@ -2,6 +2,8 @@
 
 **Goal**: This code generates an initial equity measures report for an introductory STEM course for the SEISMIC SELC project. Currently, the documents in this repository will guide institutional researchers (IRs) and data analysts through the process of preparing institutional data to generate equity reports for local SELC grant teams.
 
+## This material is based upon work supported by the National Science Foundation under Award Nos. 2215398 and 2215689. Any opinions, findings and conclusions or recommendations expressed in this material are those of the authors and do not necessarily reflect the views of the National Science Foundation.
+
 More information about the SELC grant can be found here: [The SELC Grant | SEISMIC Collaboration](https://www.seismicproject.org/seismic-central/the_selc_grant/).
 
 **Project contacts:**
